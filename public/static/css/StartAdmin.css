@@ -1,0 +1,85 @@
+body, html {
+    padding: 0;
+    margin: 0;
+    background-color: #f5f5f5;
+}
+
+[v-cloak] {
+    visibility: hidden !important;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+    /*对垂直流动条有效*/
+    height: 5px;
+    /*对水平流动条有效*/
+}
+
+/*定义滚动条的轨道颜色、内阴影及圆角*/
+
+::-webkit-scrollbar-track {
+    background-color: rgba(50, 50, 50, 0.1);
+    border-radius: 5px;
+}
+
+/*定义滑块颜色、内阴影及圆角*/
+
+::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/*定义两端按钮的样式*/
+
+::-webkit-scrollbar-button {
+    background-color: transparent;
+}
+
+/*定义右下角汇合处的样式*/
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+.el-dialog {
+    margin: 0!important;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100% - 30px);
+    max-width: calc(100% - 30px);
+}
+
+.el-dialog__body {
+    transform: translate3d(0, 0, 0);
+    overflow: auto;
+    padding: 20px;
+}
+
+.el-dialog__header {
+    padding: 20px 20px 20px 20px!important;
+    border-bottom: 1px solid #f4f4f4;
+}
+
+.el-dialog__footer {
+    text-align: right!important;
+    padding: 12px 20px 12px 20px!important;
+    border-top: 1px solid #f4f4f4;
+}
+
+.el-dialog__headerbtn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 0;
+    background: 0 0;
+    border: none;
+    outline: 0;
+    cursor: pointer;
+    font-size: 24px!important;
+}
+
+.el-dialog__wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

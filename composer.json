@@ -1,0 +1,49 @@
+{
+    "name": "hamm/start-admin",
+    "description": "Fast build your php project",
+    "type": "project",
+    "keywords": [
+        "StartAdmin"
+    ],
+    "homepage": "https://startadmin.hamm.cn/",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Hamm",
+            "email": "admin@hamm.cn"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.0",
+        "topthink/framework": "^6.0.0",
+        "topthink/think-orm": "^2.0",
+        "topthink/think-multi-app": "^1.0",
+        "topthink/think-view": "^1.0",
+        "alibabacloud/client": "^1.5",
+        "phpoffice/phpexcel": "^1.8",
+        "overtrue/wechat": "~4.0",
+        "topthink/think-image": "^1.0",
+        "phpmailer/phpmailer": "^6.1"
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^4.2",
+        "topthink/think-trace": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "app\\": "app"
+        },
+        "psr-0": {
+            "": "extend/"
+        }
+    },
+    "config": {
+        "preferred-install": "dist"
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "@php think service:discover",
+            "@php think vendor:publish"
+        ]
+    }
+}
