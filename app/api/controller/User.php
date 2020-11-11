@@ -730,6 +730,9 @@ class User extends BaseController
         if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
             return jerr("你无权操作");
         }
+        if(getIsAdmin($user) && $this->user['user_id'] !=1){
+            return jerr("你无权操作管理员");
+        }
 
         cache('shutdown_room_' . $room_id . '_user_' . $user_id, time());
         $msg = [
@@ -774,6 +777,9 @@ class User extends BaseController
         if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
             return jerr("你无权操作");
         }
+        if(getIsAdmin($user) && $this->user['user_id'] !=1){
+            return jerr("你无权操作管理员");
+        }
 
         cache('songdown_room_' . $room_id . '_user_' . $user_id, time());
         $msg = [
@@ -817,6 +823,9 @@ class User extends BaseController
         }
         if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
             return jerr("你无权操作");
+        }
+        if(getIsAdmin($user) && $this->user['user_id'] !=1){
+            return jerr("你无权操作管理员");
         }
 
         cache('shutdown_room_' . $room_id . '_user_' . $user_id, null);
