@@ -437,7 +437,7 @@ class User extends BaseController
 
         $ret = $this->model->view('user', 'user_id,user_name,user_head,user_group,user_remark,user_device,user_sex,user_extra,user_icon,user_vip')->view('app', 'app_id,app_name,app_url', 'user.user_app = app.app_id')->where([
             ['user_id', 'in', $arr ?? []],
-        ])->where('user_group',1)->where("user_id",'>',1)->order($order)->select();
+        ])->where('user_group',1)->order($order)->select();
         $ret = $ret ? $ret->toArray() : [];
         for ($i = 0; $i < count($ret); $i++) {
             $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
@@ -654,7 +654,7 @@ class User extends BaseController
         $data = [];
         if (input('user_name')) {
             $data['user_name'] = rawurldecode(input('user_name'));
-            $data['user_name'] = mb_substr($data['user_name'], 0, 20, 'utf-8');
+            $data['user_name'] = mb_substr($data['user_name'], 0, 30, 'utf-8');
             $data['user_name'] = rawurlencode($data['user_name']);
         }
         $data['user_touchtip'] = rawurldecode(input('user_touchtip'));
