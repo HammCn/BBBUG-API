@@ -229,8 +229,7 @@ class Message extends BaseController
             return jerr("消息范围参数缺失");
         }
         $where = '';
-        $msg_resource = rawurldecode(input('msg'));
-
+        $msg_resource = (input('msg'));
         $room = $roomModel->where('room_id', $room_id)->find();
 
         if (!$room) {
@@ -260,8 +259,7 @@ class Message extends BaseController
         if (!input('at') && !input("msg")) {
             return jerr("消息内容参数缺失");
         }
-
-        $msg_rawurlencode = rawurlencode($msg_resource);
+        
 
         if (getIsAdmin($this->user)) {
             //管理员
@@ -297,7 +295,7 @@ class Message extends BaseController
                     if (cache('last_' . $this->user['user_id'])) {
                         return jerr('发送消息太频繁啦~');
                     }
-                    if (cache('message_' . $this->user['user_id']) == $msg_rawurlencode) {
+                    if (cache('message_' . $this->user['user_id']) == $msg_resource) {
                         return jerr('灌水可耻,请不要重复发送相同信息');
                     }
                 }
@@ -524,10 +522,9 @@ class Message extends BaseController
                     'message_updatetime' => time(),
                 ]);
 
-                $msg_rawurlencode = rawurlencode($msg_resource);
                 $msg = [
                     'type' => $type,
-                    'content' => rawurlencode($msg_rawurlencode),
+                    'content' => rawurlencode($msg_resource),
                     'where' => $where,
                     'at' => $at,
                     'message_id' => $message_id,
@@ -549,7 +546,7 @@ class Message extends BaseController
                     'message_status' => 0,
                 ]);
                 cache('last_' . $this->user['user_id'], 1, 1);
-                cache('message_' . $this->user['user_id'], $msg_rawurlencode, 10);
+                cache('message_' . $this->user['user_id'], $msg_resource, 10);
                 
                 //彩蛋区域
                 return jok('');
@@ -558,7 +555,7 @@ class Message extends BaseController
                 if (cache('last_' . $this->user['user_id'])) {
                     return jerr('发送图片太频繁啦~');
                 }
-                if (cache('message_' . $this->user['user_id']) == $msg_rawurlencode) {
+                if (cache('message_' . $this->user['user_id']) == $msg_resource) {
                     return jerr('请不要连续发送相同的图片');
                 }
                 $userModel->where('user_id', $this->user['user_id'])->inc('user_img')->update();
@@ -574,7 +571,7 @@ class Message extends BaseController
                 ]);
                 $msg = [
                     'type' => $type,
-                    'content' => $msg_rawurlencode,
+                    'content' => $msg_resource,
                     'where' => $where,
                     'at' => $at,
                     'message_id' => $message_id,
@@ -596,7 +593,7 @@ class Message extends BaseController
                     'message_status' => 0,
                 ]);
                 cache('last_' . $this->user['user_id'], 1, 1);
-                cache('message_' . $this->user['user_id'], $msg_rawurlencode, 10);
+                cache('message_' . $this->user['user_id'], $msg_resource, 10);
                 return jok('');
                 break;
             default:

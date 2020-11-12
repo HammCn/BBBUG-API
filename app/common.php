@@ -3,6 +3,9 @@ function getTempToken()
 {
     return '45af3cfe44942c956e026d5fd58f0feffbd3a237';
 }
+function rawurlencodessssss($str){
+    return $str;
+}
 function getUserData($user)
 {
     return [
