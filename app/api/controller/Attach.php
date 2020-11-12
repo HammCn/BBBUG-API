@@ -33,7 +33,7 @@ class Attach extends BaseController
                 return jok('', $cache);
             }
 
-            $html = curlHelper("https://www.doutula.com/search?keyword=" . rawurlencode($keyword))['body'];
+            $html = curlHelper("https://www.doutula.com/tag/" . rawurlencode($keyword))['body'];
             $html = str_replace(PHP_EOL, '', $html);
             $html = str_replace(' ', '', $html);
             $html = str_replace('　', '', $html);
@@ -47,9 +47,10 @@ class Attach extends BaseController
                     array_push($arr, str_replace('http://img.doutula.com/', 'https://img_proxy.bbbug.com/', $item));
                 }
             }
+            cache("face_image_list_keyword_" . sha1($keyword), $arr, 600);
+            return jok('', $arr);
         }
-        cache("face_image_list_keyword_" . sha1($keyword), $arr, 600);
-        return jok('', $arr);
+        return jerr('我认为你有必要输入个关键词');
     }
     /**
      * 上传图片
