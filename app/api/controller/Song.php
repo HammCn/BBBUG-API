@@ -857,6 +857,12 @@ class Song extends BaseController
             exit;
         }
         $mid = input('mid');
+        $url = cache('song_play_temp_url_'.$mid) ?? false;
+        if($url){
+            header("Cache: From Redis");
+            header("Location: " . $url);
+            die;
+        }
         $url = 'http://kuwo.cn/url?rid=' . $mid . '&type=convert_url3&br=128kmp3';
         $result = curlHelper($url)['body'];
         $arr = json_decode($result, true);
@@ -872,6 +878,7 @@ class Song extends BaseController
                 ]);
                 cache('song_waiting_download_list',$tempList);
             }
+            cache('song_play_temp_url_'.$mid,$arr['url'],30);
             header("Location: " . $arr['url']);
         }
     }
