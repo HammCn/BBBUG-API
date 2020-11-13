@@ -47,7 +47,7 @@ class Attach extends BaseController
                     array_push($arr, str_replace('http://img.doutula.com/', 'https://img_proxy.bbbug.com/', $item));
                 }
             }
-            cache("face_image_list_keyword_" . sha1($keyword), $arr, 600);
+            cache("face_image_list_keyword_" . sha1($keyword), $arr, 86400);
             return jok('', $arr);
         }
         return jerr('我认为你有必要输入个关键词');
