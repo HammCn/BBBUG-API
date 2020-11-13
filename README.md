@@ -37,6 +37,10 @@ IM后端采用 Node 实现 ```Websocket``` 服务，```Nginx``` 做Wss代理，�
 
 6. 配合其他端运行此项目。
 
+[API部分的部署教程>>>](https://doc.bbbug.com/3097468.html)
+
+[Websocket部分的部署教程](https://doc.bbbug.com/3097478.html)
+
 ### 特色功能
 ```
 1、创建房间、切换房间，房间权限与房间类型管理
