@@ -877,9 +877,11 @@ class Song extends BaseController
                     'url'=>$arr['url']
                 ]);
                 cache('song_waiting_download_list',$tempList);
+                cache('song_play_temp_url_'.$mid,$arr['url'],30);
+                header("Location: " . $arr['url']);
+            }else{
+                header("status: 404 Not Found");
             }
-            cache('song_play_temp_url_'.$mid,$arr['url'],30);
-            header("Location: " . $arr['url']);
         }
     }
 }

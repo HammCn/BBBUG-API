@@ -18,7 +18,8 @@ class Download extends BaseCommand
 
     protected function execute(Input $input, Output $output)
     {
-        // cache('song_downloaded_list',[]);
+        // cache('song_downloaded_list',null);
+        // cache('song_waiting_download_list',null);
         // return;
         while (true) {
             $cacheList = cache('song_waiting_download_list') ?? [];
@@ -54,11 +55,11 @@ class Download extends BaseCommand
                 }
             }
             $downloaded_song_list = cache('song_downloaded_list') ?? [];
-            print_r($downloaded_song_list);
+            // print_r($downloaded_song_list);
             for ($i = 0; $i < count($downloaded_song_list); $i++) {
                 $_mid = $downloaded_song_list[$i];
                 $songCache = cache('song_download_mid_' . $_mid) ?? false;
-                print_r($songCache);
+                // print_r($songCache);
                 if ($songCache) {
                     if (time() - $songCache > 600) {
                         echo "超时" . PHP_EOL;
@@ -70,10 +71,10 @@ class Download extends BaseCommand
                             cache('song_downloaded_list', $downloaded_song_list);
                         }
                     } else {
-                        echo "有效" . PHP_EOL;
+                        // echo "有效" . PHP_EOL;
                     }
                 } else {
-                    echo "下载已移出" . PHP_EOL;
+                    // echo "下载已移出" . PHP_EOL;
                 }
             }
             sleep(1);

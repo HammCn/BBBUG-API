@@ -42,9 +42,15 @@ class Song extends BaseCommand
                 // print_r(count($rooms)."个房间需要歌曲".PHP_EOL);
             }
             foreach ($rooms as $room) { 
+                // cache('SongList_' . $room['room_id'],null);
+                // if($room['room_id']==10246){
+                //     cache('SongNow_' . $room['room_id'],null);
+                // }
                 $songList = cache('SongList_' . $room['room_id']) ?? [];
                 $songNow = cache('SongNow_' . $room['room_id']) ?? false;
                 if ($songNow) {
+                    // print_r($room['room_id']);
+                    // print_r($songNow['song']);
                     if (time() > $songNow['song']['length'] + $songNow['since']) {
                         //已超时 切歌
                         if ($room['room_type'] == 4 && $room['room_playone']) {
@@ -58,6 +64,30 @@ class Song extends BaseCommand
                         // print_r('房间' . $room['room_id'] . '已超时,切歌' . PHP_EOL);
                     } else {
                         //歌曲正在播放中
+                        if(count($songList)>0){
+                            //歌曲列表中还有歌 取出第一个读取缓存
+                            $preMid = $songList[0]['song']['mid'];
+                            $preSong = cache('song_play_temp_url_'.$preMid) ?? false;
+                            $preSongName = $songList[0]['song']['name'];
+                            $preRoomId = $room['room_id'];
+                            if(!$preSong){
+                                $url = 'http://kuwo.cn/url?rid=' . $preMid . '&type=convert_url3&br=128kmp3';
+                                $result = curlHelper($url)['body'];
+                                $arr = json_decode($result, true);
+                                if ($arr['code'] == 200) {
+                                    if($arr['url']){
+                                        $tempList = cache('song_waiting_download_list') ?? [];
+                                        array_push($tempList,[
+                                            'mid'=>$preMid,
+                                            'url'=>$arr['url']
+                                        ]);
+                                        cache('song_waiting_download_list',$tempList);
+                                        cache('song_play_temp_url_'.$preMid,$arr['url'],600);
+                                        print_r($preRoomId." 歌曲预缓存成功 ".$preSongName.PHP_EOL);
+                                    }
+                                }
+                            }
+                        }
                         continue;
                     }
                 }
@@ -113,12 +143,6 @@ class Song extends BaseCommand
                     continue;
                 }
                 print_r('房间' . $room['room_id'] . '已获取到歌曲' . PHP_EOL);
-                
-                $result = curlHelper('http://bd.kuwo.cn/url?rid=' . $songNow['song']['mid'] . '&type=convert_url3&br=128kmp3');
-                $arr = json_decode($result['body'], true);
-                if ($arr['code'] != 200) {
-                    continue;
-                }
                 
                 cache("song_detail_".$songNow['song']['mid'],$songNow['song'],600);
                 $msg = [
