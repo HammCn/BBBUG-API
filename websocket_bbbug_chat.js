@@ -1,31 +1,32 @@
 console.log("Ready now.\n**********************************");
 var Config = {
-    portSocket: 10011,
-    portHttp: 10012,
+    portSocket: 10011,//websocket端口 如果前端配置了https，你需要反代一下这个端口到443实现wss
+    portHttp: 10012,//api端通过这个端口的http服务来获取在线用户信息
     secret: "wss_bbbug_com",
+    apiUrl: "https://api.bbbug.com",//这里修改为你部署的API端地址
 };
 var websocket = require("nodejs-websocket"),
     crypto = require('crypto'),
     http = require('http'),
     https = require('https');
-var webSocketServer = websocket.createServer(function(conn) {
+var webSocketServer = websocket.createServer(function (conn) {
     var query = login(conn.path);
     if (!query) {
         console.error("客户端登录失败");
         conn.close();
     } else {
         console.log("客户端连接成功 " + query.account);
-        var url = 'https://api.bbbug.com/api/song/now?room_id='+query.channel;
-        https.get(url, function(res) {
+        var url = Config.apiUrl + '/api/song/now?room_id=' + query.channel;
+        https.get(url, function (res) {
             var dataString = "";
-            res.on("data", function(data) {
+            res.on("data", function (data) {
                 dataString += data;
             });
-            res.on("end", function() {
+            res.on("end", function () {
                 try {
                     conn.sendText(JSON.stringify({
                         type: JSON.parse(dataString).type,
-                        time:'now',
+                        time: 'now',
                         song: JSON.parse(dataString).song || null,
                         story: JSON.parse(dataString).story || null,
                         since: JSON.parse(dataString).since || 0,
@@ -38,27 +39,27 @@ var webSocketServer = websocket.createServer(function(conn) {
         });
         sendOnlineList(query.channel);
     }
-    conn.on("close", function(code, reason) {
+    conn.on("close", function (code, reason) {
         console.error("客户端断开");
         sendOnlineList(query.channel);
     });
-    conn.on("error", function(code, reason) {
+    conn.on("error", function (code, reason) {
         console.error("客户端断开");
         sendOnlineList(query.channel);
     });
-    conn.on("text", function(msg) {
-        if(msg == 'getNowSong'){
-            var url = 'https://api.bbbug.com/api/song/now?room_id='+query.channel;
-            https.get(url, function(res) {
+    conn.on("text", function (msg) {
+        if (msg == 'getNowSong') {
+            var url = Config.apiUrl + '/api/song/now?room_id=' + query.channel;
+            https.get(url, function (res) {
                 var dataString = "";
-                res.on("data", function(data) {
+                res.on("data", function (data) {
                     dataString += data;
                 });
-                res.on("end", function() {
+                res.on("end", function () {
                     try {
                         conn.sendText(JSON.stringify({
                             type: JSON.parse(dataString).type,
-                            time:'now',
+                            time: 'now',
                             song: JSON.parse(dataString).song || null,
                             story: JSON.parse(dataString).story || null,
                             since: JSON.parse(dataString).since || 0,
@@ -69,7 +70,7 @@ var webSocketServer = websocket.createServer(function(conn) {
                     }
                 });
             });
-        }else if(msg == 'bye'){
+        } else if (msg == 'bye') {
             console.error('用户主动断开链接');
             conn.close();
         }
@@ -81,27 +82,27 @@ checkConnection();
 
 function checkConnection() {
     console.log("当前在线连接数：(" + webSocketServer.connections.length + ")");
-    setTimeout(function() {
+    setTimeout(function () {
         checkConnection();
     },
         5000);
 }
 
 function sendOnlineList(channel) {
-    var url = 'https://api.bbbug.com/api/user/online?sync=yes&room_id='+channel;
-    https.get(url, function(res) {
+    var url = Config.apiUrl + '/api/user/online?sync=yes&room_id=' + channel;
+    https.get(url, function (res) {
         var dataString = "";
-        res.on("data", function(data) {
+        res.on("data", function (data) {
             dataString += data;
         });
-        res.on("end", function() {
-            webSocketServer.connections.forEach(function(conn) {
+        res.on("end", function () {
+            webSocketServer.connections.forEach(function (conn) {
                 try {
                     var query = login(conn.path);
-                    if(query.channel == channel){
+                    if (query.channel == channel) {
                         conn.sendText(JSON.stringify({
                             type: "online",
-                            channel:channel,
+                            channel: channel,
                             data: JSON.parse(dataString).data
                         }));
                     }
@@ -115,21 +116,21 @@ function sendOnlineList(channel) {
 var http = require('http');
 var url = require('url');
 var querystring = require('querystring');
-var httpServer = http.createServer(function(req, res) {
+var httpServer = http.createServer(function (req, res) {
     if (req.method.toUpperCase() == 'POST') {
         res.writeHead(200, {
             'Content-Type': 'application/json;charset=utf-8'
         });
         var postData = '';
-        req.on('data', function(chunk) {
+        req.on('data', function (chunk) {
             postData += chunk;
         });
-        req.on('end', function() {
+        req.on('end', function () {
             postData = querystring.parse(postData);
             if (postData.token == sha1(Config.secret)) {
-                switch(postData.type){
+                switch (postData.type) {
                     case 'chat':
-                        webSocketServer.connections.forEach(function(conn) {
+                        webSocketServer.connections.forEach(function (conn) {
                             var query = new QueryString(conn.path);
                             if (query.account == postData.to) {
                                 conn.sendText(postData.msg);
@@ -137,7 +138,7 @@ var httpServer = http.createServer(function(req, res) {
                         });
                         break;
                     case 'channel':
-                        webSocketServer.connections.forEach(function(conn) {
+                        webSocketServer.connections.forEach(function (conn) {
                             var query = new QueryString(conn.path);
                             if (query.channel == postData.to) {
                                 conn.sendText(postData.msg);
@@ -145,7 +146,7 @@ var httpServer = http.createServer(function(req, res) {
                         });
                         break;
                     case 'system':
-                        webSocketServer.connections.forEach(function(conn) {
+                        webSocketServer.connections.forEach(function (conn) {
                             conn.sendText(postData.msg);
                         });
                         break;
@@ -160,13 +161,13 @@ var httpServer = http.createServer(function(req, res) {
         });
         var onlineList = [];
         var gets = new QueryString(req.url);
-        webSocketServer.connections.forEach(function(conn) {
+        webSocketServer.connections.forEach(function (conn) {
             var query = new QueryString(conn.path);
-            if(gets.channel){
-                if(gets.channel==query.channel){
+            if (gets.channel) {
+                if (gets.channel == query.channel) {
                     onlineList.push(query.account);
                 }
-            }else{
+            } else {
                 onlineList.push(query.account);
             }
         });
@@ -205,7 +206,7 @@ function debug(message) {
 
 function login(url) {
     var query = new QueryString(url);
-    if (sha1("account" + query.account + "channel" + query.channel +'salt'+ query.channel) == query.ticket) {
+    if (sha1("account" + query.account + "channel" + query.channel + 'salt' + query.channel) == query.ticket) {
         return query;
     } else {
         return false;

@@ -630,13 +630,6 @@ class User extends BaseController
         $myInfo['push_count'] = intval($pushCount);
         $myInfo['pass_count'] = intval($passCount);
 
-        // $channel = getWebsocketMailChannel();
-        // $myInfo['websocket'] = [
-        //     'account' => $this->user['user_id'],
-        //     'channel' => $channel,
-        //     'ticket' => sha1("account" . $this->user['user_id'] . "channel" . $channel . 'salt' . $channel),
-        // ];
-
         return jok('', $myInfo);
     }
     public function updateMyInfo()

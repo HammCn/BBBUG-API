@@ -1,7 +1,7 @@
 <?php
 function getTempToken()
 {
-    return '45af3cfe44942c956e026d5fd58f0feffbd3a237';
+    return config('startadmin.api_guest_token');
 }
 function rawurlencodessssss($str){
     return $str;
@@ -35,15 +35,11 @@ function getIsAdmin($user)
 }
 function getWebsocketApiUrl()
 {
-    return "http://127.0.0.1:10012/";
+    return config('startadmin.websocket_http');
 }
 function getWebsocketToken()
 {
-    return sha1('wss_bbbug_com');
-}
-function getWebsocketMailChannel()
-{
-    return 'MainChannel';
+    return sha1(config('startadmin.websocket_token'));
 }
 /**
  * 输出正常JSON

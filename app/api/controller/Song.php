@@ -601,13 +601,6 @@ class Song extends BaseController
             return jok('你的不想听态度表态成功!');
         }
 
-        if ($now['user']['user_id'] != $this->user['user_id']) {
-            $songKeepCard = cache('song_keep_card_' . $now['user']['user_id']) ?? false;
-            if ($songKeepCard && $now['user']['user_id'] != 1) {
-                return jerr('该用户当前持有一张守护卡,无法切歌!');
-            }
-        }
-
         cache('SongNow_' . $room_id, null);
         $msg = [
             "user" => getUserData($this->user),
