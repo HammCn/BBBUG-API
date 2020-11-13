@@ -21,6 +21,7 @@ class Song extends BaseCommand
 
     protected function execute(Input $input, Output $output)
     {
+        $this->loadConfig();
         $roomModel = new RoomModel();
         $songModel = new SongModel();
         $userModel = new UserModel();

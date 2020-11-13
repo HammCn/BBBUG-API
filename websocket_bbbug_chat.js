@@ -152,8 +152,10 @@ var httpServer = http.createServer(function (req, res) {
                         break;
                     default:
                 }
+                res.end();
+            } else {
+                res.end("token error");
             }
-            res.end();
         });
     } else if (req.method.toUpperCase() == 'GET') {
         res.writeHead(200, {

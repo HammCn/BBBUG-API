@@ -5,9 +5,19 @@ declare(strict_types=1);
 namespace app\command;
 
 use think\console\Command;
+use app\model\Conf as ConfModel;
 
 class BaseCommand extends Command
 {
+    public function loadConfig(){
+        $confModel = new ConfModel();
+        $configs = $confModel->select()->toArray();
+        $c = [];
+        foreach ($configs as $config) {
+            $c[$config['conf_key']] = $config['conf_value'];
+        }
+        config($c, 'startadmin');
+    }
     protected function console($text, $break = true)
     {
         print_r($text . ($break ? PHP_EOL : ''));
