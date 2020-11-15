@@ -22,151 +22,169 @@ class Song extends BaseCommand
     protected function execute(Input $input, Output $output)
     {
         $this->loadConfig();
-        $roomModel = new RoomModel();
-        $songModel = new SongModel();
-        $userModel = new UserModel();
         while (true) {
             usleep(10 * 1000);
-            $rooms = cache('RoomList') ?? [];
-            if (!$rooms) {
-                $rooms = $roomModel->field('room_id,room_robot,room_type,room_playone,room_user')->where('room_type in (1,4) and room_realonline > 0 or room_id < 1000')->select();
-                $rooms = $rooms ? $rooms->toArray() : [];
-                if ($rooms) {
-                    cache('RoomList', $rooms, 5);
-                }
-            }
-            $rooms = cache('RoomList') ?? [];
+            $rooms = $this->getRoomList();
             if (!$rooms) {
                 print_r('暂无房间开启点歌' . PHP_EOL);
                 continue;
-            }else{
-                // print_r(count($rooms)."个房间需要歌曲".PHP_EOL);
             }
             foreach ($rooms as $room) { 
-                // cache('SongList_' . $room['room_id'],null);
-                // if($room['room_id']==10246){
-                //     cache('SongNow_' . $room['room_id'],null);
-                // }
-                $songList = cache('SongList_' . $room['room_id']) ?? [];
-                $songNow = cache('SongNow_' . $room['room_id']) ?? false;
-                if ($songNow) {
-                    // print_r($room['room_id']);
-                    // print_r($songNow['song']);
-                    if (time() > $songNow['song']['length'] + $songNow['since']) {
-                        //已超时 切歌
-                        if ($room['room_type'] == 4 && $room['room_playone']) {
-                            //是单曲循环的房间
-                            $songNow['since'] = time();
-                            cache('SongNow_' . $room['room_id'], $songNow);
-                        } else {
-                            cache('SongNow_' . $room['room_id'], null);
-                            $songNow=false;
-                        }
-                        // print_r('房间' . $room['room_id'] . '已超时,切歌' . PHP_EOL);
-                    } else {
-                        //歌曲正在播放中
-                        if(count($songList)>0){
-                            //歌曲列表中还有歌 取出第一个读取缓存
-                            $preMid = $songList[0]['song']['mid'];
-                            $preSong = cache('song_play_temp_url_'.$preMid) ?? false;
-                            $preSongName = $songList[0]['song']['name'];
-                            $preRoomId = $room['room_id'];
-                            if(!$preSong){
-                                $url = 'http://kuwo.cn/url?rid=' . $preMid . '&type=convert_url3&br=128kmp3';
-                                $result = curlHelper($url)['body'];
-                                $arr = json_decode($result, true);
-                                if ($arr['code'] == 200) {
-                                    if($arr['url']){
-                                        $tempList = cache('song_waiting_download_list') ?? [];
-                                        array_push($tempList,[
-                                            'mid'=>$preMid,
-                                            'url'=>$arr['url']
-                                        ]);
-                                        cache('song_waiting_download_list',$tempList);
-                                        cache('song_play_temp_url_'.$preMid,$arr['url'],600);
-                                        print_r($preRoomId." 歌曲预缓存成功 ".$preSongName.PHP_EOL);
-                                    }
-                                }
-                            }
-                        }
+                $song = $this->getPlayingSong($room['room_id']);
+                if ($song) {
+                    //歌曲正在播放
+                    if (time() < $song['song']['length'] + $song['since']) {
+                        //预先缓存下一首歌
+                        $this->preLoadMusicUrl($room);
                         continue;
                     }
                 }
-
-                if (!$songNow) {
-                    //没有歌
-                    if ($room['room_type'] == 4) {
-                        //随机查询一首房主的歌
-                        $playerWaitSong = cache('song_wait_'.$room['room_id']) ?? false;
-                        cache('song_wait_'.$room['room_id'],null);
-                        if(!$playerWaitSong){
-                            $temp = $songModel->where('song_user', $room['room_user'])->orderRand()->find();
-                            if (!$temp) {
-                                continue;
-                            }
-                            
-                            $playerWaitSong = [
-                                'mid' => $temp['song_mid'],
-                                'name' => $temp['song_name'],
-                                'pic' => $temp['song_pic'] ?? '',
-                                'length' => $temp['song_length'],
-                                'singer' => $temp['song_singer'],
-                            ];
-                        }
-                        $user = $userModel->where('user_id', $room['room_user'])->find();
-                        if (!$user) {
-                            continue;
-                        }
-                        $songNow = [
-                            'user' => getUserData($user),
-                            'song' => $playerWaitSong,
-                            'since' => time(),
-                        ];
-                        cache('SongNow_' . $room['room_id'], $songNow, 600);
-                    } else {
-                        if (count($songList) > 0) {
-                            $songNow = $songList[0];
-                            $songNow['since'] = time() + 5;
-                            array_shift($songList);
-                            cache('SongList_' . $room['room_id'], $songList, 86400);
-                            cache('SongNow_' . $room['room_id'], $songNow, 600);
-                        } else {
-                            if ($room['room_robot'] == 0) {
-                                $songNow = $this->getOneMusic();
-                                cache('SongNow_' . $room['room_id'], $songNow, 600);
-                            } else {
-                                continue;
-                            }
-                        }
+                if ($room['room_type'] == 4) {
+                    //电台房
+                    if($room['room_playone']){
+                        //是单曲循环的房间 重置播放时间
+                        $song['since'] = time();
+                        $this->playSong($song);
+                    }else{
+                        //随机播放
+                        $song = $this->getSongByUser($room['room_user']);
+                        $this->playSong($song);
+                    }
+                } else {
+                    //普通房
+                    $song = $this->getSongFromList($room['room_id']);
+                    if($song){
+                        $this->playSong($room['room_id'],$song);
+                    }else{
+                        if ($room['room_robot'] == 0) {
+                            $song = $this->getSongByRobot();
+                            $this->playSong($room['room_id'],$song);
+                        } 
                     }
                 }
-                if (!$songNow) {
-                    continue;
-                }
-                print_r('房间' . $room['room_id'] . '已获取到歌曲' . PHP_EOL);
-                
-                cache("song_detail_".$songNow['song']['mid'],$songNow['song'],600);
-                $msg = [
-                    'at' => $songNow['at'] ?? false,
-                    'user' => $songNow['user'],
-                    'song' => $songNow['song'],
-                    'since' => $songNow['since'],
-                    "type" => "playSong",
-                    "time" => date('H:i:s'),
-                ];
-                $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-                    'type' => 'channel',
-                    'to' => $room['room_id'],
-                    'token' => getWebsocketToken(),
-                    'msg' => json_encode($msg),
-                ]), [
-                    'content-type:application/x-www-form-rawurlencode',
-                ]);
             }
         }
     }
-
-    protected function getOneMusic()
+    protected function addSongToList($room_id,$song){
+        $songList = cache('SongList_' . $room_id) ?? [];
+        array_push($songList,$song);
+        cache('SongList_' . $room_id, $songList, 86400);
+    }
+    protected function preLoadMusicUrl($room){
+        $preRoomId = $room['room_id'];
+        $songList = $this->getSongList($preRoomId);
+        $song = false;
+        if(count($songList) > 0){
+            $song = $songList[0];
+        }else{
+            if($room['room_type']==4){
+                $song = $this->getSongByUser($room['room_user']);
+            }else{
+                $song = $this->getSongByRobot();
+            }
+            if($song){
+                $this->addSongToList($preRoomId,$song);
+            }
+        }
+        if(!$song){
+            return;
+        }
+        $preMid = $song['song']['mid'];
+        $preSong = cache('song_play_temp_url_'.$preMid) ?? false;
+        if(!$preSong){
+            print_r("请缓存 ".$room['room_id']." ".$preMid);
+            $url = 'http://kuwo.cn/url?rid=' . $preMid . '&type=convert_url3&br=128kmp3';
+            $result = curlHelper($url)['body'];
+            $arr = json_decode($result, true);
+            if ($arr['code'] == 200) {
+                if($arr['url']){
+                    $tempList = cache('song_waiting_download_list') ?? [];
+                    array_push($tempList,[
+                        'mid'=>$preMid,
+                        'url'=>$arr['url']
+                    ]);
+                    cache('song_waiting_download_list',$tempList);
+                    cache('song_play_temp_url_'.$preMid,$arr['url'],600);
+                    print_r($preRoomId." 歌曲预缓存成功 ".$preMid.PHP_EOL);
+                }
+            }
+        }
+    }
+    protected function getSongByUser($user_id){
+        $userModel = new UserModel();
+        $songModel = new SongModel();
+        $playerWaitSong = $songModel->where('song_user', $user_id)->orderRand()->find();
+        $playerWaitSong = [
+            'mid' => $temp['song_mid'],
+            'name' => $temp['song_name'],
+            'pic' => $temp['song_pic'] ?? '',
+            'length' => $temp['song_length'],
+            'singer' => $temp['song_singer'],
+        ];
+        $user = $userModel->where('user_id', $user_id)->find();
+        if (!$user) {
+            return false;
+        }
+        $song = [
+            'user' => getUserData($user),
+            'song' => $playerWaitSong,
+            'since' => time(),
+        ];
+        return $song;
+    }
+    protected function playSong($room_id,$song){
+        cache('SongNow_' . $room_id, $song, 600);
+        cache("song_detail_".$song['song']['mid'],$song['song'],600);
+        $msg = [
+            'at' => $song['at'] ?? false,
+            'user' => $song['user'],
+            'song' => $song['song'],
+            'since' => $song['since'],
+            "type" => "playSong",
+            "time" => date('H:i:s'),
+        ];
+        $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
+            'type' => 'channel',
+            'to' => $room_id,
+            'token' => getWebsocketToken(),
+            'msg' => json_encode($msg),
+        ]), [
+            'content-type:application/x-www-form-rawurlencode',
+        ]);
+    }
+    protected function getPlayingSong($room_id){
+        return  cache('SongNow_' . $room_id) ?? false;
+    }
+    protected function getSongFromList($room_id)
+    {
+        $songList = cache('SongList_' . $room_id) ?? [];
+        if(count($songList)>0){
+            $songNow = $songList[0];
+            $songNow['since'] = time() + 5;
+            array_shift($songList);
+            cache('SongList_' . $room_id, $songList, 86400);
+            return $songNow;
+        }else{
+            return false;
+        }
+    }
+    protected function getSongList($room_id){
+        $songList = cache('SongList_' . $room_id) ?? [];
+        return $songList;
+    }
+    protected function getRoomList(){
+        $roomModel = new RoomModel();
+        $rooms = cache('RoomList') ?? false;
+        if (!$rooms) {
+            $rooms = $roomModel->field('room_id,room_robot,room_type,room_playone,room_user')->where('room_type in (1,4) and room_realonline > 0 or room_id < 1000')->select();
+            $rooms = $rooms ? $rooms->toArray() : [];
+            if ($rooms) {
+                cache('RoomList', $rooms, 5);
+            }
+        }
+        return $rooms;
+    }
+    protected function getSongByRobot()
     {
         $bangIdArray = [278, 284, 26, 64, 187, 281, 153, 17, 16, 158, 145];
         $bangId = $bangIdArray[rand(0, count($bangIdArray) - 1)];
@@ -204,7 +222,7 @@ class Song extends BaseCommand
                 "user_admin" => true,
                 "user_head" => "https://cdn.bbbug.com/uploads/thumb/image/20201105/1bafe18a648eb26bbdf7f24b6fe53dfc.jpg",
                 "user_id" => 1,
-                "user_name" => "BBBUG点歌机器人",
+                "user_name" => "BBBUG机器人",
                 "user_remark" => "别@我,我只是个测试帐号",
             ],
         ];
