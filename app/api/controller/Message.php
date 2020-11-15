@@ -301,14 +301,14 @@ class Message extends BaseController
                 }
             }
             if ($type == 'img') {
-                if ((time() > strtotime(date('Y-m-d 18:00:00')) || time() < strtotime(date('Y-m-d 09:00:00'))) && strpos(rawurldecode(input('msg')), 'images/emoji') === false && strpos(rawurldecode(input('msg')), 'img_proxy.bbbug.com') === false) {
+                if ((time() > strtotime(date('Y-m-d 18:00:00')) || time() < strtotime(date('Y-m-d 09:00:00'))) && strpos(rawurldecode(input('msg')), 'images/emoji') === false && strpos(rawurldecode(input('msg')), 'img.doutula.com') === false) {
                     return jerr("18:00-09:00禁止发送自定义上传图片");
                 }
                 if (strpos(rawurldecode(input('msg')), rawurldecode(input('resource'))) !== false) {
                 } else {
                     return jerr('图片发送失败,我怀疑你在搞事情');
                 }
-                if (strpos(rawurldecode(input('msg')), 'bbbug.com') === false && strpos(rawurldecode(input('msg')), 'thumb/image/') === false && strpos(rawurldecode(input('msg')), 'images/emoji') === false) {
+                if (strpos(rawurldecode(input('msg')), 'bbbug.com') === false && strpos(rawurldecode(input('msg')), 'img.doutula.com') === false && strpos(rawurldecode(input('msg')), 'thumb/image/') === false && strpos(rawurldecode(input('msg')), 'images/emoji') === false) {
                     return jerr('暂不支持站外图');
                 }
             }
