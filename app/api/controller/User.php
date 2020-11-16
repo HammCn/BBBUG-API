@@ -656,6 +656,9 @@ class User extends BaseController
         
         if (input('user_head')) {
             $data['user_head'] = input('user_head');
+            if(strpos($data['user_head'],'.gif')===FALSE){
+                return jerr('头像不支持Gif,不要尝试钻空子');
+            }
         }
         if (input('user_remark')) {
             $data['user_remark'] = input('user_remark');
