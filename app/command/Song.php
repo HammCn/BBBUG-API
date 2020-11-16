@@ -80,7 +80,9 @@ class Song extends BaseCommand
             if($room['room_type']==4){
                 $song = $this->getSongByUser($room['room_user']);
             }else{
-                $song = $this->getSongByRobot();
+                if ($room['room_robot'] == 0) {
+                    $song = $this->getSongByRobot();
+                }
             }
             if($song){
                 $this->addSongToList($preRoomId,$song);
