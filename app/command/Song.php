@@ -48,7 +48,7 @@ class Song extends BaseCommand
                     }else{
                         //随机播放
                         $song = $this->getSongByUser($room['room_user']);
-                        $this->playSong($song);
+                        $this->playSong($room['room_id'],$song);
                     }
                 } else {
                     //普通房
@@ -115,11 +115,11 @@ class Song extends BaseCommand
         $songModel = new SongModel();
         $playerWaitSong = $songModel->where('song_user', $user_id)->orderRand()->find();
         $playerWaitSong = [
-            'mid' => $temp['song_mid'],
-            'name' => $temp['song_name'],
-            'pic' => $temp['song_pic'] ?? '',
-            'length' => $temp['song_length'],
-            'singer' => $temp['song_singer'],
+            'mid' => $playerWaitSong['song_mid'],
+            'name' => $playerWaitSong['song_name'],
+            'pic' => $playerWaitSong['song_pic'] ?? '',
+            'length' => $playerWaitSong['song_length'],
+            'singer' => $playerWaitSong['song_singer'],
         ];
         $user = $userModel->where('user_id', $user_id)->find();
         if (!$user) {
