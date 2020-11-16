@@ -44,7 +44,7 @@ class Song extends BaseCommand
                     if($room['room_playone']){
                         //是单曲循环的房间 重置播放时间
                         $song['since'] = time();
-                        $this->playSong($song);
+                        $this->playSong($room['room_id'],$song);
                     }else{
                         //随机播放
                         $song = $this->getSongByUser($room['room_user']);
@@ -93,8 +93,10 @@ class Song extends BaseCommand
         }
         $preMid = $song['song']['mid'];
         $preSong = cache('song_play_temp_url_'.$preMid) ?? false;
-        if(!$preSong){
+        $preCount = cache('song_pre_load_count') ?? 0;
+        if(!$preSong && $preCount<5){
             print_r("请缓存 ".$room['room_id']." ".$preMid);
+            cache('song_pre_load_count',$preCount+1,60);
             $url = 'http://kuwo.cn/url?rid=' . $preMid . '&type=convert_url3&br=128kmp3';
             $result = curlHelper($url)['body'];
             $arr = json_decode($result, true);
