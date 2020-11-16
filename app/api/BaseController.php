@@ -172,6 +172,11 @@ abstract class BaseController
             }
             $this->user = $this->userModel->where('user_id', $this->user['user_id'])->find();
 
+            if(strpos($_SERVER['HTTP_REFERER'],'servicewechat.com') !== false){ 
+                $this->userModel->where('user_id', $this->user['user_id'])->update([
+                    'user_icon' =>1 
+                ]);
+            }
             $this->user = $this->user->toArray();
             $appModel = new AppModel();
             $app = $appModel->where('app_id', $this->user['user_app'])->find();

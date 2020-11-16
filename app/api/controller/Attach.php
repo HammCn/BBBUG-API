@@ -141,28 +141,35 @@ class Attach extends BaseController
                 $this->model->where('attach_sha', $sha)->where('attach_user', $this->user['user_id'])->inc('attach_used')->update();
                 $attach_data = $this->model->where('attach_sha', $sha)->where('attach_user', $this->user['user_id'])->find();
                 $image = \think\Image::open($file);
-                // if (!$attach_data) {
-                $saveName = Filesystem::putFile('image', $file);
-                // 按照原图的比例生成一个最大为150*150的缩略图并保存为thumb.png
-                $path = "thumb/" . $saveName;
-                $dir = "./uploads/thumb/image/" . date('Ymd');
-                if (!is_dir($dir)) {
-                    mkdir(iconv("UTF-8", "GBK", $dir), 0777, true);
+                
+                if(strtolower($file->extension()) == 'gif'){
+                    return jerr("头像不支持Gif头像,请换其他的格式");
                 }
-                $image->thumb(400, 400, \think\Image::THUMB_CENTER)->save('./uploads/' . $path);
-                $attach_data = array(
-                    'attach_path' => $saveName,
-                    'attach_thumb' => $path,
-                    'attach_sha' => $sha,
-                    'attach_type' => $file->extension(),
-                    'attach_size' => $file->getSize(),
-                    'attach_createtime' => time(),
-                    'attach_updatetime' => time(),
-                    'attach_user' => $this->user['user_id'],
-                );
-                $attach_id = $this->model->insertGetId($attach_data);
-                $attach_data = $this->model->where(["attach_id" => $attach_id])->find();
-                // }
+                
+                if (!$attach_data) {
+                    $saveName = Filesystem::putFile('image', $file);
+                    
+                    $path = "thumb/" . $saveName;
+                    
+                    $dir = "./uploads/thumb/image/" . date('Ymd');
+                    if (!is_dir($dir)) {
+                        mkdir(iconv("UTF-8", "GBK", $dir), 0777, true);
+                    }
+                    $image->thumb(400, 400, \think\Image::THUMB_CENTER)->save('./uploads/' . $path);
+                    
+                    $attach_data = array(
+                        'attach_path' => $saveName,
+                        'attach_thumb' => $path,
+                        'attach_sha' => $sha,
+                        'attach_type' => $file->extension(),
+                        'attach_size' => $file->getSize(),
+                        'attach_createtime' => time(),
+                        'attach_updatetime' => time(),
+                        'attach_user' => $this->user['user_id'],
+                    );
+                    $attach_id = $this->model->insertGetId($attach_data);
+                    $attach_data = $this->model->where(["attach_id" => $attach_id])->find();
+                }
                 if (input("?extend")) {
                     $attach_data['extend'] = input("extend");
                 }
