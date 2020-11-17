@@ -119,6 +119,11 @@ class Room extends BaseController
                 }
             }
         }
+
+        if(empty($data['room_type']) || !in_array($data['room_type'],[0,1,4])){
+            $data['room_type'] = 1;
+        }
+
         if ($data['room_domain']) {
             $exist = $this->model->where('room_id', 'not like', $this->pk_value)->where('room_domain', $data['room_domain'])->where('room_domainstatus', 1)->find();
             if ($exist) {

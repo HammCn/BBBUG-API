@@ -308,10 +308,14 @@ class Message extends BaseController
                 } else {
                     return jerr('图片发送失败,我怀疑你在搞事情');
                 }
-                if (strpos(rawurldecode(input('msg')), 'bbbug.com') === false && strpos(rawurldecode(input('msg')), 'img.doutula.com') === false && strpos(rawurldecode(input('msg')), 'thumb/image/') === false && strpos(rawurldecode(input('msg')), 'images/emoji') === false) {
-                    return jerr('暂不支持站外图');
+                if(strpos(rawurldecode(input('msg')), 'https://') !== false || strpos(rawurldecode(input('msg')), 'http://') !== false){
+                    //绝对路径
+                    if (strpos(rawurldecode(input('msg')), 'bbbug.com') === false && 
+                        strpos(rawurldecode(input('msg')), 'img.doutula.com') === false) {
+                            return jerr('暂不支持站外图');
+                        }
+                    }
                 }
-            }
         }
         //全局预处理消息
         $jump_room = false;
