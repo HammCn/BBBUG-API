@@ -30,6 +30,9 @@ class Song extends BaseCommand
                 continue;
             }
             foreach ($rooms as $room) { 
+                // cache('SongNow_'.$room['room_id'],null);
+                // cache('SongList_'.$room['room_id'],[]);
+                // continue;
                 $song = $this->getPlayingSong($room['room_id']);
                 if ($song) {
                     //歌曲正在播放
@@ -39,21 +42,20 @@ class Song extends BaseCommand
                         continue;
                     }
                 }
-                if ($room['room_type'] == 4) {
-                    //电台房
-                    if($room['room_playone']){
-                        //是单曲循环的房间 重置播放时间
-                        $song['since'] = time();
-                        $this->playSong($room['room_id'],$song);
-                    }else{
-                        //随机播放
+                if ($room['room_type'] == 4 && $room['room_playone']) {
+                    //是单曲循环的电台房间 重置播放时间
+                    $song['since'] = time();
+                    $this->playSong($room['room_id'],$song);
+                    return;
+                }
+                //其他房间
+                $song = $this->getSongFromList($room['room_id']);
+                if($song){
+                    $this->playSong($room['room_id'],$song);
+                }else{
+                    if($room['room_type'] == 4){
+                        //电台模式
                         $song = $this->getSongByUser($room['room_user']);
-                        $this->playSong($room['room_id'],$song);
-                    }
-                } else {
-                    //普通房
-                    $song = $this->getSongFromList($room['room_id']);
-                    if($song){
                         $this->playSong($room['room_id'],$song);
                     }else{
                         if ($room['room_robot'] == 0) {

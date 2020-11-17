@@ -207,7 +207,7 @@ class Song extends BaseController
         if (!$song) {
             $temp = $this->model->where('song_mid', $mid)->find();
             if (!$temp) {
-                return jerr("歌曲数据获取失败,请重新搜索后点歌");
+                return jerr("歌曲信息读取失败，无法播放");
             } else {
                 $song = [
                     'mid' => $temp['song_mid'],
@@ -218,28 +218,29 @@ class Song extends BaseController
                 ];
             }
         }
-
-        $result = curlHelper('http://bd.kuwo.cn/url?rid=' . $song['mid'] . '&type=convert_url3&br=128kmp3');
-        $arr = json_decode($result['body'], true);
-        if ($arr['code'] != 200) {
-            return jerr("获取播放地址失败,该歌曲无法被播放!");
-        }
-        if ($room['room_user'] != $this->user['user_id']) {
-            return jerr('你没有权限操作~');
-        }
-
+        //将歌曲置顶
         $songList = cache('SongList_' . $room_id) ?? [];
+        $isPushed = false;
         for ($i = 0; $i < count($songList); $i++) {
             $item = $songList[$i];
             if ($item['song']['mid'] == $mid) {
                 array_splice($songList, $i, 1);
+                array_unshift($songList, $item);
+                $isPushed=true;
                 break;
             }
         }
+        if(!$isPushed){
+            array_unshift($songList, [
+                'user' => getUserData($this->user),
+                'song' => $song,
+                'at' => false,
+            ]);
+        }
         cache('SongList_' . $room_id, $songList, 86400);
-        cache('song_wait_' . $room['room_id'], $song);
-        cache('SongNow_' . $room['room_id'], null);
-
+        //切掉正在播放
+        cache('SongNow_' . $room_id, null);
+        
         $songModel = new SongModel();
         $songExist = $songModel->where('song_mid', $song['mid'])->where('song_user', $this->user['user_id'])->find();
         if (!$songExist) {

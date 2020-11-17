@@ -9,7 +9,7 @@ class Index extends BaseController
     public function index()
     {
         return jok("Hello World!",[
-            'hide'=>1
+             'hide'=>1
         ]);
         return jok("Hello World!",[
             'hide'=>0,
