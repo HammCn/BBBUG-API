@@ -30,9 +30,6 @@ class Song extends BaseCommand
                 continue;
             }
             foreach ($rooms as $room) { 
-                // cache('SongNow_'.$room['room_id'],null);
-                // cache('SongList_'.$room['room_id'],[]);
-                // continue;
                 $song = $this->getPlayingSong($room['room_id']);
                 if ($song) {
                     //歌曲正在播放
@@ -56,7 +53,9 @@ class Song extends BaseCommand
                     if($room['room_type'] == 4){
                         //电台模式
                         $song = $this->getSongByUser($room['room_user']);
-                        $this->playSong($room['room_id'],$song);
+                        if($song){
+                            $this->playSong($room['room_id'],$song);
+                        }
                     }else{
                         if ($room['room_robot'] == 0) {
                             $song = $this->getSongByRobot();
@@ -69,8 +68,16 @@ class Song extends BaseCommand
     }
     protected function addSongToList($room_id,$song){
         $songList = cache('SongList_' . $room_id) ?? [];
-        array_push($songList,$song);
-        cache('SongList_' . $room_id, $songList, 86400);
+        $isExist = false;
+        for($i=0;$i<count($songList);$i++){
+            if($songList[$i]['song']['mid'] == $song['song']['mid']){
+                $isExist=true;
+            }
+        }
+        if(!$isExist){
+            array_push($songList,$song);
+            cache('SongList_' . $room_id, $songList, 86400);
+        }
     }
     protected function preLoadMusicUrl($room){
         $preRoomId = $room['room_id'];
@@ -120,6 +127,9 @@ class Song extends BaseCommand
         $userModel = new UserModel();
         $songModel = new SongModel();
         $playerWaitSong = $songModel->where('song_user', $user_id)->orderRand()->find();
+        if(!$playerWaitSong){
+            return false;
+        }
         $playerWaitSong = [
             'mid' => $playerWaitSong['song_mid'],
             'name' => $playerWaitSong['song_name'],
