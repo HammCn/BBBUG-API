@@ -175,8 +175,9 @@ class Attach extends BaseController
                 }
 
                 
-                $obj = pathinfo($attach_data['attach_path']);
-                if($obj['extension'] == "gif"){
+                $obj = getimagesize('./uploads/'.$attach_data['attach_path']);
+
+                if(end($obj) == "image/gif"){
                     return jerr("不要尝试钻空子上传Gif图片当头像,那真的不高端 - Hamm");
                 }
 

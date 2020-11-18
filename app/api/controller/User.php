@@ -675,6 +675,14 @@ class User extends BaseController
                 $data['user_sex'] = 0;
             }
         }
+
+        if(!empty($data['user_head'])){
+            $obj = getimagesize('./uploads/'.urldecode($data['user_head']));
+            if(end($obj) == "image/gif"){
+                return jerr("不要尝试钻空子上传Gif图片当头像,那真的不高端 - Hamm");
+            }
+        }
+
         if (input('user_password')) {
             $password = input('user_password');
             if (strlen($password) < 6 || strlen($password) > 16) {
