@@ -173,6 +173,13 @@ class Attach extends BaseController
                 if (input("?extend")) {
                     $attach_data['extend'] = input("extend");
                 }
+
+                
+                $obj = pathinfo($attach_data['attach_path']);
+                if($obj['extension'] == "gif"){
+                    return jerr("不要尝试钻空子上传Gif图片当头像,那真的不高端 - Hamm");
+                }
+
                 return jok('上传成功！', $attach_data);
             } catch (ValidateException $e) {
                 return jerr($e->getMessage());
