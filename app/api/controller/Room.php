@@ -101,7 +101,9 @@ class Room extends BaseController
         //从请求中获取Update数据
         $data = $this->getUpdateDataFromRequest();
         //根据主键更新这条数据
-
+        if(empty($data['room_public'])){
+            $data['room_public'] = 0;
+        }
         if ($data['room_public'] == 0) {
             //设置公开 取消密码
             $data['room_password'] = '';
@@ -124,7 +126,7 @@ class Room extends BaseController
             $data['room_type'] = 1;
         }
 
-        if ($data['room_domain']) {
+        if (!empty($data['room_domain'])) {
             $exist = $this->model->where('room_id', 'not like', $this->pk_value)->where('room_domain', $data['room_domain'])->where('room_domainstatus', 1)->find();
             if ($exist) {
                 return jerr($data['room_domain'] . '.bbbug.com已被其他人使用啦,换一个再试试吧!');

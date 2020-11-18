@@ -677,9 +677,14 @@ class User extends BaseController
         }
 
         if(!empty($data['user_head'])){
-            $obj = getimagesize('./uploads/'.urldecode($data['user_head']));
-            if(end($obj) == "image/gif"){
-                return jerr("不要尝试钻空子上传Gif图片当头像,那真的不高端 - Hamm");
+            $domain = getTopHost(urldecode($data['user_head']));
+            if(strpos($domain,'bbbug.com')===FALSE){
+                unset($data['user_head']);
+            }else{
+                $obj = getimagesize(urldecode($data['user_head']));
+                if(!$obj || end($obj) == "image/gif"){
+                    return jerr("不要尝试钻空子上传Gif图片当头像,那真的不高端 - Hamm");
+                }
             }
         }
 
