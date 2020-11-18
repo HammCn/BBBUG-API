@@ -30,38 +30,47 @@ class Song extends BaseCommand
                 continue;
             }
             foreach ($rooms as $room) { 
-                $song = $this->getPlayingSong($room['room_id']);
-                if ($song) {
-                    //歌曲正在播放
-                    if (time() < $song['song']['length'] + $song['since']) {
-                        //预先缓存下一首歌
-                        $this->preLoadMusicUrl($room);
-                        continue;
-                    }
-                }
-                if ($room['room_type'] == 4 && $room['room_playone']) {
-                    //是单曲循环的电台房间 重置播放时间
-                    $song['since'] = time();
-                    $this->playSong($room['room_id'],$song);
-                    return;
-                }
-                //其他房间
-                $song = $this->getSongFromList($room['room_id']);
-                if($song){
-                    $this->playSong($room['room_id'],$song);
-                }else{
-                    if($room['room_type'] == 4){
-                        //电台模式
-                        $song = $this->getSongByUser($room['room_user']);
-                        if($song){
-                            $this->playSong($room['room_id'],$song);
+                try{
+                    $song = $this->getPlayingSong($room['room_id']);
+                    if ($song && $song['song']) {
+                        //歌曲正在播放
+                        if (time() < $song['song']['length'] + $song['since']) {
+                            //预先缓存下一首歌
+                            $this->preLoadMusicUrl($room);
+                            continue;
                         }
-                    }else{
-                        if ($room['room_robot'] == 0) {
-                            $song = $this->getSongByRobot();
+                        if ($room['room_type'] == 4 && $room['room_playone']) {
+                            //是单曲循环的电台房间 重置播放时间
+                            $song['since'] = time();
                             $this->playSong($room['room_id'],$song);
-                        } 
+                            return;
+                        }
                     }
+                    //其他房间
+                    $song = $this->getSongFromList($room['room_id']);
+                    if($song){
+                        $this->playSong($room['room_id'],$song);
+                    }else{
+                        if($room['room_type'] == 4){
+                            //电台模式
+                            $song = $this->getSongByUser($room['room_user']);
+                            if($song){
+                                $this->playSong($room['room_id'],$song);
+                            }
+                        }else{
+                            if ($room['room_robot'] == 0) {
+                                $song = $this->getSongByRobot();
+                                $this->playSong($room['room_id'],$song);
+                            } 
+                        }
+                    }
+                }catch(\Exception $e){
+                    print_r($e->getLine());
+                    print_r($e->getMessage());
+                    // print_r($song);
+                    // print_r($room['room_id']);
+                    cache('SongNow_'.$room['room_id'],null);
+                    continue;
                 }
             }
         }

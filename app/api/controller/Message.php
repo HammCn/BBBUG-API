@@ -112,7 +112,7 @@ class Message extends BaseController
             return $error;
         }
         if (!input('room_id')) {
-            return jerr('缺少room_id');
+            return jerr('缺少room_id',400);
         }
         $room_id = input('room_id');
 
@@ -144,14 +144,17 @@ class Message extends BaseController
     }
     public function getMessageList()
     {
+        $room_id = intval(input('room_id'));
+        if(!$room_id){
+            return jerr("请传入room_id",400);
+        }
+        $message_where = input('message_where');
+        $page = 1;
+        if (input('page')) {
+            $page = intval(input('page'));
+        }
         if (input('access_token') == getTempToken()) {
             // return jok('临时用户无法查看历史', []);
-            $room_id = intval(input('room_id'));
-            $message_where = input('message_where');
-            $page = 1;
-            if (input('page')) {
-                $page = intval(input('page'));
-            }
             $cache = cache("room_message_list_" . $room_id) ?? false;
             if ($cache) {
                 return jok('from cache', $cache);
@@ -176,12 +179,6 @@ class Message extends BaseController
         $error = $this->access();
         if ($error) {
             return $error;
-        }
-        $room_id = intval(input('room_id'));
-        $message_where = input('message_where');
-        $page = 1;
-        if (input('page')) {
-            $page = intval(input('page'));
         }
         $cache = cache("room_message_user_" . $this->user['user_id'] . "_list_" . $room_id . "_page" . $page)??false;
         if($cache){
