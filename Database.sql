@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: 2020-11-14 00:39:40
+-- Generation Time: 2020-11-20 00:03:57
 -- 服务器版本： 5.6.48-log
 -- PHP Version: 7.1.32
 
@@ -161,8 +161,6 @@ INSERT INTO `sa_conf` (`conf_id`, `conf_key`, `conf_value`, `conf_desc`, `conf_i
 (4, 'wechat_aes_key', 'StartAdmin', '微信AES密钥', 0, 0, 0, 1585844226),
 (11, 'weapp_appid', '', '小程序APPID', 0, 0, 0, 0),
 (12, 'weapp_appkey', '', '小程序SECRET', 0, 0, 0, 0),
-(36, 'app_name', 'StartAdmin', '产品名称', 0, 0, 0, 0),
-(37, 'iconfont', '//at.alicdn.com/t/font_666204_u6x6ssnn9sh.css', '阿里图标', 0, 0, 0, 0),
 (39, 'upload_max_file', '2097152', '最大文件上传限制', 0, 0, 0, 0),
 (40, 'upload_file_type', 'jpg,png,gif,jpeg,bmp,txt,pdf,mp3,mp4,amr,m4a,xls,xlsx,ppt,pptx,doc,docx', '允许文件上传类型', 0, 0, 0, 0),
 (41, 'upload_max_image', '2097152', '最大图片上传限制', 0, 0, 0, 0),
@@ -521,36 +519,16 @@ INSERT INTO `sa_node` (`node_id`, `node_title`, `node_desc`, `node_module`, `nod
 -- --------------------------------------------------------
 
 --
--- 表的结构 `sa_online`
---
-
-CREATE TABLE `sa_online` (
-  `online_id` bigint(11) NOT NULL,
-  `online_room` int(11) NOT NULL DEFAULT '0' COMMENT 'room',
-  `online_count` int(11) NOT NULL DEFAULT '0' COMMENT 'count',
-  `online_date` varchar(255) NOT NULL DEFAULT '' COMMENT 'date',
-  `online_hour` int(11) NOT NULL DEFAULT '0' COMMENT 'hour',
-  `online_status` int(11) NOT NULL DEFAULT '0' COMMENT '状态',
-  `online_createtime` int(11) NOT NULL DEFAULT '0' COMMENT '创建时间',
-  `online_updatetime` int(11) NOT NULL DEFAULT '0' COMMENT '修改时间'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='在线表';
-
--- --------------------------------------------------------
-
---
 -- 表的结构 `sa_room`
 --
 
 CREATE TABLE `sa_room` (
   `room_id` int(11) NOT NULL,
   `room_user` int(11) NOT NULL DEFAULT '0' COMMENT '所有者ID',
-  `room_score` int(11) NOT NULL DEFAULT '0',
   `room_addsongcd` int(11) NOT NULL DEFAULT '60' COMMENT '点歌CD',
   `room_addcount` int(5) NOT NULL DEFAULT '5' COMMENT '点歌数量',
   `room_pushdaycount` int(11) NOT NULL DEFAULT '5' COMMENT '顶歌日限额',
   `room_pushsongcd` int(11) NOT NULL DEFAULT '3600' COMMENT '顶歌CD',
-  `room_domain` varchar(255) NOT NULL DEFAULT '',
-  `room_domainstatus` int(11) NOT NULL DEFAULT '1',
   `room_online` int(11) NOT NULL DEFAULT '0',
   `room_realonline` int(11) NOT NULL DEFAULT '0',
   `room_name` varchar(255) NOT NULL DEFAULT '' COMMENT '房间名称',
@@ -561,13 +539,9 @@ CREATE TABLE `sa_room` (
   `room_addsong` int(11) NOT NULL DEFAULT '0',
   `room_sendmsg` int(11) NOT NULL DEFAULT '0',
   `room_robot` int(11) NOT NULL DEFAULT '0',
-  `room_huya` varchar(255) NOT NULL DEFAULT '',
   `room_order` int(11) NOT NULL DEFAULT '0',
   `room_reason` varchar(255) NOT NULL DEFAULT '',
   `room_playone` int(11) NOT NULL DEFAULT '0' COMMENT '0随机1单曲',
-  `room_pet` int(11) NOT NULL DEFAULT '0',
-  `room_single` int(11) NOT NULL DEFAULT '0' COMMENT '是否独立房间',
-  `room_url` varchar(255) NOT NULL DEFAULT '',
   `room_votepass` int(11) NOT NULL DEFAULT '1',
   `room_votepercent` int(11) NOT NULL DEFAULT '30',
   `room_status` int(11) NOT NULL DEFAULT '0' COMMENT '状态',
@@ -579,8 +553,8 @@ CREATE TABLE `sa_room` (
 -- 转存表中的数据 `sa_room`
 --
 
-INSERT INTO `sa_room` (`room_id`, `room_user`, `room_score`, `room_addsongcd`, `room_addcount`, `room_pushdaycount`, `room_pushsongcd`, `room_domain`, `room_domainstatus`, `room_online`, `room_realonline`, `room_name`, `room_type`, `room_public`, `room_password`, `room_notice`, `room_addsong`, `room_sendmsg`, `room_robot`, `room_huya`, `room_order`, `room_reason`, `room_playone`, `room_pet`, `room_single`, `room_url`, `room_votepass`, `room_votepercent`, `room_status`, `room_createtime`, `room_updatetime`) VALUES
-(888, 1, 0, 60, 5, 5, 3600, 'www', 1, 2, 5, 'BBBUG音乐大厅', 1, 0, '', '大厅为电台播放模式，欢迎大家点歌，房间已支持自定义点歌/顶歌等CD和数量，快去房间管理页面看看吧~', 0, 0, 0, 'https://www.huya.com/hyq18000', 10000000, '', 0, 0, 0, '', 1, 30, 0, 1598539777, 1604990895);
+INSERT INTO `sa_room` (`room_id`, `room_user`, `room_addsongcd`, `room_addcount`, `room_pushdaycount`, `room_pushsongcd`, `room_online`, `room_realonline`, `room_name`, `room_type`, `room_public`, `room_password`, `room_notice`, `room_addsong`, `room_sendmsg`, `room_robot`, `room_order`, `room_reason`, `room_playone`, `room_votepass`, `room_votepercent`, `room_status`, `room_createtime`, `room_updatetime`) VALUES
+(888, 1, 60, 5, 5, 3600, 2, 5, 'BBBUG音乐大厅', 1, 0, '', '大厅为电台播放模式，欢迎大家点歌，房间已支持自定义点歌/顶歌等CD和数量，快去房间管理页面看看吧~', 0, 0, 0, 10000000, '', 0, 1, 30, 0, 1598539777, 1604990895);
 
 -- --------------------------------------------------------
 
@@ -612,7 +586,6 @@ CREATE TABLE `sa_song` (
 CREATE TABLE `sa_user` (
   `user_id` int(11) NOT NULL COMMENT 'UID',
   `user_icon` int(11) NOT NULL DEFAULT '0',
-  `user_parent` int(11) NOT NULL DEFAULT '0',
   `user_sex` int(2) NOT NULL DEFAULT '0',
   `user_account` varchar(64) CHARACTER SET utf8 NOT NULL COMMENT '帐号',
   `user_password` varchar(255) CHARACTER SET utf8 NOT NULL COMMENT '密码',
@@ -621,14 +594,6 @@ CREATE TABLE `sa_user` (
   `user_head` varchar(255) NOT NULL DEFAULT 'https://cdn.bbbug.com/images/nohead.jpg',
   `user_remark` varchar(255) NOT NULL DEFAULT '每个人都应该有签名,但偏偏我没有.',
   `user_group` int(11) NOT NULL DEFAULT '0' COMMENT '用户组',
-  `user_song` int(11) NOT NULL DEFAULT '0',
-  `user_img` int(11) NOT NULL DEFAULT '0',
-  `user_chat` int(11) NOT NULL DEFAULT '0',
-  `user_pass` int(11) NOT NULL DEFAULT '0',
-  `user_push` int(11) NOT NULL DEFAULT '0',
-  `user_songrecv` int(11) NOT NULL DEFAULT '0',
-  `user_songsend` int(11) NOT NULL DEFAULT '0',
-  `user_gamesongscore` int(11) NOT NULL DEFAULT '0',
   `user_ipreg` varchar(255) NOT NULL COMMENT '注册IP',
   `user_openid` varchar(255) NOT NULL DEFAULT '',
   `user_extra` varchar(255) NOT NULL DEFAULT '',
@@ -645,8 +610,8 @@ CREATE TABLE `sa_user` (
 -- 转存表中的数据 `sa_user`
 --
 
-INSERT INTO `sa_user` (`user_id`, `user_icon`, `user_parent`, `user_sex`, `user_account`, `user_password`, `user_salt`, `user_name`, `user_head`, `user_remark`, `user_group`, `user_song`, `user_img`, `user_chat`, `user_pass`, `user_push`, `user_songrecv`, `user_songsend`, `user_gamesongscore`, `user_ipreg`, `user_openid`, `user_extra`, `user_app`, `user_device`, `user_touchtip`, `user_vip`, `user_status`, `user_createtime`, `user_updatetime`) VALUES
-(1, 1, 0, 0, 'admin@bbbug.com', '123456', 'abcd', '%E6%9C%BA%E5%99%A8%E4%BA%BA', 'https://cdn.bbbug.com/uploads/thumb/image/20201016/2a4a54f2a696179a963bbf1cb4426cb7.jpg', '别@我,我只是个测试号', 1, 3, 0, 0, 220, 0, 0, 0, 0, '127.0.0.1', '', '', 1, 'iPhone', '%EF%BC%8C%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%B7%AE%E7%82%B9%E7%88%BD%E7%BF%BB%E5%A4%A9%E3%80%82', '', 0, 0, 1605004436);
+INSERT INTO `sa_user` (`user_id`, `user_icon`, `user_sex`, `user_account`, `user_password`, `user_salt`, `user_name`, `user_head`, `user_remark`, `user_group`, `user_ipreg`, `user_openid`, `user_extra`, `user_app`, `user_device`, `user_touchtip`, `user_vip`, `user_status`, `user_createtime`, `user_updatetime`) VALUES
+(1, 1, 0, 'admin@bbbug.com', '123456', 'abcd', '%E6%9C%BA%E5%99%A8%E4%BA%BA', 'https://cdn.bbbug.com/uploads/thumb/image/20201016/2a4a54f2a696179a963bbf1cb4426cb7.jpg', '别@我,我只是个测试号', 1, '127.0.0.1', '', '', 1, 'iPhone', '%EF%BC%8C%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%B7%AE%E7%82%B9%E7%88%BD%E7%BF%BB%E5%A4%A9%E3%80%82', '', 0, 0, 1605004436);
 
 --
 -- Indexes for dumped tables
@@ -730,12 +695,6 @@ ALTER TABLE `sa_node`
   ADD KEY `node_action` (`node_action`) USING BTREE;
 
 --
--- Indexes for table `sa_online`
---
-ALTER TABLE `sa_online`
-  ADD PRIMARY KEY (`online_id`);
-
---
 -- Indexes for table `sa_room`
 --
 ALTER TABLE `sa_room`
@@ -817,15 +776,10 @@ ALTER TABLE `sa_message`
 ALTER TABLE `sa_node`
   MODIFY `node_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '功能ID', AUTO_INCREMENT=1228;
 --
--- 使用表AUTO_INCREMENT `sa_online`
---
-ALTER TABLE `sa_online`
-  MODIFY `online_id` bigint(11) NOT NULL AUTO_INCREMENT;
---
 -- 使用表AUTO_INCREMENT `sa_room`
 --
 ALTER TABLE `sa_room`
-  MODIFY `room_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10236;
+  MODIFY `room_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10000;
 --
 -- 使用表AUTO_INCREMENT `sa_song`
 --
@@ -835,7 +789,7 @@ ALTER TABLE `sa_song`
 -- 使用表AUTO_INCREMENT `sa_user`
 --
 ALTER TABLE `sa_user`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'UID', AUTO_INCREMENT=10897;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'UID', AUTO_INCREMENT=10000;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
