@@ -27,7 +27,7 @@ class Room extends BaseController
         $this->updateFields = [
             //允许更新的字段列表
             "room_user", "room_name", "room_type", "room_password", "room_notice", "room_robot", "room_addsong",
-             "room_sendmsg", "room_public", "room_playone", "room_domain","room_huya","room_votepass","room_votepercent",
+             "room_sendmsg", "room_public", "room_playone", "room_votepass","room_votepercent",
              "room_addsongcd","room_pushdaycount","room_pushsongcd","room_addcount"
         ];
         $this->insertRequire = [
@@ -125,16 +125,6 @@ class Room extends BaseController
         if(empty($data['room_type']) || !in_array($data['room_type'],[0,1,4])){
             $data['room_type'] = 1;
         }
-
-        if (!empty($data['room_domain'])) {
-            $exist = $this->model->where('room_id', 'not like', $this->pk_value)->where('room_domain', $data['room_domain'])->where('room_domainstatus', 1)->find();
-            if ($exist) {
-                return jerr($data['room_domain'] . '.bbbug.com已被其他人使用啦,换一个再试试吧!');
-            }
-        } else {
-            $data['room_domain'] = '';
-        }
-
         
         if(!empty(input('room_addsongcd')) && intval(input('room_addsongcd')) < 60 && intval(input('room_addsongcd')) > 0){
             $data['room_addsongcd'] = intval($data['room_addsongcd']);
@@ -320,7 +310,7 @@ class Room extends BaseController
     public function hotRooms()
     {
         if (input('access_token') == getTempToken()) {
-            $order = 'room_order desc,room_online desc,room_score desc,room_id desc';
+            $order = 'room_order desc,room_online desc,room_id desc';
             //设置Model中的 per_page
             $this->setGetListPerPage();
             $dataList = $this->model->getHotRooms($order, $this->selectList);
@@ -340,7 +330,7 @@ class Room extends BaseController
         if ($error) {
             return $error;
         }
-        $order = 'room_order desc,room_online desc,room_score desc,room_id desc';
+        $order = 'room_order desc,room_online desc,room_id desc';
         //设置Model中的 per_page
         $this->setGetListPerPage();
         $dataList = $this->model->getHotRooms($order, $this->selectList);

@@ -319,7 +319,6 @@ class Message extends BaseController
         $userModel = new UserModel();
         switch ($type) {
             case 'text':
-                $userModel->where('user_id', $this->user['user_id'])->inc('user_chat')->update();
                 if (strpos(rawurldecode(input('msg')), 'bbbug.com') !== false) {
                     if (preg_match('/com\/(\d+)/', rawurldecode(input('msg')), $match)) {
                         $jump_id = $match[1];
@@ -370,56 +369,7 @@ class Message extends BaseController
                                 return jok('');
                             }
                         }
-                    } else if (preg_match('/:\/\/(.*?).bbbug.com/', rawurldecode(input('msg')), $match)) {
-                        $jump_domain = $match[1];
-                        $jump_room = $roomModel->where('room_domain', $jump_domain)->where('room_domainstatus', 1)->find();
-                        if ($jump_room) {
-                            $lastJump = cache('chat_message_jump_' . $this->user['user_id']) ?? false;
-                            if ($lastJump && !getIsAdmin($this->user) && false) {
-                                return jerr('发送机票过于频繁');
-                            } else {
-                                cache('chat_message_jump_' . $this->user['user_id'], 1, 60);
-                                //jump消息
-                                if ($jump_room['room_password']) {
-                                    $jump_room['room_password'] = true;
-                                } else {
-                                    $jump_room['room_password'] = false;
-                                }
-                                $type = 'jump';
-                                $message_id = $this->model->insertGetId([
-                                    'message_user' => $this->user['user_id'],
-                                    'message_type' => 'text',
-                                    'message_content' => '',
-                                    'message_to' => $room_id,
-                                    'message_where' => $where,
-                                    'message_status' => 1,
-                                    'message_createtime' => time(),
-                                    'message_updatetime' => time(),
-                                ]);
-                                $msg = [
-                                    'type' => $type,
-                                    'jump' => $jump_room,
-                                    'message_id' => $message_id,
-                                    'message_time' => time(),
-                                    'user' => getUserData($this->user),
-                                ];
-                                curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-                                    'type' => $where,
-                                    'to' => $room_id,
-                                    'token' => getWebsocketToken(),
-                                    'msg' => json_encode($msg),
-                                ]), [
-                                    'content-type:application/x-www-form-rawurlencode',
-                                ]);
-                                $this->model->where('message_id', $message_id)->update([
-                                    'message_type' => 'text',
-                                    'message_content' => json_encode($msg),
-                                    'message_status' => 0,
-                                ]);
-                                return jok('');
-                            }
-                        }
-                    }
+                    } 
                 }
                 try {
                     $filterUrl = filter_var(str_replace(' ', '', $msg_resource), FILTER_VALIDATE_URL);
@@ -559,7 +509,6 @@ class Message extends BaseController
                 if (cache('message_' . $this->user['user_id']) == $msg_resource) {
                     return jerr('请不要连续发送相同的图片');
                 }
-                $userModel->where('user_id', $this->user['user_id'])->inc('user_img')->update();
                 $message_id = $this->model->insertGetId([
                     'message_user' => $this->user['user_id'],
                     'message_type' => 'text',
