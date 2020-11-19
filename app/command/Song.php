@@ -247,7 +247,7 @@ class Song extends BaseCommand
                 "user_admin" => true,
                 "user_head" => "https://cdn.bbbug.com/uploads/thumb/image/20201105/1bafe18a648eb26bbdf7f24b6fe53dfc.jpg",
                 "user_id" => 1,
-                "user_name" => "BBBUG机器人",
+                "user_name" => "机器人",
                 "user_remark" => "别@我,我只是个测试帐号",
             ],
         ];

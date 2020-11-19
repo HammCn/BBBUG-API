@@ -379,15 +379,6 @@ class Song extends BaseController
         ]), [
             'content-type:application/x-www-form-rawurlencode',
         ]);
-        $userModel = new UserModel();
-        $userModel->where('user_id', $this->user['user_id'])->inc('user_song')->update();
-
-        if ($at) {
-            $userModel->where('user_id', $this->user['user_id'])->inc('user_songsend')->update();
-            $userModel->where('user_id', $at['user_id'])->inc('user_songrecv')->update();
-        }
-
-        // $song['playUrl'] = $url;
 
         $songModel = new SongModel();
         $songExist = $songModel->where('song_mid', $song['mid'])->where('song_user', $this->user['user_id'])->find();
@@ -596,9 +587,6 @@ class Song extends BaseController
             }
             cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid'], $songNextCount, 600);
 
-            $userModel = new UserModel();
-            $userModel->where('user_id', $now['user']['user_id'])->inc('user_pass')->update();
-
             return jok('你的不想听态度表态成功!');
         }
 
@@ -617,9 +605,6 @@ class Song extends BaseController
         ]), [
             'content-type:application/x-www-form-rawurlencode',
         ]);
-
-        $userModel = new UserModel();
-        $userModel->where('user_id', $now['user']['user_id'])->inc('user_pass')->update();
 
         return jok('切歌成功');
     }
@@ -752,9 +737,6 @@ class Song extends BaseController
         ]), [
             'content-type:application/x-www-form-rawurlencode',
         ]);
-
-        $userModel = new UserModel();
-        $userModel->where('user_id', $this->user['user_id'])->inc('user_push')->update();
 
         if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
             return jok('顶歌成功,今日剩余' . ($pushCount - $pushCache) . '次顶歌机会!');
