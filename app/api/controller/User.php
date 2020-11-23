@@ -540,7 +540,7 @@ class User extends BaseController
         $old_password = input("oldPassword");
         $new_password = input("newPassword");
         if (strlen($new_password) < 6 || strlen($new_password) > 16) {
-            return jerr("新密码因为6-16位！");
+            return jerr("新密码应为6-16位！");
         }
         if ($this->user['user_password'] != encodePassword($old_password, $this->user['user_salt'])) {
             return jerr("原密码输入不正确，请重试！");
@@ -691,7 +691,7 @@ class User extends BaseController
         if (input('user_password')) {
             $password = input('user_password');
             if (strlen($password) < 6 || strlen($password) > 16) {
-                return jerr("新密码因为6-16位！");
+                return jerr("新密码应为6-16位！");
             }
             $salt = getRandString(4);
             $password = encodePassword($password, $salt);

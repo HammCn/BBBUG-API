@@ -310,7 +310,7 @@ class Room extends BaseController
     public function hotRooms()
     {
         if (input('access_token') == getTempToken()) {
-            $order = 'room_order desc,room_online desc,room_id desc';
+            $order = 'room_order desc,room_online desc,room_id asc';
             //设置Model中的 per_page
             $this->setGetListPerPage();
             $dataList = $this->model->getHotRooms($order, $this->selectList);
@@ -330,7 +330,7 @@ class Room extends BaseController
         if ($error) {
             return $error;
         }
-        $order = 'room_order desc,room_online desc,room_id desc';
+        $order = 'room_order desc,room_online desc,room_id asc';
         //设置Model中的 per_page
         $this->setGetListPerPage();
         $dataList = $this->model->getHotRooms($order, $this->selectList);
