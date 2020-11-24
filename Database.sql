@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: 2020-11-20 00:03:57
+-- Generation Time: 2020-11-24 10:06:54
 -- 服务器版本： 5.6.48-log
 -- PHP Version: 7.1.32
 
@@ -531,8 +531,9 @@ CREATE TABLE `sa_room` (
   `room_pushsongcd` int(11) NOT NULL DEFAULT '3600' COMMENT '顶歌CD',
   `room_online` int(11) NOT NULL DEFAULT '0',
   `room_realonline` int(11) NOT NULL DEFAULT '0',
+  `room_hide` int(1) NOT NULL DEFAULT '0' COMMENT '是否从列表隐藏',
   `room_name` varchar(255) NOT NULL DEFAULT '' COMMENT '房间名称',
-  `room_type` int(11) NOT NULL DEFAULT '0' COMMENT '房间类型',
+  `room_type` int(11) NOT NULL DEFAULT '1' COMMENT '房间类型',
   `room_public` int(11) NOT NULL DEFAULT '0',
   `room_password` varchar(8) NOT NULL DEFAULT '' COMMENT '房间密码',
   `room_notice` varchar(255) NOT NULL DEFAULT '' COMMENT '进入房间提醒',
@@ -553,8 +554,8 @@ CREATE TABLE `sa_room` (
 -- 转存表中的数据 `sa_room`
 --
 
-INSERT INTO `sa_room` (`room_id`, `room_user`, `room_addsongcd`, `room_addcount`, `room_pushdaycount`, `room_pushsongcd`, `room_online`, `room_realonline`, `room_name`, `room_type`, `room_public`, `room_password`, `room_notice`, `room_addsong`, `room_sendmsg`, `room_robot`, `room_order`, `room_reason`, `room_playone`, `room_votepass`, `room_votepercent`, `room_status`, `room_createtime`, `room_updatetime`) VALUES
-(888, 1, 60, 5, 5, 3600, 2, 5, 'BBBUG音乐大厅', 1, 0, '', '大厅为电台播放模式，欢迎大家点歌，房间已支持自定义点歌/顶歌等CD和数量，快去房间管理页面看看吧~', 0, 0, 0, 10000000, '', 0, 1, 30, 0, 1598539777, 1604990895);
+INSERT INTO `sa_room` (`room_id`, `room_user`, `room_addsongcd`, `room_addcount`, `room_pushdaycount`, `room_pushsongcd`, `room_online`, `room_realonline`, `room_hide`, `room_name`, `room_type`, `room_public`, `room_password`, `room_notice`, `room_addsong`, `room_sendmsg`, `room_robot`, `room_order`, `room_reason`, `room_playone`, `room_votepass`, `room_votepercent`, `room_status`, `room_createtime`, `room_updatetime`) VALUES
+(888, 1, 60, 5, 5, 3600, 2, 5, 0, 'BBBUG音乐大厅', 1, 0, '', '大厅为电台播放模式，欢迎大家点歌，房间已支持自定义点歌/顶歌等CD和数量，快去房间管理页面看看吧~', 0, 0, 0, 10000000, '', 0, 1, 30, 0, 1598539777, 1604990895);
 
 -- --------------------------------------------------------
 
@@ -779,7 +780,7 @@ ALTER TABLE `sa_node`
 -- 使用表AUTO_INCREMENT `sa_room`
 --
 ALTER TABLE `sa_room`
-  MODIFY `room_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10000;
+  MODIFY `room_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=889;
 --
 -- 使用表AUTO_INCREMENT `sa_song`
 --
@@ -789,7 +790,7 @@ ALTER TABLE `sa_song`
 -- 使用表AUTO_INCREMENT `sa_user`
 --
 ALTER TABLE `sa_user`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'UID', AUTO_INCREMENT=10000;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'UID', AUTO_INCREMENT=2;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
