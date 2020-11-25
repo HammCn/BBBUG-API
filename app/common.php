@@ -64,7 +64,7 @@ function getWebsocketToken()
  */
 function jok($msg = 'success', $data = null)
 {
-    header("content:application/json;chartset=uft-8");
+    header("content-type:application/json;chartset=uft-8");
     if ($data !== null) {
         echo json_encode(["code" => 200, "msg" => $msg, 'data' => $data]);
     } else {
@@ -81,7 +81,7 @@ function jok($msg = 'success', $data = null)
  */
 function jerr($msg = 'error', $code = 500)
 { 
-    header("content:application/json;chartset=uft-8");
+    header("content-type:application/json;chartset=uft-8");
     echo json_encode(["code" => $code, "msg" => $msg]);
     die;
 }
