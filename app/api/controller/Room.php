@@ -28,7 +28,7 @@ class Room extends BaseController
             //允许更新的字段列表
             "room_user", "room_name", "room_type", "room_password", "room_notice", "room_robot", "room_addsong",
              "room_sendmsg", "room_public", "room_playone", "room_votepass","room_votepercent",
-             "room_addsongcd","room_pushdaycount","room_pushsongcd","room_addcount"
+             "room_addsongcd","room_pushdaycount","room_pushsongcd","room_addcount","room_hide"
         ];
         $this->insertRequire = [
             //添加时必须填写的字段
