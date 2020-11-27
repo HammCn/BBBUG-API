@@ -227,6 +227,7 @@ class Message extends BaseController
         }
         $where = '';
         $msg_resource = (input('msg'));
+        $msg_decode = rawurldecode($msg_resource);
         $room = $roomModel->where('room_id', $room_id)->find();
 
         if (!$room) {
@@ -260,9 +261,9 @@ class Message extends BaseController
 
         if (getIsAdmin($this->user)) {
             //管理员
-            if (strpos($msg_resource, '@all') !== false) {
+            if (strpos($msg_decode, '@all') !== false) {
                 $type = 'all';
-                $content = str_replace('@all', '', $msg_resource);
+                $content = str_replace('@all', '', $msg_decode);
                 $msg = [
                     'type' => $type,
                     'content' => rawurldecode($content),
@@ -286,13 +287,13 @@ class Message extends BaseController
             if ($type == 'text') {
                 if ($this->user['user_id'] != $room['room_user']) {
                     //非房主
-                    if ($type == 'text' && mb_strlen($msg_resource) > 200) {
+                    if ($type == 'text' && mb_strlen($msg_decode) > 200) {
                         return jerr('发送文字超过最大限制！');
                     }
                     if (cache('last_' . $this->user['user_id'])) {
                         return jerr('发送消息太频繁啦~');
                     }
-                    if (cache('message_' . $this->user['user_id']) == $msg_resource) {
+                    if (cache('message_' . $this->user['user_id']) == $msg_decode) {
                         return jerr('灌水可耻,请不要重复发送相同信息');
                     }
                 }
@@ -372,7 +373,7 @@ class Message extends BaseController
                     } 
                 }
                 try {
-                    $filterUrl = filter_var(str_replace(' ', '', $msg_resource), FILTER_VALIDATE_URL);
+                    $filterUrl = filter_var(str_replace(' ', '', $msg_decode), FILTER_VALIDATE_URL);
                     if ($filterUrl) {
                         $result = file_get_contents($filterUrl);
                         if (preg_match('/<title>(.*?)<\/title>/', $result, $match)) {
@@ -431,31 +432,31 @@ class Message extends BaseController
                 foreach ($keywordList as $keywords) {
                     if ($keywords['keywords_all'] == 1) {
                         //全局替换
-                        if (strpos($msg_resource, $keywords['keywords_source']) !== false) {
-                            $msg_resource = $keywords['keywords_target'];
+                        if (strpos($msg_decode, $keywords['keywords_source']) !== false) {
+                            $msg_decode = $keywords['keywords_target'];
                             break;
                         } else {
                             //取出中文再试试
-                            $temp = preg_match_all('/[\x{4e00}-\x{9fa5}]+/u', $msg_resource, $matches);
+                            $temp = preg_match_all('/[\x{4e00}-\x{9fa5}]+/u', $msg_decode, $matches);
                             if (count($matches[0]) > 0) {
                                 $temp = join('', $matches[0]);
                                 if (strpos($temp, $keywords['keywords_source']) !== false) {
-                                    $msg_resource = $keywords['keywords_target'];
+                                    $msg_decode = $keywords['keywords_target'];
                                     break;
                                 }
                             }
                         }
                     } else {
                         //局部替换
-                        if (strpos(rawurldecode($msg_resource), $keywords['keywords_source']) !== false) {
-                            $msg_resource = rawurldecode(str_replace(rawurlencode($keywords['keywords_source']), rawurlencode($keywords['keywords_target']), $msg_resource));
+                        if (strpos(rawurldecode($msg_decode), $keywords['keywords_source']) !== false) {
+                            $msg_decode = rawurldecode(str_replace(rawurlencode($keywords['keywords_source']), rawurlencode($keywords['keywords_target']), $msg_decode));
                             break;
                         } else {
-                            $temp = preg_match_all('/[\x{4e00}-\x{9fa5}]+/u', rawurldecode($msg_resource), $matches);
+                            $temp = preg_match_all('/[\x{4e00}-\x{9fa5}]+/u', rawurldecode($msg_decode), $matches);
                             if (count($matches[0]) > 0) {
                                 $temp = join('', $matches[0]);
                                 if (strpos($temp, $keywords['keywords_source']) !== false) {
-                                    $msg_resource = rawurldecode(str_replace(rawurlencode($keywords['keywords_source']), rawurlencode($keywords['keywords_target']), $msg_resource));
+                                    $msg_decode = rawurldecode(str_replace(rawurlencode($keywords['keywords_source']), rawurlencode($keywords['keywords_target']), $msg_decode));
                                     break;
                                 }
                             }
@@ -475,12 +476,12 @@ class Message extends BaseController
 
                 $msg = [
                     'type' => $type,
-                    'content' => rawurlencode($msg_resource),
+                    'content' => rawurlencode(rawurlencode($msg_decode)),
                     'where' => $where,
                     'at' => $at,
                     'message_id' => $message_id,
                     'message_time' => time(),
-                    'resource' => input('resource') ? rawurlencode(input('resource')) : '',
+                    'resource' => rawurlencode(rawurlencode($msg_decode)) ?? '',
                     'user' => getUserData($this->user),
                 ];
                 curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
@@ -497,7 +498,7 @@ class Message extends BaseController
                     'message_status' => 0,
                 ]);
                 cache('last_' . $this->user['user_id'], 1, 1);
-                cache('message_' . $this->user['user_id'], $msg_resource, 10);
+                cache('message_' . $this->user['user_id'], $msg_decode, 10);
                 
                 //彩蛋区域
                 return jok('');
@@ -506,7 +507,7 @@ class Message extends BaseController
                 if (cache('last_' . $this->user['user_id'])) {
                     return jerr('发送图片太频繁啦~');
                 }
-                if (cache('message_' . $this->user['user_id']) == $msg_resource) {
+                if (cache('message_' . $this->user['user_id']) == $msg_decode) {
                     return jerr('请不要连续发送相同的图片');
                 }
                 $message_id = $this->model->insertGetId([
@@ -521,12 +522,12 @@ class Message extends BaseController
                 ]);
                 $msg = [
                     'type' => $type,
-                    'content' => $msg_resource,
+                    'content' => $msg_decode,
                     'where' => $where,
                     'at' => $at,
                     'message_id' => $message_id,
                     'message_time' => time(),
-                    'resource' => input('resource') ? rawurlencode(input('resource')) : '',
+                    'resource' => rawurlencode(rawurlencode($msg_decode)) ?? '',
                     'user' => getUserData($this->user),
                 ];
                 curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
@@ -543,7 +544,7 @@ class Message extends BaseController
                     'message_status' => 0,
                 ]);
                 cache('last_' . $this->user['user_id'], 1, 1);
-                cache('message_' . $this->user['user_id'], $msg_resource, 10);
+                cache('message_' . $this->user['user_id'], $msg_decode, 10);
                 return jok('');
                 break;
             default:
