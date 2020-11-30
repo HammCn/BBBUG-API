@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: 2020-11-24 10:06:54
+-- Generation Time: 2020-11-30 23:15:28
 -- 服务器版本： 5.6.48-log
 -- PHP Version: 7.1.32
 
@@ -17,7 +17,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `b`
+-- Database: `BBBBUG_Export`
 --
 
 -- --------------------------------------------------------
@@ -177,7 +177,9 @@ INSERT INTO `sa_conf` (`conf_id`, `conf_key`, `conf_value`, `conf_desc`, `conf_i
 (52, 'email_port', '465', '邮箱端口号', 0, 0, 0, 1598539052),
 (53, 'websocket_http', 'http://127.0.0.1:10012/', 'WebsocketHTTP请求地址', 0, 0, 0, 1598539052),
 (54, 'websocket_token', 'wss_bbbug_com', 'Websocket验证串', 0, 0, 0, 1598539052),
-(55, 'api_guest_token', '45af3cfe44942c956e026d5fd58f0feffbd3a237', '临时用户access_token', 0, 0, 0, 1598539052);
+(55, 'api_guest_token', '45af3cfe44942c956e026d5fd58f0feffbd3a237', '临时用户access_token', 0, 0, 0, 1598539052),
+(56, 'frontend_url', '', '前端地址', 0, 0, 0, 0),
+(57, 'api_url', '', 'API地址', 0, 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -612,7 +614,7 @@ CREATE TABLE `sa_user` (
 --
 
 INSERT INTO `sa_user` (`user_id`, `user_icon`, `user_sex`, `user_account`, `user_password`, `user_salt`, `user_name`, `user_head`, `user_remark`, `user_group`, `user_ipreg`, `user_openid`, `user_extra`, `user_app`, `user_device`, `user_touchtip`, `user_vip`, `user_status`, `user_createtime`, `user_updatetime`) VALUES
-(1, 1, 0, 'admin@bbbug.com', '123456', 'abcd', '%E6%9C%BA%E5%99%A8%E4%BA%BA', 'https://api.bbbug.com/uploads/thumb/image/20201016/2a4a54f2a696179a963bbf1cb4426cb7.jpg', '别@我,我只是个测试号', 1, '127.0.0.1', '', '', 1, 'iPhone', '%EF%BC%8C%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%B7%AE%E7%82%B9%E7%88%BD%E7%BF%BB%E5%A4%A9%E3%80%82', '', 0, 0, 1605004436);
+(1, 1, 0, 'admin@bbbug.com', '123456', 'abcd', '%E6%9C%BA%E5%99%A8%E4%BA%BA', 'https://cdn.bbbug.com/uploads/thumb/image/20201016/2a4a54f2a696179a963bbf1cb4426cb7.jpg', '别@我,我只是个测试号', 1, '127.0.0.1', '', '', 1, 'iPhone', '%EF%BC%8C%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%B7%AE%E7%82%B9%E7%88%BD%E7%BF%BB%E5%A4%A9%E3%80%82', '', 0, 0, 1605004436);
 
 --
 -- Indexes for dumped tables
@@ -750,7 +752,7 @@ ALTER TABLE `sa_code`
 -- 使用表AUTO_INCREMENT `sa_conf`
 --
 ALTER TABLE `sa_conf`
-  MODIFY `conf_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `conf_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 --
 -- 使用表AUTO_INCREMENT `sa_group`
 --
