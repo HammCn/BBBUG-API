@@ -3,9 +3,6 @@ function getTempToken()
 {
     return config('startadmin.api_guest_token');
 }
-function rawurlencodessssss($str){
-    return $str;
-}
 function getUserData($user)
 {
     return [
@@ -51,9 +48,15 @@ function getWebsocketApiUrl()
 {
     return config('startadmin.websocket_http');
 }
-function getWebsocketToken()
-{
-    return sha1(config('startadmin.websocket_token'));
+function sendWebsocketMessage($type,$to,$msg){
+    $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
+        'type' => $type,
+        'to' => $to,
+        'token' => sha1(config('startadmin.websocket_token')),
+        'msg' => json_encode($msg),
+    ]), [
+        'content-type:application/x-www-form-rawurlencode',
+    ]);
 }
 /**
  * 输出正常JSON

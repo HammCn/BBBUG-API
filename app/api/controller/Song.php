@@ -371,14 +371,7 @@ class Song extends BaseController
             'at' => $at ?? false,
             "time" => date('H:i:s'),
         ];
-        $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-            'type' => 'channel',
-            'to' => $room_id,
-            'token' => getWebsocketToken(),
-            'msg' => json_encode($msg),
-        ]), [
-            'content-type:application/x-www-form-rawurlencode',
-        ]);
+        sendWebsocketMessage('channel',$room_id,$msg);
 
         $songModel = new SongModel();
         $songExist = $songModel->where('song_mid', $song['mid'])->where('song_user', $this->user['user_id'])->find();
@@ -576,14 +569,7 @@ class Song extends BaseController
                     "type" => "system",
                     "time" => date('H:i:s'),
                 ];
-                $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-                    'type' => 'channel',
-                    'to' => $room_id,
-                    'token' => getWebsocketToken(),
-                    'msg' => json_encode($msg),
-                ]), [
-                    'content-type:application/x-www-form-rawurlencode',
-                ]);
+                sendWebsocketMessage('channel',$room_id,$msg);
             }
             cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid'], $songNextCount, 600);
 
@@ -597,14 +583,7 @@ class Song extends BaseController
             "type" => "pass",
             "time" => date('H:i:s'),
         ];
-        $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-            'type' => 'channel',
-            'to' => $room_id,
-            'token' => getWebsocketToken(),
-            'msg' => json_encode($msg),
-        ]), [
-            'content-type:application/x-www-form-rawurlencode',
-        ]);
+        sendWebsocketMessage('channel',$room_id,$msg);
 
         return jok('切歌成功');
     }
@@ -729,14 +708,7 @@ class Song extends BaseController
             "type" => "push",
             "time" => date('H:i:s'),
         ];
-        $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-            'type' => 'channel',
-            'to' => $room_id,
-            'token' => getWebsocketToken(),
-            'msg' => json_encode($msg),
-        ]), [
-            'content-type:application/x-www-form-rawurlencode',
-        ]);
+        sendWebsocketMessage('channel',$room_id,$msg);
 
         if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
             return jok('顶歌成功,今日剩余' . ($pushCount - $pushCache) . '次顶歌机会!');
@@ -790,14 +762,7 @@ class Song extends BaseController
             "type" => "removeSong",
             "time" => date('H:i:s'),
         ];
-        $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-            'type' => 'channel',
-            'to' => $room_id,
-            'token' => getWebsocketToken(),
-            'msg' => json_encode($msg),
-        ]), [
-            'content-type:application/x-www-form-rawurlencode',
-        ]);
+        sendWebsocketMessage('channel',$room_id,$msg);
         return jok('移除成功');
     }
     public function getPlayUrl()

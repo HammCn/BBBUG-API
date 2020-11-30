@@ -602,7 +602,7 @@ class User extends BaseController
             return jok('', [
                 'user_id' => -1,
                 'user_name' => 'Ghost',
-                'user_head' => 'images/nohead.jpg',
+                'user_head' => 'new/images/nohead.jpg',
                 'user_admin' => false,
                 'myRoom' => false,
             ]);
@@ -678,7 +678,7 @@ class User extends BaseController
 
         if(!empty($data['user_head'])){
             $domain = getTopHost(urldecode($data['user_head']));
-            if(strpos($domain,'bbbug.com')===FALSE){
+            if(strpos($domain,config('startadmin.api_url'))===FALSE){
                 unset($data['user_head']);
             }else{
                 $obj = getimagesize(urldecode($data['user_head']));
@@ -750,14 +750,7 @@ class User extends BaseController
             "type" => "shutdown",
             "time" => date('H:i:s'),
         ];
-        $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-            'type' => 'channel',
-            'to' => $room_id,
-            'token' => getWebsocketToken(),
-            'msg' => json_encode($msg),
-        ]), [
-            'content-type:application/x-www-form-rawurlencode',
-        ]);
+        sendWebsocketMessage('channel',$room_id,$msg);
         return jok("禁止发言成功!");
     }
     public function songdown()
@@ -797,14 +790,7 @@ class User extends BaseController
             "type" => "songdown",
             "time" => date('H:i:s'),
         ];
-        $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-            'type' => 'channel',
-            'to' => $room_id,
-            'token' => getWebsocketToken(),
-            'msg' => json_encode($msg),
-        ]), [
-            'content-type:application/x-www-form-rawurlencode',
-        ]);
+        sendWebsocketMessage('channel',$room_id,$msg);
         return jok("禁止点歌成功!");
     }
     public function removeBan()
@@ -845,14 +831,7 @@ class User extends BaseController
             "type" => "removeban",
             "time" => date('H:i:s'),
         ];
-        $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-            'type' => 'channel',
-            'to' => $room_id,
-            'token' => getWebsocketToken(),
-            'msg' => json_encode($msg),
-        ]), [
-            'content-type:application/x-www-form-rawurlencode',
-        ]);
+        sendWebsocketMessage('channel',$room_id,$msg);
         return jok("用户解禁成功!");
     }
     public function getUserInfo()
@@ -925,14 +904,6 @@ class User extends BaseController
         if (!$user) {
             $this->model->regByOpen($openid, $nickname, $head, $sex,  $appid, $extra);
             $user = $this->model->where('user_openid', $openid)->where('user_app', $app['app_id'])->find();
-        } else {
-            if($user['user_head']=="https://cdn.bbbug.com/images/nohead.jpg"){
-                $this->model->where('user_id', $user['user_id'])->update([
-                    // 'user_name' => $nickname,
-                    // 'user_sex'=>$sex,
-                    'user_head' => $head,
-                ]);
-            }
         }
         if ($user) {
             //创建一个新的授权
@@ -964,7 +935,7 @@ class User extends BaseController
                 $app_id = '1003';
                 $cliend_id = '101904044';
                 $client_key = 'b3e2cace11af99c7354409422ecbab51';
-                $redirect_uri = 'https://bbbug.com/qq';
+                $redirect_uri = config('startadmin.frontend_url').'/qq';
                 
                 $url = "https://graph.qq.com/oauth2.0/token?grant_type=authorization_code&code={$code}&client_id={$cliend_id}&redirect_uri={$redirect_uri}&client_secret=" . $client_key;
                 $result = curlHelper($url);
@@ -989,14 +960,6 @@ class User extends BaseController
                                     if (!$user) {
                                         $this->model->regByOpen($openid, $nickname, $head, $sex,  $app_id, $extra);
                                         $user = $this->model->where('user_openid', $openid)->where('user_app', $app_id)->find();
-                                    } else {
-                                        if($user['user_head']=="https://cdn.bbbug.com/images/nohead.jpg"){
-                                            $this->model->where('user_id', $user['user_id'])->update([
-                                                // 'user_name' => $nickname,
-                                                // 'user_sex'=>$sex,
-                                                'user_head' => $head,
-                                            ]);
-                                        }
                                     }
                                     if ($user) {
                                         //创建一个新的授权
@@ -1024,7 +987,7 @@ class User extends BaseController
                 $app_id = '1001';
                 $cliend_id = 'd2c3e3c6f5890837a69c65585cc14488e4075709db1e89d4cb4c64ef1712bdbb';
                 $client_key = 'eca633af5faf95fb1e5a6e605347683dddb5485b574cc3303ba0a27c2cefc9a6';
-                $redirect_uri = 'https://bbbug.com/gitee';
+                $redirect_uri = config('startadmin.frontend_url').'/gitee';
                 $url = "https://gitee.com/oauth/token?grant_type=authorization_code&code={$code}&client_id=" . $cliend_id . "&redirect_uri={$redirect_uri}&client_secret=" . $client_key;
                 $result = curlHelper($url, 'POST', [], [], "");
                 if ($result['detail']['http_code'] == 200) {
@@ -1049,14 +1012,6 @@ class User extends BaseController
                         if (!$user) {
                             $this->model->regByOpen($openid, $nickname, $head, $sex,  $app_id, $extra);
                             $user = $this->model->where('user_openid', $openid)->where('user_app', $app_id)->find();
-                        } else {
-                            if($user['user_head']=="https://cdn.bbbug.com/images/nohead.jpg"){
-                                $this->model->where('user_id', $user['user_id'])->update([
-                                    // 'user_name' => $nickname,
-                                    // 'user_sex'=>$sex,
-                                    'user_head' => $head,
-                                ]);
-                            }
                         }
                         if ($user) {
                             //创建一个新的授权
@@ -1081,7 +1036,7 @@ class User extends BaseController
                 $app_id = '1002';
                 $cliend_id = 'utwQOfbgBgBcwBolfNft';
                 $client_key = '0cAwcRfuuCcQhJUgt1ynKldwmxfymJ8n';
-                $redirect_uri = 'https://bbbug.com/oschina';
+                $redirect_uri = config('startadmin.frontend_url').'/oschina';
                 $url = "https://www.oschina.net/action/openapi/token?grant_type=authorization_code&code={$code}&client_id=" . $cliend_id . "&redirect_uri={$redirect_uri}&client_secret=" . $client_key;
                 $result = curlHelper($url, 'POST', [], [], "");
                 if ($result['detail']['http_code'] == 200) {
@@ -1100,14 +1055,6 @@ class User extends BaseController
                         if (!$user) {
                             $this->model->regByOpen($openid, $nickname, $head, $sex,  $app_id, $extra);
                             $user = $this->model->where('user_openid', $openid)->where('user_app', $app_id)->find();
-                        } else {
-                            if($user['user_head']=="https://cdn.bbbug.com/images/nohead.jpg"){
-                                $this->model->where('user_id', $user['user_id'])->update([
-                                    // 'user_name' => $nickname,
-                                    // 'user_sex'=>$sex,
-                                    'user_head' => $head,
-                                ]);
-                            }
                         }
                         if ($user) {
                             //创建一个新的授权
@@ -1150,22 +1097,14 @@ class User extends BaseController
                         $user = $user['user_info'];
                         $openid = $user['openid'];
                         $nickname = $user['nick'];
-                        $head = "https://cdn.bbbug.com/images/nohead.jpg";
+                        $head = "new/images/nohead.jpg";
                         $extra = "";
                         $sex = 0;
                         $user = $this->model->where('user_openid', $openid)->where('user_app', $app_id)->find();
                         if (!$user) {
                             $this->model->regByOpen($openid, $nickname, $head, $sex,  $app_id, $extra);
                             $user = $this->model->where('user_openid', $openid)->where('user_app', $app_id)->find();
-                        } else {
-                            if($user['user_head']=="https://cdn.bbbug.com/images/nohead.jpg"){
-                                $this->model->where('user_id', $user['user_id'])->update([
-                                    // 'user_name' => $nickname,
-                                    // 'user_sex'=>$sex,
-                                    'user_head' => $head,
-                                ]);
-                            }
-                        }
+                        } 
                         if ($user) {
                             //创建一个新的授权
                             $access = $this->accessModel->createAccess($user['user_id'], $app_id);

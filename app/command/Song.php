@@ -168,14 +168,7 @@ class Song extends BaseCommand
             "type" => "playSong",
             "time" => date('H:i:s'),
         ];
-        $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-            'type' => 'channel',
-            'to' => $room_id,
-            'token' => getWebsocketToken(),
-            'msg' => json_encode($msg),
-        ]), [
-            'content-type:application/x-www-form-rawurlencode',
-        ]);
+        sendWebsocketMessage('channel',$room_id,$msg);
     }
     protected function getPlayingSong($room_id){
         return  cache('SongNow_' . $room_id) ?? false;
@@ -245,7 +238,7 @@ class Song extends BaseCommand
                 "app_name" => "BBBUG",
                 "app_url" => "https://bbbug.com",
                 "user_admin" => true,
-                "user_head" => "https://cdn.bbbug.com/uploads/thumb/image/20201105/1bafe18a648eb26bbdf7f24b6fe53dfc.jpg",
+                "user_head" => "https://api.bbbug.com/uploads/thumb/image/20201105/1bafe18a648eb26bbdf7f24b6fe53dfc.jpg",
                 "user_id" => 1,
                 "user_name" => "机器人",
                 "user_remark" => "别@我,我只是个测试帐号",

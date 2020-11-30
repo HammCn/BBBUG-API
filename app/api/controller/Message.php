@@ -91,14 +91,7 @@ class Message extends BaseController
             "type" => "back",
             "time" => date('H:i:s'),
         ];
-        $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-            'type' => 'channel',
-            'to' => $room_id,
-            'token' => getWebsocketToken(),
-            'msg' => json_encode($msg),
-        ]), [
-            'content-type:application/x-www-form-rawurlencode',
-        ]);
+        sendWebsocketMessage('channel',$room_id,$msg);
         $this->model->where('message_id', $message_id)->delete();
         return jok('撤回消息成功!');
     }
@@ -131,14 +124,8 @@ class Message extends BaseController
             "type" => "clear",
             "time" => date('H:i:s'),
         ];
-        $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-            'type' => 'channel',
-            'to' => $room_id,
-            'token' => getWebsocketToken(),
-            'msg' => json_encode($msg),
-        ]), [
-            'content-type:application/x-www-form-rawurlencode',
-        ]);
+        
+        sendWebsocketMessage('channel',$room_id,$msg);
         $this->model->where('message_to', $room_id)->where("message_where", "channel")->delete();
         return jok('删除成功!');
     }
@@ -268,14 +255,7 @@ class Message extends BaseController
                     'type' => $type,
                     'content' => rawurldecode($content),
                 ];
-                curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-                    'type' => 'system',
-                    'to' => 'all',
-                    'token' => getWebsocketToken(),
-                    'msg' => json_encode($msg),
-                ]), [
-                    'content-type:application/x-www-form-rawurlencode',
-                ]);
+                sendWebsocketMessage('system','all',$msg);
                 return jok('');
             }
         } else {
@@ -308,7 +288,7 @@ class Message extends BaseController
                 }
                 if(strpos(rawurldecode(input('msg')), 'https://') !== false || strpos(rawurldecode(input('msg')), 'http://') !== false){
                     //绝对路径
-                    if (strpos(rawurldecode(input('msg')), 'bbbug.com') === false && 
+                    if (strpos(rawurldecode(input('msg')), config('startadmin.api_url')) === false && 
                         strpos(rawurldecode(input('msg')), 'img.doutula.com') === false) {
                             return jerr('暂不支持站外图');
                         }
@@ -320,7 +300,7 @@ class Message extends BaseController
         $userModel = new UserModel();
         switch ($type) {
             case 'text':
-                if (strpos(rawurldecode(input('msg')), 'bbbug.com') !== false) {
+                if (strpos(rawurldecode(input('msg')), config('startadmin.frontend_url')) !== false) {
                     if (preg_match('/com\/(\d+)/', rawurldecode(input('msg')), $match)) {
                         $jump_id = $match[1];
                         $jump_room = $roomModel->where('room_id', $jump_id)->find();
@@ -354,14 +334,7 @@ class Message extends BaseController
                                     'message_time' => time(),
                                     'user' => getUserData($this->user),
                                 ];
-                                curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-                                    'type' => $where,
-                                    'to' => $room_id,
-                                    'token' => getWebsocketToken(),
-                                    'msg' => json_encode($msg),
-                                ]), [
-                                    'content-type:application/x-www-form-rawurlencode',
-                                ]);
+                                sendWebsocketMessage($where,$room_id,$msg);
                                 $this->model->where('message_id', $message_id)->update([
                                     'message_type' => 'text',
                                     'message_content' => json_encode($msg),
@@ -406,14 +379,7 @@ class Message extends BaseController
                                     'message_time' => time(),
                                     'user' => getUserData($this->user),
                                 ];
-                                curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-                                    'type' => $where,
-                                    'to' => $room_id,
-                                    'token' => getWebsocketToken(),
-                                    'msg' => json_encode($msg),
-                                ]), [
-                                    'content-type:application/x-www-form-rawurlencode',
-                                ]);
+                                sendWebsocketMessage($where,$room_id,$msg);
                                 $this->model->where('message_id', $message_id)->update([
                                     'message_type' => 'link',
                                     'message_content' => json_encode($msg),
@@ -484,14 +450,7 @@ class Message extends BaseController
                     'resource' => rawurlencode(rawurlencode($msg_decode)) ?? '',
                     'user' => getUserData($this->user),
                 ];
-                curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-                    'type' => $where,
-                    'to' => $room_id,
-                    'token' => getWebsocketToken(),
-                    'msg' => json_encode($msg),
-                ]), [
-                    'content-type:application/x-www-form-rawurlencode',
-                ]);
+                sendWebsocketMessage($where,$room_id,$msg);
                 $this->model->where('message_id', $message_id)->update([
                     'message_type' => 'text',
                     'message_content' => json_encode($msg),
@@ -530,14 +489,7 @@ class Message extends BaseController
                     'resource' => rawurlencode(rawurlencode($msg_decode)) ?? '',
                     'user' => getUserData($this->user),
                 ];
-                curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-                    'type' => $where,
-                    'to' => $room_id,
-                    'token' => getWebsocketToken(),
-                    'msg' => json_encode($msg),
-                ]), [
-                    'content-type:application/x-www-form-rawurlencode',
-                ]);
+                sendWebsocketMessage($where,$room_id,$msg);
                 $this->model->where('message_id', $message_id)->update([
                     'message_type' => 'img',
                     'message_content' => json_encode($msg),
@@ -605,14 +557,7 @@ class Message extends BaseController
             'at' => $at,
             "time" => date('H:i:s'),
         ];
-        $ret = curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-            'type' => 'channel',
-            'to' => $room_id,
-            'token' => getWebsocketToken(),
-            'msg' => json_encode($msg),
-        ]), [
-            'content-type:application/x-www-form-rawurlencode',
-        ]);
+        sendWebsocketMessage('channel',$room_id,$msg);
         return jok('操作成功');
     }
 }

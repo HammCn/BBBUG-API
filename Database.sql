@@ -612,7 +612,7 @@ CREATE TABLE `sa_user` (
 --
 
 INSERT INTO `sa_user` (`user_id`, `user_icon`, `user_sex`, `user_account`, `user_password`, `user_salt`, `user_name`, `user_head`, `user_remark`, `user_group`, `user_ipreg`, `user_openid`, `user_extra`, `user_app`, `user_device`, `user_touchtip`, `user_vip`, `user_status`, `user_createtime`, `user_updatetime`) VALUES
-(1, 1, 0, 'admin@bbbug.com', '123456', 'abcd', '%E6%9C%BA%E5%99%A8%E4%BA%BA', 'https://cdn.bbbug.com/uploads/thumb/image/20201016/2a4a54f2a696179a963bbf1cb4426cb7.jpg', '别@我,我只是个测试号', 1, '127.0.0.1', '', '', 1, 'iPhone', '%EF%BC%8C%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%B7%AE%E7%82%B9%E7%88%BD%E7%BF%BB%E5%A4%A9%E3%80%82', '', 0, 0, 1605004436);
+(1, 1, 0, 'admin@bbbug.com', '123456', 'abcd', '%E6%9C%BA%E5%99%A8%E4%BA%BA', 'https://api.bbbug.com/uploads/thumb/image/20201016/2a4a54f2a696179a963bbf1cb4426cb7.jpg', '别@我,我只是个测试号', 1, '127.0.0.1', '', '', 1, 'iPhone', '%EF%BC%8C%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%B7%AE%E7%82%B9%E7%88%BD%E7%BF%BB%E5%A4%A9%E3%80%82', '', 0, 0, 1605004436);
 
 --
 -- Indexes for dumped tables

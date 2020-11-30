@@ -44,34 +44,6 @@ class Room extends BaseController
         ];
         $this->model = new RoomModel();
     }
-    public function getRoomByDomain()
-    {
-        if (!input('room_domain')) {
-            return jerr('room_domain缺失');
-        }
-        $room_domain = input('room_domain');
-        if($room_domain=='bbbug.com'){
-            $room_domain = 'www';
-        }
-        $room = $this->model->where('room_domain', $room_domain)->where('room_domainstatus', 1)->find();
-        if ($room) {
-            unset($room['room_password']);
-            return jok('success', $room);
-        } else {
-            $cname = dns_get_record($room_domain, DNS_CNAME);
-            if (count($cname) > 0) {
-                $subDomain = str_replace('.bbbug.com', '', $cname[0]['target']);
-                if ($subDomain != $cname[0]['target']) {
-                    $room = $this->model->where('room_domain', $subDomain)->where('room_domainstatus', 1)->find();
-                    if ($room) {
-                        unset($room['room_password']);
-                        return jok('success', $room);
-                    }
-                }
-            } 
-            return jerr('没有查询到域名绑定的房间，即将进入大厅');
-        }
-    }
     public function saveMyRoom()
     {
         if (input('access_token') == getTempToken()) {
@@ -160,14 +132,7 @@ class Room extends BaseController
             'user' => getUserData($this->user),
         ];
 
-        curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-            'type' => 'channel',
-            'to' => $this->pk_value,
-            'token' => getWebsocketToken(),
-            'msg' => json_encode($msg),
-        ]), [
-            'content-type:application/x-www-form-rawurlencode',
-        ]);
+        sendWebsocketMessage('channel',$this->pk_value,$msg);
 
         return jok('房间信息修改成功');
     }
@@ -225,14 +190,7 @@ class Room extends BaseController
                         ];
                     }
 
-                    curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-                        'type' => 'channel',
-                        'to' => $channel,
-                        'token' => getWebsocketToken(),
-                        'msg' => json_encode($msg),
-                    ]), [
-                        'content-type:application/x-www-form-rawurlencode',
-                    ]);
+                    sendWebsocketMessage('channel',$channel,$msg);
                     cache('channel_' . $channel . '_user_' . $user_id, time(), 10);
                     cache('channel_'.$channel.'_ip_'.getClientIp(),time(),10);
                 }else{
@@ -241,15 +199,9 @@ class Room extends BaseController
                     //     'content' => "IP " . getClientIp() . " 正在刷新页面",
                     // ];
 
-                    // curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-                    //     'type' => 'channel',
-                    //     'to' => $channel,
-                    //     'token' => getWebsocketToken(),
-                    //     'msg' => json_encode($msg),
-                    // ]), [
-                    //     'content-type:application/x-www-form-rawurlencode',
-                    // ]);
+                    // sendWebsocketMessage('channel',$channel,$msg);
                     // return jerr('刷新太过频繁,请稍后再试!');
+
                 }
             }
 
@@ -289,14 +241,7 @@ class Room extends BaseController
             ];
 
             if ($this->user['user_id'] > 1) {
-                curlHelper(getWebsocketApiUrl(), "POST", http_build_query([
-                    'type' => 'channel',
-                    'to' => $channel,
-                    'token' => getWebsocketToken(),
-                    'msg' => json_encode($msg),
-                ]), [
-                    'content-type:application/x-www-form-rawurlencode',
-                ]);
+                sendWebsocketMessage('channel',$channel,$msg);
             }
             cache('channel_' . $channel . '_user_' . $this->user['user_id'], time(), 10);
         }
