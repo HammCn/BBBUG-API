@@ -935,8 +935,7 @@ class User extends BaseController
                 $app_id = '1003';
                 $cliend_id = '101904044';
                 $client_key = 'b3e2cace11af99c7354409422ecbab51';
-                $redirect_uri = config('startadmin.frontend_url').'/qq';
-                
+                $redirect_uri = config('startadmin.frontend_url').'qq';
                 $url = "https://graph.qq.com/oauth2.0/token?grant_type=authorization_code&code={$code}&client_id={$cliend_id}&redirect_uri={$redirect_uri}&client_secret=" . $client_key;
                 $result = curlHelper($url);
                 if ($result['detail']['http_code'] == 200) {
@@ -981,13 +980,13 @@ class User extends BaseController
                         }
                     }
                 }
-                return jerr('使用码云账号登录失败,请重试');
+                return jerr('使用QQ账号登录失败,请重试');
             break;
             case 'gitee':
                 $app_id = '1001';
                 $cliend_id = 'd2c3e3c6f5890837a69c65585cc14488e4075709db1e89d4cb4c64ef1712bdbb';
                 $client_key = 'eca633af5faf95fb1e5a6e605347683dddb5485b574cc3303ba0a27c2cefc9a6';
-                $redirect_uri = config('startadmin.frontend_url').'/gitee';
+                $redirect_uri = config('startadmin.frontend_url').'gitee';
                 $url = "https://gitee.com/oauth/token?grant_type=authorization_code&code={$code}&client_id=" . $cliend_id . "&redirect_uri={$redirect_uri}&client_secret=" . $client_key;
                 $result = curlHelper($url, 'POST', [], [], "");
                 if ($result['detail']['http_code'] == 200) {
@@ -1036,7 +1035,7 @@ class User extends BaseController
                 $app_id = '1002';
                 $cliend_id = 'utwQOfbgBgBcwBolfNft';
                 $client_key = '0cAwcRfuuCcQhJUgt1ynKldwmxfymJ8n';
-                $redirect_uri = config('startadmin.frontend_url').'/oschina';
+                $redirect_uri = config('startadmin.frontend_url').'oschina';
                 $url = "https://www.oschina.net/action/openapi/token?grant_type=authorization_code&code={$code}&client_id=" . $cliend_id . "&redirect_uri={$redirect_uri}&client_secret=" . $client_key;
                 $result = curlHelper($url, 'POST', [], [], "");
                 if ($result['detail']['http_code'] == 200) {
