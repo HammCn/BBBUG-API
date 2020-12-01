@@ -537,7 +537,7 @@ CREATE TABLE `sa_room` (
   `room_name` varchar(255) NOT NULL DEFAULT '' COMMENT '房间名称',
   `room_type` int(11) NOT NULL DEFAULT '1' COMMENT '房间类型',
   `room_public` int(11) NOT NULL DEFAULT '0',
-  `room_password` varchar(8) NOT NULL DEFAULT '' COMMENT '房间密码',
+  `room_password` varchar(255) NOT NULL DEFAULT '' COMMENT '房间密码',
   `room_notice` varchar(255) NOT NULL DEFAULT '' COMMENT '进入房间提醒',
   `room_addsong` int(11) NOT NULL DEFAULT '0',
   `room_sendmsg` int(11) NOT NULL DEFAULT '0',
