@@ -739,7 +739,7 @@ class User extends BaseController
         if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
             return jerr("你无权操作");
         }
-        if(getIsAdmin($user) && $this->user['user_id'] !=1){
+        if(getIsAdmin($user) && $this->user['user_id'] !=$room['room_user'] && $this->user['user_id']!=1){
             return jerr("你无权操作管理员");
         }
 
@@ -779,7 +779,7 @@ class User extends BaseController
         if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
             return jerr("你无权操作");
         }
-        if(getIsAdmin($user) && $this->user['user_id'] !=1){
+        if(getIsAdmin($user) && $this->user['user_id'] !=$room['room_user'] && $this->user['user_id']!=1){
             return jerr("你无权操作管理员");
         }
 
