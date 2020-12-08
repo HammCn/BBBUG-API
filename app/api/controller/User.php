@@ -469,6 +469,8 @@ class User extends BaseController
         }
         $list = array_merge($list,$ret);
 
+        
+
         return jok('success', $list);
     }
     protected function isBaned($type, $room_id, $user_id)
