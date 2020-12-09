@@ -174,10 +174,10 @@ class User extends BaseModel
             "access_status" => 0,
         ])->find();
         if ($access) {
-            if (time() > $access['access_updatetime'] + 86400) {
+            if (time() > $access['access_updatetime'] + 86400 * 7) {
                 return false;
             }
-            if ($access['access_updatetime'] - $access['access_createtime'] > 86400 * 7) {
+            if ($access['access_updatetime'] - $access['access_createtime'] > 86400 * 31) {
                 return false;
             }
             $Access->where([
