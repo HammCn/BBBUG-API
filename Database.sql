@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: 2020-11-30 23:15:28
+-- Generation Time: 2020-12-11 16:12:59
 -- 服务器版本： 5.6.48-log
 -- PHP Version: 7.1.32
 
@@ -516,7 +516,8 @@ INSERT INTO `sa_node` (`node_id`, `node_title`, `node_desc`, `node_module`, `nod
 (1223, '删除房间聊天记录接口', '', 'api', 'message', 'clear', 0, 0, 1, '', NULL, 1, 0, 0, 1600668831, 1600668831),
 (1224, '摸一摸接口', '', 'api', 'message', 'touch', 0, 0, 1, '', NULL, 1, 0, 0, 1600668831, 1600668831),
 (1225, '搜藏歌曲到我的歌单', '', 'api', 'song', 'addmysong', 0, 0, 1, '', NULL, 1, 0, 0, 1600668831, 1600668831),
-(1227, '域名查询房间接口', '', 'api', 'room', 'getRoomByDomain', 0, 0, 1, '', NULL, 1, 1, 0, 0, 0);
+(1227, '域名查询房间接口', '', 'api', 'room', 'getRoomByDomain', 0, 0, 1, '', NULL, 1, 1, 0, 0, 0),
+(1228, '设置/取消嘉宾身份接口', '', 'api', 'user', 'guestctrl', 0, 0, 1, '', NULL, 1, 1, 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -777,7 +778,7 @@ ALTER TABLE `sa_message`
 -- 使用表AUTO_INCREMENT `sa_node`
 --
 ALTER TABLE `sa_node`
-  MODIFY `node_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '功能ID', AUTO_INCREMENT=1228;
+  MODIFY `node_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '功能ID', AUTO_INCREMENT=1229;
 --
 -- 使用表AUTO_INCREMENT `sa_room`
 --
