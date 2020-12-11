@@ -441,8 +441,9 @@ class User extends BaseController
         $ret = $ret ? $ret->toArray() : [];
         for ($i = 0; $i < count($ret); $i++) {
             $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
-            $ret[$i]['user_shutdown'] = $this->isBaned('shutdown', $room_id, $ret[$i]['user_id']);
-            $ret[$i]['user_songdown'] = $this->isBaned('songdown', $room_id, $ret[$i]['user_id']);
+            $ret[$i]['user_shutdown'] = $this->getCacheStatus('shutdown', $room_id, $ret[$i]['user_id']);
+            $ret[$i]['user_songdown'] = $this->getCacheStatus('songdown', $room_id, $ret[$i]['user_id']);
+            $ret[$i]['user_guest'] = $this->getCacheStatus('guestctrl', $room_id, $ret[$i]['user_id']);
         }
         $list = array_merge($list,$ret);
 
@@ -452,8 +453,9 @@ class User extends BaseController
         $ret = $ret ? $ret->toArray() : [];
         for ($i = 0; $i < count($ret); $i++) {
             $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
-            $ret[$i]['user_shutdown'] = $this->isBaned('shutdown', $room_id, $ret[$i]['user_id']);
-            $ret[$i]['user_songdown'] = $this->isBaned('songdown', $room_id, $ret[$i]['user_id']);
+            $ret[$i]['user_shutdown'] = $this->getCacheStatus('shutdown', $room_id, $ret[$i]['user_id']);
+            $ret[$i]['user_songdown'] = $this->getCacheStatus('songdown', $room_id, $ret[$i]['user_id']);
+            $ret[$i]['user_guest'] = $this->getCacheStatus('guestctrl', $room_id, $ret[$i]['user_id']);
         }
         $list = array_merge($list,$ret);
 
@@ -464,8 +466,9 @@ class User extends BaseController
         $ret = $ret ? $ret->toArray() : [];
         for ($i = 0; $i < count($ret); $i++) {
             $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
-            $ret[$i]['user_shutdown'] = $this->isBaned('shutdown', $room_id, $ret[$i]['user_id']);
-            $ret[$i]['user_songdown'] = $this->isBaned('songdown', $room_id, $ret[$i]['user_id']);
+            $ret[$i]['user_shutdown'] = $this->getCacheStatus('shutdown', $room_id, $ret[$i]['user_id']);
+            $ret[$i]['user_songdown'] = $this->getCacheStatus('songdown', $room_id, $ret[$i]['user_id']);
+            $ret[$i]['user_guest'] = $this->getCacheStatus('guestctrl', $room_id, $ret[$i]['user_id']);
         }
         $list = array_merge($list,$ret);
 
@@ -473,7 +476,7 @@ class User extends BaseController
 
         return jok('success', $list);
     }
-    protected function isBaned($type, $room_id, $user_id)
+    protected function getCacheStatus($type, $room_id, $user_id)
     {
         switch ($type) {
             case 'shutdown':
@@ -481,6 +484,9 @@ class User extends BaseController
                 break;
             case 'songdown':
                 return cache('songdown_room_' . $room_id . '_user_' . $user_id) ? true : false;
+                break;
+            case 'guestctrl':
+                return cache('guest_room_' . $room_id . '_user_' . $user_id) ? true : false;
                 break;
             default:
         }
@@ -714,6 +720,61 @@ class User extends BaseController
         //         'user_name' => rawurlencode($item['user_name']),
         //     ]);
         // }
+    }
+    public function guestctrl()
+    {
+        $error = $this->access();
+        if ($error) {
+            return $error;
+        }
+
+        if (!input('user_id') || !input('room_id')) {
+            return jerr("参数错误,缺少user_id/room_id");
+        }
+        $user_id = input('user_id');
+        $room_id = input('room_id');
+
+        $user = $this->model->where('user_id', $user_id)->find();
+        if (!$user) {
+            return jerr("用户信息查询失败");
+        }
+
+        $roomModel = new RoomModel();
+        $room = $roomModel->where('room_id', $room_id)->find();
+        if (!$room) {
+            return jerr("房间信息查询失败");
+        }
+        if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
+            return jerr("你无权操作");
+        }
+        if(getIsAdmin($user)){
+            return jerr("你无权操作管理员");
+        }
+        
+        $isSet = cache('guest_room_' . $room_id . '_user_' . $user_id) ?? false;
+        if($isSet){
+            cache('guest_room_' . $room_id . '_user_' . $user_id, null);
+            
+            $msg = [
+                'user' => getUserData($this->user),
+                'guest' => getUserData($user),
+                "type" => "guest_remove",
+                "time" => date('H:i:s'),
+            ];
+            sendWebsocketMessage('channel',$room_id,$msg);
+            return jok("取消嘉宾身份成功!");
+        }else{
+            cache('guest_room_' . $room_id . '_user_' . $user_id, time());
+            $msg = [
+                'user' => getUserData($this->user),
+                'guest' => getUserData($user),
+                "type" => "guest_add",
+                "time" => date('H:i:s'),
+            ];
+            sendWebsocketMessage('channel',$room_id,$msg);
+            return jok("设置嘉宾成功!");
+        }
+        
     }
     public function shutdown()
     {

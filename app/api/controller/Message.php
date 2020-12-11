@@ -223,6 +223,16 @@ class Message extends BaseController
         if (!getIsAdmin($this->user) && $this->user['user_id'] != $room['room_user'] && $room['room_sendmsg'] == 1) {
             return jerr('全员禁言中,你暂时无法发言');
         }
+        
+        
+        if (!getIsAdmin($this->user) && $this->user['user_id'] != $room['room_user'] && $room['room_sendmsg'] == 2) {
+            $isGuest = cache('guest_room_' . $room['room_id'] . '_user_' . $this->user['user_id']) ?? false;
+            if(!$isGuest){
+                return jerr('抱歉,当前房间仅允许嘉宾发言!');
+            }
+            
+        }
+        
         $type = input('type');
 
         switch (input('where')) {
