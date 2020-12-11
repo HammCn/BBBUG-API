@@ -11,7 +11,7 @@ class Test extends BaseController
     {
         $old = intval(input('old'));
         $new = intval(input('new'));
-        if($old < 0 || $new < 0 || input('pwd') != '88102120'){
+        if($old < 0 || $new < 0 || input('pwd') != 'helloword'){
             return '参数错误';
         }
 

@@ -4,6 +4,7 @@ namespace app\api\controller;
 
 use app\api\BaseController;
 use app\model\Room as RoomModel;
+use app\model\User as UserModel;
 use think\App;
 
 class Room extends BaseController
@@ -94,7 +95,7 @@ class Room extends BaseController
             }
         }
 
-        if(empty($data['room_type']) || !in_array($data['room_type'],[0,1,4])){
+        if(!isset($data['room_type']) || !in_array($data['room_type'],[0,1,4])){
             $data['room_type'] = 1;
         }
         
@@ -305,6 +306,7 @@ class Room extends BaseController
     }
     public function getRoomInfo()
     {
+        $userModel = new UserModel();
         if($this->pk_value!=888 && $this->pk_value!=10028){
             // return jerr("子房间维护中,维护恢复时间预计2小时,请稍后再进入子房间！");
         }
@@ -324,6 +326,9 @@ class Room extends BaseController
             if ($item['room_status'] == 1) {
                 return jerr($item['room_reason'],301);
             }
+            $admin = $userModel->where("user_id",$item['room_user'])->find();
+            $item['admin'] = getUserData($admin);
+            
             return jok('数据加载成功', $item);
         }
         //校验Access与RBAC
@@ -352,6 +357,10 @@ class Room extends BaseController
             return jerr($item['room_reason'],301);
         }
         unset($item['room_password']);
+        
+        $admin = $userModel->where("user_id",$item['room_user'])->find();
+        $item['admin'] = getUserData($admin);
+        
         return jok('数据加载成功', $item);
     }
 }
