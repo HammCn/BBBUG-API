@@ -251,7 +251,7 @@ class Message extends BaseController
                 return jerr("未知的消息范围");
         }
 
-        if (!input('at') && !input("msg")) {
+        if (!input('at') && !input("?msg")) {
             return jerr("消息内容参数缺失");
         }
         
