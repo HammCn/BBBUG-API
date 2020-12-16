@@ -91,7 +91,7 @@ class Song extends BaseController
             }
         }
         if (count($kuwo_list) > 0) {
-            cache("music_search_list_keyword_" . sha1($keyword), $kuwo_list, 600);
+            cache("music_search_list_keyword_" . sha1($keyword), $kuwo_list, 3600);
             for ($i = 0; $i < count($kuwo_list); $i++) {
                 $song = $kuwo_list[$i];
                 $temp = [
@@ -102,7 +102,7 @@ class Song extends BaseController
                     'singer' => $song['artist'],
                 ];
                 array_push($list, $temp);
-                cache('song_detail_' . $song['rid'], $temp, 600);
+                cache('song_detail_' . $song['rid'], $temp, 3600);
             }
             return jok('', $list);
         }else{
@@ -560,7 +560,7 @@ class Song extends BaseController
             if ($isMeNexted == $now['song']['mid']) {
                 return jok('已有' . $songNextCount . '人不想听,在线' . $room['room_votepercent'] . '%(' . $limitCount . '人)不想听即可自动切歌');
             }
-            cache('song_next_user_' . $this->user['user_id'], $now['song']['mid'], 600);
+            cache('song_next_user_' . $this->user['user_id'], $now['song']['mid'], 3600);
             $songNextCount++;
             if ($songNextCount >= $limitCount) {
                 cache('SongNow_' . $room_id, null);
@@ -571,7 +571,7 @@ class Song extends BaseController
                 ];
                 sendWebsocketMessage('channel',$room_id,$msg);
             }
-            cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid'], $songNextCount, 600);
+            cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid'], $songNextCount, 3600);
 
             return jok('你的不想听态度表态成功!');
         }

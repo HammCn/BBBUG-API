@@ -126,7 +126,7 @@ class Song extends BaseCommand
                         'url'=>$arr['url']
                     ]);
                     cache('song_waiting_download_list',$tempList);
-                    cache('song_play_temp_url_'.$preMid,$arr['url'],600);
+                    cache('song_play_temp_url_'.$preMid,$arr['url'],3600);
                     print_r($preRoomId." 歌曲预缓存成功 ".$preMid.PHP_EOL);
                 }
             }
@@ -158,8 +158,8 @@ class Song extends BaseCommand
         return $song;
     }
     protected function playSong($room_id,$song){
-        cache('SongNow_' . $room_id, $song, 600);
-        cache("song_detail_".$song['song']['mid'],$song['song'],600);
+        cache('SongNow_' . $room_id, $song, 3600);
+        cache("song_detail_".$song['song']['mid'],$song['song'],3600);
         $msg = [
             'at' => $song['at'] ?? false,
             'user' => $song['user'],
