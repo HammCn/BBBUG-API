@@ -39,11 +39,12 @@ class Song extends BaseCommand
                             $this->preLoadMusicUrl($room);
                             continue;
                         }
+                        // 歌曲已超时
                         if ($room['room_type'] == 4 && $room['room_playone']) {
                             //是单曲循环的电台房间 重置播放时间
                             $song['since'] = time();
-                            $this->playSong($room['room_id'],$song);
-                            return;
+                            $this->playSong($room['room_id'],$song,true); //给true 保留当前房间歌曲
+                            continue;
                         }
                     }
                     //其他房间
@@ -157,8 +158,12 @@ class Song extends BaseCommand
         ];
         return $song;
     }
-    protected function playSong($room_id,$song){
-        cache('SongNow_' . $room_id, $song, 3600);
+    protected function playSong($room_id,$song,$last=false){
+        if($last){
+            cache('SongNow_' . $room_id, $song);
+        }else{
+            cache('SongNow_' . $room_id, $song, 3600);
+        }
         cache("song_detail_".$song['song']['mid'],$song['song'],3600);
         $msg = [
             'at' => $song['at'] ?? false,
