@@ -473,10 +473,10 @@ class Message extends BaseController
                 return jok('');
                 break;
             case 'img':
-                if (cache('last_' . $this->user['user_id'])) {
+                if (cache('last_' . $this->user['user_id']) && !getIsAdmin($this->user) && $this->user['user_id']!=$room['room_user']) {
                     return jerr('发送图片太频繁啦~');
                 }
-                if (cache('message_' . $this->user['user_id']) == $msg_decode) {
+                if (cache('message_' . $this->user['user_id']) == $msg_decode && !getIsAdmin($this->user) && $this->user['user_id']!=$room['room_user']) {
                     return jerr('请不要连续发送相同的图片');
                 }
                 $message_id = $this->model->insertGetId([
@@ -496,9 +496,10 @@ class Message extends BaseController
                     'at' => $at,
                     'message_id' => $message_id,
                     'message_time' => time(),
-                    'resource' => rawurlencode(rawurlencode($msg_decode)) ?? '',
+                    'resource' => rawurlencode(input('resource')) ?? '',
                     'user' => getUserData($this->user),
                 ];
+
                 sendWebsocketMessage($where,$room_id,$msg);
                 $this->model->where('message_id', $message_id)->update([
                     'message_type' => 'img',

@@ -308,7 +308,7 @@ class Room extends BaseController
     {
         $userModel = new UserModel();
         if($this->pk_value!=888 && $this->pk_value!=10028){
-            // return jerr("子房间维护中,维护恢复时间预计2小时,请稍后再进入子房间！");
+            // return jerr("子房间维护中,维护恢复时间预计10分钟,请稍后再进入子房间！");
         }
         if (input('access_token') == getTempToken()) {
             if (!$this->pk_value) {
