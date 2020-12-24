@@ -174,36 +174,31 @@ class Room extends BaseController
     }
     public function getWebsocketUrl()
     {
-        if (input('access_token') == getTempToken()) {$channel = input('channel');
-            $user_id = 0 - rand(10000000, 99999999);
+        if (!input('channel')) {
+            return jerr("请选择一个房间呀");
+        }
+        $channel = input('channel');
+
+        $item = $this->model->where('room_id', $channel)->find();
+        if (!$item) {
+            return jerr('没有查询到房间信息');
+        }
+        if (input('access_token') == getTempToken()) {
+            if($item['room_public'] == 1){
+                return jerr('禁止游客进入密码房间');
+            }
+            $ip = getClientIp();
+            $user_id = preg_replace("/[^\.]{1,3}$/","*",$ip).$_SERVER['REMOTE_PORT'];
+            // $user_id = $ip.":".$_SERVER['REMOTE_PORT'];
             $lastSend = cache('channel_' . $channel . '_user_' . $user_id) ?? false;
             if (!$lastSend) {
-                $ipLogin = cache('channel_'.$channel.'_ip_'.getClientIp()) ?? false;
-                if($ipLogin){
-                    $msg = [
-                        'type' => 'join',
-                        'content' => "临时用户 " . $user_id . " 进入房间",
-                    ];
-                    if(input("plat") == "vscode"){
-                        $msg = [
-                            'type' => 'system',
-                            'content' => "vscode插件临时用户 " . $user_id . " 进入房间",
-                        ];
-                    }
+                $msg = [
+                    'type' => 'join',
+                    'content' => "临时用户 " . $user_id . " 进入房间",
+                ];
 
-                    sendWebsocketMessage('channel',$channel,$msg);
-                    cache('channel_' . $channel . '_user_' . $user_id, time(), 10);
-                    cache('channel_'.$channel.'_ip_'.getClientIp(),time(),10);
-                }else{
-                    // $msg = [
-                    //     'type' => 'system',
-                    //     'content' => "IP " . getClientIp() . " 正在刷新页面",
-                    // ];
-
-                    // sendWebsocketMessage('channel',$channel,$msg);
-                    // return jerr('刷新太过频繁,请稍后再试!');
-
-                }
+                sendWebsocketMessage('channel',$channel,$msg);
+                cache('channel_' . $channel . '_user_' . $user_id, time(), 10);
             }
 
             return jok('success', [
@@ -215,15 +210,6 @@ class Room extends BaseController
         $error = $this->access();
         if ($error) {
             return $error;
-        }
-        if (!input('channel')) {
-            return jerr("请选择一个房间呀");
-        }
-        $channel = input('channel');
-
-        $item = $this->model->where('room_id', $channel)->find();
-        if (!$item) {
-            return jerr('没有查询到房间信息');
         }
 
         if ($item['room_public'] == 1 && $this->user['user_id'] != $item['room_user'] && !getIsAdmin($this->user)) {
