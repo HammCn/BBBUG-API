@@ -1,4 +1,19 @@
 <?php
+function getTencentAiSign($params, $appkey)
+{
+    ksort($params);
+    $str = '';
+    foreach ($params as $key => $value)
+    {
+        if ($value !== '')
+        {
+            $str .= $key . '=' . urlencode($value) . '&';
+        }
+    }
+    $str .= 'app_key=' . $appkey;
+    $sign = strtoupper(md5($str));
+    return $sign;
+}
 function getTempToken()
 {
     return config('startadmin.api_guest_token');
