@@ -437,7 +437,7 @@ class User extends BaseController
 
         $ret = $this->model->view('user', 'user_id,user_name,user_head,user_group,user_remark,user_device,user_sex,user_extra,user_icon,user_vip')->view('app', 'app_id,app_name,app_url', 'user.user_app = app.app_id')->where([
             ['user_id', 'in', $arr ?? []],
-        ])->where('user_group',1)->order($order)->select();
+        ])->where('user_group',1)->whereOr("user_id",1)->order($order)->select();
         $ret = $ret ? $ret->toArray() : [];
         for ($i = 0; $i < count($ret); $i++) {
             $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
@@ -619,6 +619,21 @@ class User extends BaseController
         if ($error) {
             return $error;
         }
+
+        $isVisitToday = cache('visit_user_'.$this->user['user_id']."_".date('Y_m_d')) ?? false;
+        if(!$isVisitToday && time() > strtotime('2020-12-25 23:59:59')){
+            cache('visit_user_'.$this->user['user_id']."_".date('Y_m_d'),1,86400);
+            $cacheVisit = cache("visit_count") ?? 0;
+            if($cacheVisit < 10){
+                //前10访问
+                $this->model->where('user_id',$this->user['user_id'])->update([
+                    'user_icon'=>1
+                ]);;
+            }
+            $cacheVisit ++;
+            cache("visit_count",$cacheVisit,86400*3);
+        }
+
         $myInfo = $this->user;
         $roomModel = new RoomModel();
         $myRoom = $roomModel->where('room_user', $this->user['user_id'])->find();
@@ -799,11 +814,13 @@ class User extends BaseController
         if (!$room) {
             return jerr("房间信息查询失败");
         }
-        if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
-            return jerr("你无权操作");
-        }
-        if(getIsAdmin($user) && $this->user['user_id'] !=$room['room_user'] && $this->user['user_id']!=1){
-            return jerr("你无权操作管理员");
+        if($user_id>1){
+            if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
+                return jerr("你无权操作");
+            }
+            if(getIsAdmin($user) && $this->user['user_id'] !=$room['room_user'] && $this->user['user_id']!=1){
+                return jerr("你无权操作管理员");
+            }
         }
 
         cache('shutdown_room_' . $room_id . '_user_' . $user_id, time());
@@ -879,11 +896,14 @@ class User extends BaseController
         if (!$room) {
             return jerr("房间信息查询失败");
         }
-        if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
-            return jerr("你无权操作");
-        }
-        if(getIsAdmin($user) && $this->user['user_id'] !=$room['room_user'] && $this->user['user_id']!=1){
-            return jerr("你无权操作管理员");
+        
+        if($user_id>1){
+            if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
+                return jerr("你无权操作");
+            }
+            if(getIsAdmin($user) && $this->user['user_id'] !=$room['room_user'] && $this->user['user_id']!=1){
+                return jerr("你无权操作管理员");
+            }
         }
 
         cache('shutdown_room_' . $room_id . '_user_' . $user_id, null);

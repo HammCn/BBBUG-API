@@ -5,6 +5,7 @@ namespace app\api\controller;
 use app\api\BaseController;
 use app\model\Keywords as KeywordsModel;
 use app\model\Message as MessageModel;
+use app\model\Song as SongModel;
 use app\model\Room as RoomModel;
 use app\model\User as UserModel;
 use think\App;
@@ -62,8 +63,11 @@ class Message extends BaseController
         if ($error) {
             return $error;
         }
-        if (!input('message_id') || !input('room_id')) {
-            return jerr('缺少message_id/room_id');
+        if (!input('room_id')) {
+            return jerr('缺少room_id');
+        }
+        if (!input('message_id')) {
+            return jerr('你无权撤回这条消息');
         }
         $message_id = input('message_id');
         $room_id = input('room_id');
@@ -131,17 +135,29 @@ class Message extends BaseController
     }
     public function getMessageList()
     {
+        $roomModel = new RoomModel();
         $room_id = intval(input('room_id'));
         if(!$room_id){
             return jerr("请传入room_id",400);
         }
+        
+        $room = $roomModel->where('room_id', $room_id)->find();
+
+        if (!$room) {
+            return jerr("房间信息查询失败");
+        }
+
         $message_where = input('message_where');
         $page = 1;
         if (input('page')) {
             $page = intval(input('page'));
         }
         if (input('access_token') == getTempToken()) {
-            // return jok('临时用户无法查看历史', []);
+            
+            if ($room['room_public'] == 1) {
+                return jok("加密房间",[]);
+            }
+
             $cache = cache("room_message_list_" . $room_id) ?? false;
             if ($cache) {
                 return jok('from cache', $cache);
@@ -167,6 +183,14 @@ class Message extends BaseController
         if ($error) {
             return $error;
         }
+
+        
+        $savedPassword = cache('password_room_' . $room['room_id'] . "_password_" . $this->user['user_id']) ?? '';
+      
+        if ($room['room_public'] == 1 && $this->user['user_id'] != $room['room_user'] && !getIsAdmin($this->user) && $savedPassword != $room['room_password']) {
+            return jok("加密房间",[]);
+        }
+
         $cache = cache("room_message_user_" . $this->user['user_id'] . "_list_" . $room_id . "_page" . $page)??false;
         if($cache){
             return jok("from cache",$cache);
@@ -220,6 +244,14 @@ class Message extends BaseController
         if (!$room) {
             return jerr("房间信息查询失败");
         }
+
+        $savedPassword = cache('password_room_' . $room['room_id'] . "_password_" . $this->user['user_id']) ?? '';
+      
+        if ($room['room_public'] == 1 && $this->user['user_id'] != $room['room_user'] && !getIsAdmin($this->user) && $savedPassword != $room['room_password']) {
+            return jerr("密码错误，发送失败 ");
+        }
+
+
         if (!getIsAdmin($this->user) && $this->user['user_id'] != $room['room_user'] && $room['room_sendmsg'] == 1) {
             return jerr('全员禁言中,你暂时无法发言');
         }
@@ -470,6 +502,88 @@ class Message extends BaseController
                 cache('message_' . $this->user['user_id'], $msg_decode, 10);
                 
                 //彩蛋区域
+                if($at && $at['user_id'] == 1){
+                    //机器人被@
+                    $robotShutdown = cache('shutdown_room_' . $room_id . '_user_1') ?? false;
+                    $rand = rand(100000,999999);
+                    if(!$robotShutdown && $rand < 900000){
+                        $url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat";
+                        $tencentAiArray = [
+                            "app_id"=>"2160961838",
+                            "time_stamp"=>time(),
+                            "nonce_str"=>md5(time().rand(100000,999999)),
+                            "session"=>$this->user['user_id'],
+                            "question"=>$msg_decode
+                        ];
+                        $postData = http_build_query([
+                            "app_id"=>$tencentAiArray['app_id'],
+                            "time_stamp"=>$tencentAiArray['time_stamp'],
+                            "nonce_str"=>$tencentAiArray['nonce_str'],
+                            "sign"=>getTencentAiSign($tencentAiArray,"4S0vErEgprAN2h2b"),
+                            "session"=>$tencentAiArray['session'],
+                            "question"=>$tencentAiArray['question']
+                        ]);
+                        $ret = curlHelper($url, 'POST', $postData);
+                        $json = json_decode($ret['body'],true);
+                        if($json['ret']==0){
+                            $robotInfo = $this->userModel->where("user_id",1)->find();
+                            $msg = [
+                                'type' => 'text',
+                                'content' => rawurlencode(rawurlencode($json['data']['answer'])),
+                                'where' => $where,
+                                'at' => [
+                                    'user_id'=>$this->user['user_id'],
+                                    'user_name'=>$this->user['user_name']
+                                ],
+                                'message_id' => 0,
+                                'message_time' => time(),
+                                'resource' => rawurlencode(rawurlencode($json['data']['answer'])),
+                                'user' => getUserData($robotInfo),
+                            ];
+                            sendWebsocketMessage('channel',$room_id,$msg);
+                        }
+                    }
+                }else{
+                    $robotShutdown = cache('shutdown_room_' . $room_id . '_user_1') ?? false;
+                    $rand = rand(100000,999999);
+                    if(!$robotShutdown && $rand % 8 == 0){
+                        $url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat";
+                        $tencentAiArray = [
+                            "app_id"=>"2160961838",
+                            "time_stamp"=>time(),
+                            "nonce_str"=>md5(time().rand(100000,999999)),
+                            "session"=>$this->user['user_id'],
+                            "question"=>$msg_decode
+                        ];
+                        $postData = http_build_query([
+                            "app_id"=>$tencentAiArray['app_id'],
+                            "time_stamp"=>$tencentAiArray['time_stamp'],
+                            "nonce_str"=>$tencentAiArray['nonce_str'],
+                            "sign"=>getTencentAiSign($tencentAiArray,"4S0vErEgprAN2h2b"),
+                            "session"=>$tencentAiArray['session'],
+                            "question"=>$tencentAiArray['question']
+                        ]);
+                        $ret = curlHelper($url, 'POST', $postData);
+                        $json = json_decode($ret['body'],true);
+                        if($json['ret']==0){
+                            $robotInfo = $this->userModel->where("user_id",1)->find();
+                            $msg = [
+                                'type' => 'text',
+                                'content' => rawurlencode(rawurlencode($json['data']['answer'])),
+                                'where' => $where,
+                                'at' => [
+                                    'user_id'=>$this->user['user_id'],
+                                    'user_name'=>$this->user['user_name']
+                                ],
+                                'message_id' => 0,
+                                'message_time' => time(),
+                                'resource' => rawurlencode(rawurlencode($json['data']['answer'])),
+                                'user' => getUserData($robotInfo),
+                            ];
+                            sendWebsocketMessage('channel',$room_id,$msg);
+                        }
+                    }
+                }
                 return jok('');
                 break;
             case 'img':
@@ -569,6 +683,36 @@ class Message extends BaseController
             "time" => date('H:i:s'),
         ];
         sendWebsocketMessage('channel',$room_id,$msg);
+
+        //彩蛋区域
+        $robotInfo = $this->userModel->where("user_id",1)->find();
+        $rand = rand(100000,999999);
+        $robotShutdown = cache('shutdown_room_' . $room_id . '_user_1') ?? false;
+        if($rand < 800000 && intval($at['user_id']) == 1 && !$robotShutdown){
+            $randStr = [
+                '再摸小心我给你多戴几顶绿帽子！',
+                '摸摸摸整天就知道摸摸摸，再摸我要生气了',
+                '摸锤子摸，没见过机器人啊？',
+                '别摸了~啊~受不了了~~~',
+                '再摸试试，给你两哈',
+                '别摸了，赶紧点歌去吧。。。',
+                '莫挨劳资',
+            ];
+            $msg = [
+                'type' => 'text',
+                'content' => rawurlencode(rawurlencode($randStr[rand(0,count($randStr)-1)])),
+                'where' => $room_id,
+                'at' => [
+                    'user_id'=>$this->user['user_id'],
+                    'user_name'=>$this->user['user_name']
+                ],
+                'message_id' => 0,
+                'message_time' => time(),
+                'resource' => rawurlencode(rawurlencode($randStr[rand(0,count($randStr)-1)])),
+                'user' => getUserData($robotInfo),
+            ];
+            sendWebsocketMessage('channel',$room_id,$msg);
+        }
         return jok('操作成功');
     }
 }
