@@ -243,7 +243,7 @@ class Song extends BaseCommand
                 "app_name" => "BBBUG",
                 "app_url" => "https://bbbug.com",
                 "user_admin" => true,
-                "user_head" => "https://api.bbbug.com/uploads/thumb/image/20201105/1bafe18a648eb26bbdf7f24b6fe53dfc.jpg",
+                "user_head" => "http://api.bbbug.com/new/images/emoji/28.png",
                 "user_id" => 1,
                 "user_name" => "机器人",
                 "user_remark" => "别@我,我只是个测试帐号",
