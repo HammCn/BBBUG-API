@@ -549,7 +549,7 @@ class Message extends BaseController
                     if(!$robotShutdown && $rand % 8 == 0){
                         $url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat";
                         $tencentAiArray = [
-                            "app_id"=>"2160961838",
+                            "app_id"=>config("startadmin.tencent_ai_appid"),
                             "time_stamp"=>time(),
                             "nonce_str"=>md5(time().rand(100000,999999)),
                             "session"=>$this->user['user_id'],
@@ -559,7 +559,7 @@ class Message extends BaseController
                             "app_id"=>$tencentAiArray['app_id'],
                             "time_stamp"=>$tencentAiArray['time_stamp'],
                             "nonce_str"=>$tencentAiArray['nonce_str'],
-                            "sign"=>getTencentAiSign($tencentAiArray,"4S0vErEgprAN2h2b"),
+                            "sign"=>getTencentAiSign($tencentAiArray,config("startadmin.tencent_ai_appkey")),
                             "session"=>$tencentAiArray['session'],
                             "question"=>$tencentAiArray['question']
                         ]);
