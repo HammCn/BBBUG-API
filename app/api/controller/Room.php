@@ -29,7 +29,7 @@ class Room extends BaseController
             //允许更新的字段列表
             "room_user", "room_name", "room_type", "room_password", "room_notice", "room_robot", "room_addsong",
              "room_sendmsg", "room_public", "room_playone", "room_votepass","room_votepercent",
-             "room_addsongcd","room_pushdaycount","room_pushsongcd","room_addcount","room_hide"
+             "room_addsongcd","room_pushdaycount","room_pushsongcd","room_addcount","room_hide","room_background"
         ];
         $this->insertRequire = [
             //添加时必须填写的字段
@@ -123,6 +123,15 @@ class Room extends BaseController
             $data['room_addcount'] = 5;
         }
 
+        if (input('room_background')) {
+            $data['room_background'] = input('room_background');
+            if(strpos(strtolower($data['room_background']),'.jpg')===FALSE && strpos(strtolower($data['room_background']),'.png')===FALSE){
+                return jerr('房间背景支持JPG/PNG图片');
+            }
+            if(strpos(strtolower($data['room_background']),config('startadmin.api_url'))===FALSE){
+                return jerr('房间背景不支持站外图');
+            }
+        }
 
         $this->updateByPk($data);
         if ($data['room_type'] != 1) {

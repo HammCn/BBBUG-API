@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: 2020-12-27 09:11:00
+-- Generation Time: 2020-12-27 09:13:53
 -- 服务器版本： 5.6.48-log
 -- PHP Version: 7.1.32
 
@@ -550,6 +550,7 @@ CREATE TABLE `sa_room` (
   `room_playone` int(11) NOT NULL DEFAULT '0' COMMENT '0随机1单曲',
   `room_votepass` int(11) NOT NULL DEFAULT '1',
   `room_votepercent` int(11) NOT NULL DEFAULT '30',
+  `room_background` varchar(255) NOT NULL DEFAULT '' COMMENT '房间背景图',
   `room_status` int(11) NOT NULL DEFAULT '0' COMMENT '状态',
   `room_createtime` int(11) NOT NULL DEFAULT '0' COMMENT '创建时间',
   `room_updatetime` int(11) NOT NULL DEFAULT '0' COMMENT '修改时间'
@@ -559,8 +560,8 @@ CREATE TABLE `sa_room` (
 -- 转存表中的数据 `sa_room`
 --
 
-INSERT INTO `sa_room` (`room_id`, `room_user`, `room_addsongcd`, `room_addcount`, `room_pushdaycount`, `room_pushsongcd`, `room_online`, `room_realonline`, `room_hide`, `room_name`, `room_type`, `room_public`, `room_password`, `room_notice`, `room_addsong`, `room_sendmsg`, `room_robot`, `room_order`, `room_reason`, `room_playone`, `room_votepass`, `room_votepercent`, `room_status`, `room_createtime`, `room_updatetime`) VALUES
-(888, 1, 60, 5, 5, 3600, 2, 5, 0, 'BBBUG音乐大厅', 1, 0, '', '大厅为电台播放模式，欢迎大家点歌，房间已支持自定义点歌/顶歌等CD和数量，快去房间管理页面看看吧~', 0, 0, 0, 10000000, '', 0, 1, 30, 0, 1598539777, 1604990895);
+INSERT INTO `sa_room` (`room_id`, `room_user`, `room_addsongcd`, `room_addcount`, `room_pushdaycount`, `room_pushsongcd`, `room_online`, `room_realonline`, `room_hide`, `room_name`, `room_type`, `room_public`, `room_password`, `room_notice`, `room_addsong`, `room_sendmsg`, `room_robot`, `room_order`, `room_reason`, `room_playone`, `room_votepass`, `room_votepercent`, `room_background`, `room_status`, `room_createtime`, `room_updatetime`) VALUES
+(888, 1, 60, 5, 5, 3600, 2, 5, 0, 'BBBUG音乐大厅', 1, 0, '', '大厅为电台播放模式，欢迎大家点歌，房间已支持自定义点歌/顶歌等CD和数量，快去房间管理页面看看吧~', 0, 0, 0, 10000000, '', 0, 1, 30, '', 0, 1598539777, 1604990895);
 
 -- --------------------------------------------------------
 
