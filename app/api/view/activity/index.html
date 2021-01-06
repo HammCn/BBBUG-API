@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBBUG 2020 年度报告</title>
+    <meta name="viewport"
+        content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            overflow: hidden;
+        }
+
+        body {
+
+            overflow-y: scroll;
+        }
+
+        .bg {
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            z-index: -1;
+        }
+
+        .content {
+            font-size: 20px;
+            color: #aaaaaa;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .content span {
+            display: inline-block;
+        }
+
+        .value {
+            font-size: 32px;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg" style="background-image: url(https://api.bbbug.com//new/images/bg_dark.jpg);"></div>
+    <div class="content">
+        <div>2020年,BBBUG注册用户共计<br>
+            <span class="value">
+                <?php echo $user_total_count;?>人
+            </span>，其中：
+        </div>
+    </div>
+    <div class="content">
+        <div>
+            有<span class="value">
+                <?php echo $room_total_count;?>人
+            </span><br>创建了自己的听歌小房间</span>
+        </div>
+    </div>
+    <div class="content">
+        <div>
+            Ta们每天闲得蛋疼，一共点过<br><span class="value">
+                <?php echo $song_total_count;?>
+            </span>次歌曲,共计</span><br><span class="value">
+                <?php echo $song_total;?>
+            </span>首歌
+        </div>
+    </div>
+    <div class="content">
+        <div>
+            Ta们最爱的十个歌手分别是：
+            <br><br>
+            <?php echo implode($singer_list)?>
+        </div>
+    </div>
+    <div class="content">
+        <div>
+            不过，你最喜欢这几个歌手的歌
+            <br><br>
+            <?php echo implode($my_singer_name)?>
+        </div>
+    </div>
+    <div class="content">
+        <div>
+            你听过<span class="value">
+                <?php echo $my_song_count;?>
+            </span>首歌，但你最喜欢的是
+            <br><br>
+            <?php echo implode($my_song_name)?>
+        </div>
+    </div>
+    <div class="content">
+        <div>
+            接下来，让我们一起来认识下<br>这些天天划水听歌的大水逼
+            <br><br>
+            <?php echo implode($hot_user)?>
+        </div>
+    </div>
+    <div class="content">
+        <div>
+            有人的地方就有江湖,有江湖的地方就有<br>下面这些爱发黄图的LSP
+            <br><br>
+            <?php echo implode($img_user)?>
+        </div>
+    </div>
+    <div class="content">
+        <div>
+            这十个人，聊起天来简直是打字机...
+            <br><br>
+            <?php echo implode($text_user)?>
+        </div>
+    </div>
+    <div class="content">
+        <div>
+            兄弟萌，2020就这样去他妈的吧
+            <br><br>
+            <span class="value">我祝你2021发财。</span>
+        </div>
+    </div>
+</body>
+
+</html>
