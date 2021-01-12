@@ -330,7 +330,7 @@ class Message extends BaseController
                 }
                 if(strpos(rawurldecode(input('msg')), 'https://') !== false || strpos(rawurldecode(input('msg')), 'http://') !== false){
                     //绝对路径
-                    if (strpos(rawurldecode(input('msg')), config('startadmin.api_url')) === false && 
+                    if (strpos(rawurldecode(input('msg')), config('startadmin.api_url')) === false && strpos(rawurldecode(input('msg')), config('startadmin.static_url')) === false && 
                         strpos(rawurldecode(input('msg')), 'img.doutula.com') === false) {
                             return jerr('暂不支持站外图');
                         }
