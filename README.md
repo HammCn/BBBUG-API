@@ -1,12 +1,15 @@
-<p align="left">
-<h1>BBBUG聊天室 API端</h1>
+<h1 align="center">BBBUG聊天室 API端</h1>
+<p align="center">
+<a href="https://github.com/HammCn/BBBUG-API" target="_blank">Github</a> | <a href="https://gitee.com/bbbug_com/ChatAPI" target="_blank">Gitee</a>
 </p>
-<p align="left">
+<p align="center">
 <a href="https://gitee.com/bbbug_com/ChatAPI/stargazers" target="_blank"><img src="https://svg.hamm.cn/gitee.svg?type=star&user=bbbug_com&project=ChatAPI"/></a>
 <a href="https://gitee.com/bbbug_com/ChatAPI/members" target="_blank"><img src="https://svg.hamm.cn/gitee.svg?type=fork&user=bbbug_com&project=ChatAPI"/></a>
 <img src="https://svg.hamm.cn/badge.svg?key=Base&value=Vue.Element"/>
 <img src="https://svg.hamm.cn/badge.svg?key=License&value=Apache-2.0"/>
 </p>
+
+
 
 ### 介绍
 
