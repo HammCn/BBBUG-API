@@ -11,6 +11,11 @@
 
 
 
+<p align="center">
+<a href="https://bbbug.com" target="_blank"><img src="https://api.bbbug.com/api/badge/888"/></a>
+</p>
+
+
 ### 介绍
 
 此仓库为BBBUG项目后端API部分，其他客户端代码请查看组织下的对应仓库。开发者QQ群：1140258698
