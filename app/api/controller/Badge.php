@@ -19,12 +19,13 @@ class Badge extends BaseController
         $userName = '';
         if($now){
             $song = [
-                'name'=>$now['song']['name'],
-                'singer'=>$now['song']['singer'],
+                'name'=>htmlentities($now['song']['name']),
+                'singer'=>htmlentities($now['song']['singer']),
                 'pic'=> str_replace("http://","https://", $now['song']['pic']),
             ];
             $userName = '点歌人: '.urldecode($now['user']['user_name']);
         }
+        $userName = htmlentities($userName);
         $song["pic"] = "data:image/jpeg;base64,".base64_encode(file_get_contents( $song["pic"] ));
         
         $song["bg"] = "data:image/jpeg;base64,".base64_encode(file_get_contents("https://bbbug.hamm.cn//new/images/player_bg.png"));
