@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: 2020-12-27 09:13:53
+-- Generation Time: 2021-01-21 17:27:42
 -- 服务器版本： 5.6.48-log
 -- PHP Version: 7.1.32
 
@@ -181,7 +181,8 @@ INSERT INTO `sa_conf` (`conf_id`, `conf_key`, `conf_value`, `conf_desc`, `conf_i
 (56, 'frontend_url', '', '前端地址', 0, 0, 0, 0),
 (57, 'api_url', '', 'API地址', 0, 0, 0, 0),
 (58, 'tencent_ai_appid', '2160961838', '腾讯AI的APPID', 0, 0, 0, 1598539052),
-(59, 'tencent_ai_appkey', '4S0vErEgprAN2h2b', '腾讯AI的APPKEY', 0, 0, 0, 1598539052);
+(59, 'tencent_ai_appkey', '4S0vErEgprAN2h2b', '腾讯AI的APPKEY', 0, 0, 0, 1598539052),
+(60, 'static_url', '', 'Static文件地址', 0, 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -756,7 +757,7 @@ ALTER TABLE `sa_code`
 -- 使用表AUTO_INCREMENT `sa_conf`
 --
 ALTER TABLE `sa_conf`
-  MODIFY `conf_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `conf_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 --
 -- 使用表AUTO_INCREMENT `sa_group`
 --
