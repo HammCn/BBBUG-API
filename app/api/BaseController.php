@@ -119,6 +119,15 @@ abstract class BaseController
             $c[$config['conf_key']] = $config['conf_value'];
         }
         config($c, 'startadmin');
+        
+        $apiUrl = getTopHost(config('startadmin.api_url'));
+        $staticUrl = getTopHost(config('startadmin.static_url'));
+        if(!$apiUrl){
+            die('请先配置sa_conf表的api_url字段数据');
+        }
+        if(!$staticUrl){
+            die('请先配置sa_conf表的static_url字段数据');
+        }
     }
     /**
      * 检测授权

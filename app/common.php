@@ -40,7 +40,7 @@ function getUserData($user)
 function getTopHost($url){
     $url = strtolower($url);  //首先转成小写
     $hosts = parse_url($url);
-    return $hosts['host'];
+    return $hosts['host'] ?? '';
 }
 function getIsAdmin($user)
 {

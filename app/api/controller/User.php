@@ -701,12 +701,14 @@ class User extends BaseController
 
         if(!empty($data['user_head'])){
             $domain = getTopHost(urldecode($data['user_head']));
-            if(strpos($domain,getTopHost(config('startadmin.api_url')))===FALSE && strpos($domain,getTopHost(config('startadmin.static_url')))===FALSE){
-                unset($data['user_head']);
-            }else{
-                $obj = getimagesize(urldecode($data['user_head']));
-                if(!$obj || end($obj) == "image/gif"){
-                    return jerr("不要尝试钻空子上传Gif图片当头像,那真的不高端 - Hamm");
+            if($domain){
+                if(strpos($domain,getTopHost(config('startadmin.api_url')))===FALSE && strpos($domain,getTopHost(config('startadmin.static_url')))===FALSE){
+                    unset($data['user_head']);
+                }else{
+                    $obj = getimagesize(urldecode($data['user_head']));
+                    if(!$obj || end($obj) == "image/gif"){
+                        unset($data['user_head']);
+                    }
                 }
             }
         }
