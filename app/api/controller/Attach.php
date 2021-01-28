@@ -69,7 +69,7 @@ class Attach extends BaseController
         try {
             $file = request()->file('file');
             try {
-                validate(['file' => 'filesize:' . config("startadmin.upload_max_image") . '|fileExt:php,' . config("startadmin.upload_image_type")])
+                validate(['file' => 'filesize:' . config("startadmin.upload_max_image") . '|fileExt:' . config("startadmin.upload_image_type")])
                     ->check(['file' => $file]);
 
                 $sha = $file->sha1();
@@ -134,7 +134,7 @@ class Attach extends BaseController
         try {
             $file = request()->file('file');
             try {
-                validate(['file' => 'filesize:' . config("startadmin.upload_max_image") . '|fileExt:php,' . config("startadmin.upload_image_type")])
+                validate(['file' => 'filesize:' . config("startadmin.upload_max_image") . '|fileExt:' . config("startadmin.upload_image_type")])
                     ->check(['file' => $file]);
 
                 $sha = $file->sha1();
@@ -203,7 +203,7 @@ class Attach extends BaseController
         try {
             $file = request()->file('file');
             try {
-                validate(['file' => 'filesize:' . config("startadmin.upload_max_file") . '|fileExt:php,' . config("startadmin.upload_file_type")])
+                validate(['file' => 'filesize:' . config("startadmin.upload_max_file") . '|fileExt:' . config("startadmin.upload_file_type")])
                     ->check(['file' => $file]);
                 $saveName = Filesystem::putFile('normal', $file);
                 $attach_data = array(
