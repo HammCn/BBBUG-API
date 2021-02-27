@@ -703,7 +703,10 @@ class User extends BaseController
             $domain = getTopHost(urldecode($data['user_head']));
             if($domain){
                 if(strpos($domain,getTopHost(config('startadmin.api_url')))===FALSE && strpos($domain,getTopHost(config('startadmin.static_url')))===FALSE){
-                    unset($data['user_head']);
+                    $obj = getimagesize(urldecode($data['user_head']));
+                    if(!$obj || end($obj) == "image/gif"){
+                        unset($data['user_head']);
+                    }
                 }else{
                     $obj = getimagesize(urldecode($data['user_head']));
                     if(!$obj || end($obj) == "image/gif"){
