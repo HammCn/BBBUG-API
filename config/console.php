@@ -9,5 +9,6 @@ return [
         'User' => 'app\command\User',
         'Online' => 'app\command\Online',
         'Download' => 'app\command\Download',
+        'Test' => 'app\command\Test',
     ],
 ];

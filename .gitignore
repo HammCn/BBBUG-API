@@ -3,6 +3,7 @@
 /vendor
 /public/install
 /public/music
+/public/weapp_code
 *.log
 .env
 composer.lock
