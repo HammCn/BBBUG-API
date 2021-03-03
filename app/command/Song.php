@@ -229,6 +229,9 @@ class Song extends BaseCommand
             'length' => $song['duration'],
             'singer' => $song['artist'],
         ],3600);
+        
+        $userModel = new UserModel();
+        $robotInfo = $userModel->where("user_id",1)->find();
         return [
             'song' => [
                 'mid' => $song['rid'],
@@ -242,11 +245,11 @@ class Song extends BaseCommand
                 "app_id" => 1,
                 "app_name" => "BBBUG",
                 "app_url" => "https://bbbug.com",
-                "user_admin" => true,
-                "user_head" => "http://api.bbbug.com/new/images/emoji/28.png",
-                "user_id" => 1,
-                "user_name" => "机器人",
-                "user_remark" => "别@我,我只是个测试帐号",
+                "user_admin" => $robotInfo['user_admin'],
+                "user_head" => $robotInfo['user_head'],
+                "user_id" => $robotInfo['user_id'],
+                "user_name" => rawurldecode($robotInfo['user_name']),
+                "user_remark" => rawurldecode($robotInfo['user_remark']),
             ],
         ];
     }
