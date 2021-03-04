@@ -544,7 +544,7 @@ class Song extends BaseController
             }
             $ret = curlHelper(getWebsocketApiUrl() . "?channel=" . $room_id);
             $arr = json_decode($ret['body'], true);
-            $onlineCount = count($arr);
+            $onlineCount = count($arr) - 1;//取消机器人的在线数
             $limitCount = intval($onlineCount * $room['room_votepercent'] / 100);
             if ($limitCount > 10) {
                 $limitCount = 10;
