@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: 2021-01-21 17:27:42
+-- Generation Time: 2021-03-04 12:12:57
 -- 服务器版本： 5.6.48-log
 -- PHP Version: 7.1.32
 
@@ -64,7 +64,8 @@ INSERT INTO `sa_app` (`app_id`, `app_key`, `app_name`, `app_url`, `app_user`, `a
 (1001, '请重置后对接', 'Gitee', 'https://gitee.com/#extra#', 1, '', 0, 0, 0),
 (1002, '请重置后对接', 'OSChina', 'https://my.oschina.net/#extra#', 1, '', 0, 0, 0),
 (1003, '请重置后对接', 'QQ', 'https://hamm.cn', 1, '', 0, 0, 0),
-(1004, '请重置后对接', '钉钉', 'https://hamm.cn', 1, '', 0, 0, 0);
+(1004, '请重置后对接', '钉钉', 'https://hamm.cn', 1, '', 0, 0, 0),
+(1005, '请重置后对接', '微信小程序', 'https://hamm.cn', 1, '', 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -621,6 +622,20 @@ CREATE TABLE `sa_user` (
 INSERT INTO `sa_user` (`user_id`, `user_icon`, `user_sex`, `user_account`, `user_password`, `user_salt`, `user_name`, `user_head`, `user_remark`, `user_group`, `user_ipreg`, `user_openid`, `user_extra`, `user_app`, `user_device`, `user_touchtip`, `user_vip`, `user_status`, `user_createtime`, `user_updatetime`) VALUES
 (1, 1, 0, 'admin@bbbug.com', '123456', 'abcd', '%E6%9C%BA%E5%99%A8%E4%BA%BA', 'https://cdn.bbbug.com/uploads/thumb/image/20201016/2a4a54f2a696179a963bbf1cb4426cb7.jpg', '别@我,我只是个测试号', 1, '127.0.0.1', '', '', 1, 'iPhone', '%EF%BC%8C%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%B7%AE%E7%82%B9%E7%88%BD%E7%BF%BB%E5%A4%A9%E3%80%82', '', 0, 0, 1605004436);
 
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `sa_weapp`
+--
+
+CREATE TABLE `sa_weapp` (
+  `weapp_id` int(11) NOT NULL,
+  `weapp_openid` varchar(255) NOT NULL DEFAULT '' COMMENT 'OPENID',
+  `weapp_status` int(11) NOT NULL DEFAULT '0' COMMENT '状态',
+  `weapp_createtime` int(11) NOT NULL DEFAULT '0' COMMENT '创建时间',
+  `weapp_updatetime` int(11) NOT NULL DEFAULT '0' COMMENT '修改时间'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='小程序用户表' ROW_FORMAT=COMPACT;
+
 --
 -- Indexes for dumped tables
 --
@@ -725,6 +740,12 @@ ALTER TABLE `sa_user`
   ADD KEY `admin_account` (`user_account`) USING BTREE;
 
 --
+-- Indexes for table `sa_weapp`
+--
+ALTER TABLE `sa_weapp`
+  ADD PRIMARY KEY (`weapp_id`) USING BTREE;
+
+--
 -- 在导出的表使用AUTO_INCREMENT
 --
 
@@ -737,7 +758,7 @@ ALTER TABLE `sa_access`
 -- 使用表AUTO_INCREMENT `sa_app`
 --
 ALTER TABLE `sa_app`
-  MODIFY `app_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1005;
+  MODIFY `app_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1006;
 --
 -- 使用表AUTO_INCREMENT `sa_attach`
 --
@@ -798,6 +819,11 @@ ALTER TABLE `sa_song`
 --
 ALTER TABLE `sa_user`
   MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'UID', AUTO_INCREMENT=2;
+--
+-- 使用表AUTO_INCREMENT `sa_weapp`
+--
+ALTER TABLE `sa_weapp`
+  MODIFY `weapp_id` int(11) NOT NULL AUTO_INCREMENT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
