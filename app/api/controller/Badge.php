@@ -4,6 +4,7 @@ namespace app\api\controller;
 
 use app\api\BaseController;
 use app\model\Room as RoomModel;
+use think\facade\View;
 
 class Badge extends BaseController
 {
@@ -104,5 +105,20 @@ class Badge extends BaseController
 XMLDATA;
         echo $xmlData;
         die;
+    }
+    public function player(){
+        $room_id = str_replace('//api/badge/player/','',$_REQUEST['s']);
+        if(!$room_id){
+            $room_id = 888;
+        }
+        $roomModel = new RoomModel();
+        $room = $roomModel->where('room_id',$room_id)->find();
+        if(!$room){
+            header('Location: https://bbbug.com');
+            return;
+        }
+        View::assign('room', $room);
+        View::assign('access_token', getTempToken());
+        return View::fetch();
     }
 }
