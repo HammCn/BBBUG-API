@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBBUG 外链播放器</title>
+    <style>
+        * {
+
+            -webkit-text-size-adjust: none;
+            -moz-text-size-adjust: none;
+            -ms-text-size-adjust: none;
+            text-size-adjust: none;
+            -moz-user-select: none;
+            /*火狐*/
+            -webkit-user-select: none;
+            /*webkit浏览器*/
+            -ms-user-select: none;
+            /*IE10*/
+            -khtml-user-select: none;
+            /*早期浏览器*/
+            user-select: none;
+        }
+
+        .player {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            bottom: 20px;
+            right: 20px;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+            background-color: #333;
+            overflow: hidden;
+            white-space: nowrap;
+
+            text-overflow: ellipsis;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .img .bg {
+            width: 120px;
+            height: 120px;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+        }
+
+        .img .bar {
+            width: 60px;
+            height: 80px;
+            position: absolute;
+            left: 65px;
+            top: 0px;
+        }
+
+        .img .picture {
+            width: 80px;
+            height: 80px;
+            position: absolute;
+            left: 30px;
+            top: 30px;
+            border-radius: 100%;
+            cursor: pointer;
+        }
+
+        .love {
+            -webkit-animation: rotate 60s linear infinite;
+            -moz-animation: rotate 60s linear infinite;
+            -o-animation: rotate 60s linear infinite;
+            animation: rotate 60s linear infinite;
+        }
+
+        @-webkit-keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(180deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .info {
+            margin-left: 140px;
+            margin-top: 15px;
+            color: #fff;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.9);
+        }
+
+        .name {
+            font-size: 20px;
+        }
+
+        .user {
+            font-size: 14px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .room {
+            font-size: 14px;
+            margin-top: 30px;
+        }
+
+        .room span {
+            color: #999;
+        }
+
+        .cover {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+        }
+    </style>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+</head>
+
+<body>
+    <div class="player">
+        <div class="img">
+            <img id="img" src="https://img2.kuwo.cn/star/albumcover/500/36/9/13515874.jpg" class="picture love" />
+            <img src="https://bbbug.hamm.cn//new/images/player_bg.png" class="bg love" />
+            <img src="https://bbbug.hamm.cn//new/images/player_bar.png" class="bar" />
+        </div>
+        <div class="info">
+            <div class="name" id="name">数据加载中...</div>
+            <div class="user" id="user">　</div>
+            <div class="room">ID:<font id="room">{$room['room_id']} {$room['room_name']}</font> <span
+                    id="online">在线:{$room['room_online']}</span></div>
+        </div>
+        <div class="cover" onclick="playOrPause()"></div>
+        <audio id="audio" autoplay loop="-1"></audio>
+    </div>
+</body>
+<script>
+    var wss = null;
+    var wssUrl = '';
+    function init() {
+        getWssUrl();
+    }
+    function playOrPause() {
+        document.getElementById("audio").play();
+    }
+    function getWssUrl() {
+        $.post("https://api.bbbug.com/api/room/getWebsocketUrl", {
+            access_token: '{$access_token}',
+            plat: 'player',
+            version: 10000,
+            channel: "{$room['room_id']}"
+        }, function (result) {
+            if (result.code == 200) {
+                wssUrl = 'wss://websocket.bbbug.com/?account=' + result.data.account + '&channel=' + result.data.channel + '&ticket=' + result.data.ticket;
+                connect();
+            } else {
+                document.getElementById("name").innerHTML = result.msg;
+            }
+        });
+    }
+    function connect() {
+        if (wss) {
+            wss.close();
+        }
+        wss = new WebSocket(wssUrl);
+        wss.onopen = function () {
+            console.log('connected!');
+            startHeartBeat();
+        };
+
+        wss.onmessage = function (evt) {
+            let data = evt.data;
+            let json = false;
+            try {
+                json = JSON.parse(decodeURIComponent(decodeURIComponent(data)));
+            } catch (e) {
+                json = JSON.parse(decodeURIComponent(data));
+            }
+            console.log(json);
+            switch (json.type) {
+                case 'online':
+                    document.getElementById('online').innerHTML = "在线:" + json.data.length;
+                    break;
+                case 'playSong':
+                    if (json.song) {
+                        document.getElementById('name').innerHTML = json.song.name + " - " + json.song.singer;
+                        document.getElementById('user').innerHTML = "点歌人: " + json.user.user_name;
+                        document.getElementById('img').src = json.song.pic;
+                        document.getElementById('audio').src = 'https://api.bbbug.com//api/song/playurl?mid=' + json.song.mid;
+                        document.getElementById("audio").play();
+                    }
+                    break;
+                default:
+                    console.log(json.type)
+            }
+        };
+
+        wss.onclose = function () {
+            reconnect();
+        };
+    }
+    function reconnect() {
+        wss.close();
+        wss = null;
+        connect();
+    }
+    var heartBeatTimer = null;
+    function startHeartBeat() {
+        clearTimeout(heartBeatTimer);
+        heartBeatTimer = setTimeout(function () {
+            wss.send('heartBeat');
+        }, 1000);
+    }
+    init();
+</script>
+
+</html>
