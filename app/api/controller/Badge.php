@@ -121,4 +121,8 @@ XMLDATA;
         View::assign('access_token', getTempToken());
         return View::fetch();
     }
+    public function bg(){
+        header('Content-Type:image/svg+xml');
+        echo View::fetch();die;
+    }
 }

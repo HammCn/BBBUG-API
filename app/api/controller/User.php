@@ -620,20 +620,6 @@ class User extends BaseController
             return $error;
         }
 
-        $isVisitToday = cache('visit_user_'.$this->user['user_id']."_".date('Y_m_d')) ?? false;
-        if(!$isVisitToday && time() > strtotime('2020-12-25 23:59:59')){
-            cache('visit_user_'.$this->user['user_id']."_".date('Y_m_d'),1,86400);
-            $cacheVisit = cache("visit_count") ?? 0;
-            if($cacheVisit < 10){
-                //前10访问
-                $this->model->where('user_id',$this->user['user_id'])->update([
-                    'user_icon'=>1
-                ]);;
-            }
-            $cacheVisit ++;
-            cache("visit_count",$cacheVisit,86400*3);
-        }
-
         $myInfo = $this->user;
         $roomModel = new RoomModel();
         $myRoom = $roomModel->where('room_user', $this->user['user_id'])->find();
