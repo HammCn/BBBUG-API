@@ -100,6 +100,7 @@ class Song extends BaseController
                     'pic' => $song['pic'] ?? '',
                     'length' => $song['duration'],
                     'singer' => $song['artist'],
+                    'album' => $song['album'] ?? ""
                 ];
                 array_push($list, $temp);
                 cache('song_detail_' . $song['rid'], $temp, 3600);
