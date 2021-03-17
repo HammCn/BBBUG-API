@@ -304,9 +304,9 @@ class User extends BaseController
         $user = false;
         if ($code == $user_password) {
             //验证通过
-            if(preg_match("/^[1-9][0-9]*$/" ,$user_account)){
+            if (preg_match("/^[1-9][0-9]*$/", $user_account)) {
                 $user = $this->model->where('user_id', $user_account)->find();
-            }else{
+            } else {
                 $user = $this->model->where('user_account', $user_account)->find();
             }
             if (!$user) {
@@ -416,16 +416,16 @@ class User extends BaseController
         $ret = curlHelper(getWebsocketApiUrl() . "?channel=" . $room_id);
         $arr = json_decode($ret['body'], true);
         $count = $this->model->where('user_id', 'in', $arr)->count('user_id');
-        
+
         if (input('sync') == 'yes') {
             //同步一下该频道的在线人数
             $roomModel = new RoomModel();
             $myRoom = $roomModel->where('room_id', $room_id)->update([
                 'room_online' => $count,
-                'room_realonline'=>count($arr)
+                'room_realonline' => count($arr)
             ]);
         }
-        
+
         $roomModel = new RoomModel();
         $room = $roomModel->where('room_id', $room_id)->find();
         if (!$room) {
@@ -437,7 +437,7 @@ class User extends BaseController
 
         $ret = $this->model->view('user', 'user_id,user_name,user_head,user_group,user_remark,user_device,user_sex,user_extra,user_icon,user_vip')->view('app', 'app_id,app_name,app_url', 'user.user_app = app.app_id')->where([
             ['user_id', 'in', $arr ?? []],
-        ])->where('user_group',1)->whereOr("user_id",1)->order($order)->select();
+        ])->where('user_group', 1)->whereOr("user_id", 1)->order($order)->where('user_id', 'not like', 10000)->select();
         $ret = $ret ? $ret->toArray() : [];
         for ($i = 0; $i < count($ret); $i++) {
             $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
@@ -445,11 +445,11 @@ class User extends BaseController
             $ret[$i]['user_songdown'] = $this->getCacheStatus('songdown', $room_id, $ret[$i]['user_id']);
             $ret[$i]['user_guest'] = $this->getCacheStatus('guestctrl', $room_id, $ret[$i]['user_id']);
         }
-        $list = array_merge($list,$ret);
+        $list = array_merge($list, $ret);
 
         $ret = $this->model->view('user', 'user_id,user_name,user_head,user_group,user_remark,user_device,user_sex,user_extra,user_icon,user_vip')->view('app', 'app_id,app_name,app_url', 'user.user_app = app.app_id')->where([
             ['user_id', 'in', $arr ?? []],
-        ])->where('user_group',5)->where('user_id','like',$room['room_user'])->order($order)->select();
+        ])->where('user_group', 5)->where('user_id', 'like', $room['room_user'])->where('user_id', 'not like', 10000)->order($order)->select();
         $ret = $ret ? $ret->toArray() : [];
         for ($i = 0; $i < count($ret); $i++) {
             $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
@@ -457,11 +457,11 @@ class User extends BaseController
             $ret[$i]['user_songdown'] = $this->getCacheStatus('songdown', $room_id, $ret[$i]['user_id']);
             $ret[$i]['user_guest'] = $this->getCacheStatus('guestctrl', $room_id, $ret[$i]['user_id']);
         }
-        $list = array_merge($list,$ret);
+        $list = array_merge($list, $ret);
 
         $ret = $this->model->view('user', 'user_id,user_name,user_head,user_group,user_remark,user_device,user_sex,user_extra,user_icon,user_vip')->view('app', 'app_id,app_name,app_url', 'user.user_app = app.app_id')->where([
             ['user_id', 'in', $arr ?? []],
-        ])->where('user_group',5)->where('user_id','not like',$room['room_user'])->order($order)->select();
+        ])->where('user_group', 5)->where('user_id', 'not like', $room['room_user'])->where('user_id', 'not like', 10000)->order($order)->select();
 
         $ret = $ret ? $ret->toArray() : [];
         for ($i = 0; $i < count($ret); $i++) {
@@ -470,9 +470,9 @@ class User extends BaseController
             $ret[$i]['user_songdown'] = $this->getCacheStatus('songdown', $room_id, $ret[$i]['user_id']);
             $ret[$i]['user_guest'] = $this->getCacheStatus('guestctrl', $room_id, $ret[$i]['user_id']);
         }
-        $list = array_merge($list,$ret);
+        $list = array_merge($list, $ret);
 
-        
+
 
         return jok('success', $list);
     }
@@ -662,10 +662,10 @@ class User extends BaseController
         $data['user_touchtip'] = rawurldecode(input('user_touchtip'));
         $data['user_touchtip'] = mb_substr($data['user_touchtip'], 0, 20, 'utf-8');
         $data['user_touchtip'] = rawurlencode($data['user_touchtip']);
-        
+
         if (input('user_head')) {
             $data['user_head'] = input('user_head');
-            if(strpos(strtolower($data['user_head']),'.gif')!==FALSE){
+            if (strpos(strtolower($data['user_head']), '.gif') !== FALSE) {
                 return jerr('头像不支持Gif,不要尝试钻空子');
             }
         }
@@ -685,17 +685,17 @@ class User extends BaseController
             }
         }
 
-        if(!empty($data['user_head'])){
+        if (!empty($data['user_head'])) {
             $domain = getTopHost(urldecode($data['user_head']));
-            if($domain){
-                if(strpos($domain,getTopHost(config('startadmin.api_url')))===FALSE && strpos($domain,getTopHost(config('startadmin.static_url')))===FALSE){
+            if ($domain) {
+                if (strpos($domain, getTopHost(config('startadmin.api_url'))) === FALSE && strpos($domain, getTopHost(config('startadmin.static_url'))) === FALSE) {
                     $obj = getimagesize(urldecode($data['user_head']));
-                    if(!$obj || end($obj) == "image/gif"){
+                    if (!$obj || end($obj) == "image/gif") {
                         unset($data['user_head']);
                     }
-                }else{
+                } else {
                     $obj = getimagesize(urldecode($data['user_head']));
-                    if(!$obj || end($obj) == "image/gif"){
+                    if (!$obj || end($obj) == "image/gif") {
                         unset($data['user_head']);
                     }
                 }
@@ -753,23 +753,23 @@ class User extends BaseController
         if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
             return jerr("你无权操作");
         }
-        if(getIsAdmin($user)){
+        if (getIsAdmin($user)) {
             return jerr("你无权操作管理员");
         }
-        
+
         $isSet = cache('guest_room_' . $room_id . '_user_' . $user_id) ?? false;
-        if($isSet){
+        if ($isSet) {
             cache('guest_room_' . $room_id . '_user_' . $user_id, null);
-            
+
             $msg = [
                 'user' => getUserData($this->user),
                 'guest' => getUserData($user),
                 "type" => "guest_remove",
                 "time" => date('H:i:s'),
             ];
-            sendWebsocketMessage('channel',$room_id,$msg);
+            sendWebsocketMessage('channel', $room_id, $msg);
             return jok("取消嘉宾身份成功!");
-        }else{
+        } else {
             cache('guest_room_' . $room_id . '_user_' . $user_id, time());
             $msg = [
                 'user' => getUserData($this->user),
@@ -777,10 +777,9 @@ class User extends BaseController
                 "type" => "guest_add",
                 "time" => date('H:i:s'),
             ];
-            sendWebsocketMessage('channel',$room_id,$msg);
+            sendWebsocketMessage('channel', $room_id, $msg);
             return jok("设置嘉宾成功!");
         }
-        
     }
     public function shutdown()
     {
@@ -805,11 +804,11 @@ class User extends BaseController
         if (!$room) {
             return jerr("房间信息查询失败");
         }
-        if($user_id>1){
+        if ($user_id > 1) {
             if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
                 return jerr("你无权操作");
             }
-            if(getIsAdmin($user) && $this->user['user_id'] !=$room['room_user'] && $this->user['user_id']!=1){
+            if (getIsAdmin($user) && $this->user['user_id'] != $room['room_user'] && $this->user['user_id'] != 1) {
                 return jerr("你无权操作管理员");
             }
         }
@@ -821,7 +820,7 @@ class User extends BaseController
             "type" => "shutdown",
             "time" => date('H:i:s'),
         ];
-        sendWebsocketMessage('channel',$room_id,$msg);
+        sendWebsocketMessage('channel', $room_id, $msg);
         return jok("禁止发言成功!");
     }
     public function songdown()
@@ -850,7 +849,7 @@ class User extends BaseController
         if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
             return jerr("你无权操作");
         }
-        if(getIsAdmin($user) && $this->user['user_id'] !=$room['room_user'] && $this->user['user_id']!=1){
+        if (getIsAdmin($user) && $this->user['user_id'] != $room['room_user'] && $this->user['user_id'] != 1) {
             return jerr("你无权操作管理员");
         }
 
@@ -861,7 +860,7 @@ class User extends BaseController
             "type" => "songdown",
             "time" => date('H:i:s'),
         ];
-        sendWebsocketMessage('channel',$room_id,$msg);
+        sendWebsocketMessage('channel', $room_id, $msg);
         return jok("禁止点歌成功!");
     }
     public function removeBan()
@@ -887,12 +886,12 @@ class User extends BaseController
         if (!$room) {
             return jerr("房间信息查询失败");
         }
-        
-        if($user_id>1){
+
+        if ($user_id > 1) {
             if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
                 return jerr("你无权操作");
             }
-            if(getIsAdmin($user) && $this->user['user_id'] !=$room['room_user'] && $this->user['user_id']!=1){
+            if (getIsAdmin($user) && $this->user['user_id'] != $room['room_user'] && $this->user['user_id'] != 1) {
                 return jerr("你无权操作管理员");
             }
         }
@@ -905,7 +904,7 @@ class User extends BaseController
             "type" => "removeban",
             "time" => date('H:i:s'),
         ];
-        sendWebsocketMessage('channel',$room_id,$msg);
+        sendWebsocketMessage('channel', $room_id, $msg);
         return jok("用户解禁成功!");
     }
     public function getUserInfo()
@@ -930,16 +929,16 @@ class User extends BaseController
         }
         $user = getUserData($user);
         $user = array_merge($user, $app);
-        
+
         $roomModel = new RoomModel();
         $myRoom = $roomModel->where('room_user', $user_id)->find();
         $myRoom = $myRoom ? $myRoom->toArray() : false;
-        if($myRoom){
+        if ($myRoom) {
             $myRoom['room_password'] = null;
         }
         $user['myRoom'] = $myRoom;
-        
-        
+
+
 
         $pushCount = cache('push_song_card_user_' . $user['user_id']) ?? 0;
         $passCount = cache('pass_song_card_user_' . $user['user_id']) ?? 0;
@@ -995,21 +994,22 @@ class User extends BaseController
             return jerr('帐号或密码错误');
         }
     }
-    public function thirdLogin(){
-        if(!input('from')){
+    public function thirdLogin()
+    {
+        if (!input('from')) {
             return jerr('where are you from?');
         }
         $from  = input('from');
-        if(!input('code')){
+        if (!input('code')) {
             return jerr("What's your passcode?");
         }
         $code  = input('code');
-        switch($from){
+        switch ($from) {
             case 'qq':
                 $app_id = '1003';
                 $cliend_id = '101904044';
                 $client_key = 'b3e2cace11af99c7354409422ecbab51';
-                $redirect_uri = config('startadmin.frontend_url').'qq';
+                $redirect_uri = config('startadmin.frontend_url') . 'qq';
                 $url = "https://graph.qq.com/oauth2.0/token?grant_type=authorization_code&code={$code}&client_id={$cliend_id}&redirect_uri={$redirect_uri}&client_secret=" . $client_key;
                 $result = curlHelper($url);
                 if ($result['detail']['http_code'] == 200) {
@@ -1028,7 +1028,7 @@ class User extends BaseController
                                     $nickname = $user['nickname'];
                                     $head = $user['figureurl_qq_2'] ?? $user['figureurl_qq_1'];
                                     $extra = $openid;
-                                    $sex = $user['gender'] == '男'?1:0;
+                                    $sex = $user['gender'] == '男' ? 1 : 0;
                                     $user = $this->model->where('user_openid', $openid)->where('user_app', $app_id)->find();
                                     if (!$user) {
                                         $this->model->regByOpen($openid, $nickname, $head, $sex,  $app_id, $extra);
@@ -1055,12 +1055,12 @@ class User extends BaseController
                     }
                 }
                 return jerr('使用QQ账号登录失败,请重试');
-            break;
+                break;
             case 'gitee':
                 $app_id = '1001';
                 $cliend_id = 'd2c3e3c6f5890837a69c65585cc14488e4075709db1e89d4cb4c64ef1712bdbb';
                 $client_key = 'eca633af5faf95fb1e5a6e605347683dddb5485b574cc3303ba0a27c2cefc9a6';
-                $redirect_uri = config('startadmin.frontend_url').'gitee';
+                $redirect_uri = config('startadmin.frontend_url') . 'gitee';
                 $url = "https://gitee.com/oauth/token?grant_type=authorization_code&code={$code}&client_id=" . $cliend_id . "&redirect_uri={$redirect_uri}&client_secret=" . $client_key;
                 $result = curlHelper($url, 'POST', [], [], "");
                 if ($result['detail']['http_code'] == 200) {
@@ -1104,12 +1104,12 @@ class User extends BaseController
                     }
                 }
                 return jerr('使用码云账号登录失败,请重试');
-            break;
+                break;
             case 'oschina':
                 $app_id = '1002';
                 $cliend_id = 'utwQOfbgBgBcwBolfNft';
                 $client_key = '0cAwcRfuuCcQhJUgt1ynKldwmxfymJ8n';
-                $redirect_uri = config('startadmin.frontend_url').'oschina';
+                $redirect_uri = config('startadmin.frontend_url') . 'oschina';
                 $url = "https://www.oschina.net/action/openapi/token?grant_type=authorization_code&code={$code}&client_id=" . $cliend_id . "&redirect_uri={$redirect_uri}&client_secret=" . $client_key;
                 $result = curlHelper($url, 'POST', [], [], "");
                 if ($result['detail']['http_code'] == 200) {
@@ -1123,7 +1123,7 @@ class User extends BaseController
                         $nickname = $user['name'];
                         $head = explode('!', $user['avatar'])[0];
                         $extra = str_replace('https://my.oschina.net/', '', $user['url']);
-                        $sex = $user['gender'] == 'male'?1:0;
+                        $sex = $user['gender'] == 'male' ? 1 : 0;
                         $user = $this->model->where('user_openid', $openid)->where('user_app', $app_id)->find();
                         if (!$user) {
                             $this->model->regByOpen($openid, $nickname, $head, $sex,  $app_id, $extra);
@@ -1144,29 +1144,28 @@ class User extends BaseController
                         } else {
                             return jerr('帐号或密码错误');
                         }
-            
                     }
                 }
                 return jerr('使用开源中国账号登录失败,请重试');
-            break;
+                break;
             case 'ding':
                 $app_id = '1004';
                 $cliend_id = 'dingoag8afgz20g2otw0jf';
                 $client_key = 'fkWK4AanFg_U96xC2Jh1oH_-CcDXNPVHzAnrg_vNNsZRS5nxDj-Zp61qiFXTGGXs';
-                $time = time()."000";
+                $time = time() . "000";
                 $s = hash_hmac('sha256', $time, $client_key, true);
                 $signature = base64_encode($s);
                 $urlencode_signature = urlencode($signature);
 
-                $url = "https://oapi.dingtalk.com/sns/getuserinfo_bycode?accessKey=".$cliend_id."&timestamp=".$time."&signature=".$urlencode_signature;
+                $url = "https://oapi.dingtalk.com/sns/getuserinfo_bycode?accessKey=" . $cliend_id . "&timestamp=" . $time . "&signature=" . $urlencode_signature;
                 $result = curlHelper($url, 'POST', json_encode([
-                    "tmp_auth_code"=>$code
+                    "tmp_auth_code" => $code
                 ]), [
                     'content-type: application/json'
                 ], "");
                 if ($result['detail']['http_code'] == 200) {
                     $user = json_decode($result['body'], true);
-                    if($user['errcode'] == 0){
+                    if ($user['errcode'] == 0) {
                         $user = $user['user_info'];
                         $openid = $user['openid'];
                         $nickname = $user['nick'];
@@ -1177,7 +1176,7 @@ class User extends BaseController
                         if (!$user) {
                             $this->model->regByOpen($openid, $nickname, $head, $sex,  $app_id, $extra);
                             $user = $this->model->where('user_openid', $openid)->where('user_app', $app_id)->find();
-                        } 
+                        }
                         if ($user) {
                             //创建一个新的授权
                             $access = $this->accessModel->createAccess($user['user_id'], $app_id);
@@ -1196,7 +1195,7 @@ class User extends BaseController
                     }
                 }
                 return jerr('使用钉钉账号登录失败,请重试');
-            break;
+                break;
             default:
                 return jerr("暂不支持的第三方平台登录");
         }

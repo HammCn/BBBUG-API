@@ -28,8 +28,8 @@ class Room extends BaseController
         $this->updateFields = [
             //允许更新的字段列表
             "room_user", "room_name", "room_type", "room_password", "room_notice", "room_robot", "room_addsong",
-             "room_sendmsg", "room_public", "room_playone", "room_votepass","room_votepercent",
-             "room_addsongcd","room_pushdaycount","room_pushsongcd","room_addcount","room_hide","room_background"
+            "room_sendmsg", "room_public", "room_playone", "room_votepass", "room_votepercent",
+            "room_addsongcd", "room_pushdaycount", "room_pushsongcd", "room_addcount", "room_hide", "room_background"
         ];
         $this->insertRequire = [
             //添加时必须填写的字段
@@ -74,7 +74,7 @@ class Room extends BaseController
         //从请求中获取Update数据
         $data = $this->getUpdateDataFromRequest();
         //根据主键更新这条数据
-        if(empty($data['room_public'])){
+        if (empty($data['room_public'])) {
             $data['room_public'] = 0;
         }
         if ($data['room_public'] == 0) {
@@ -95,40 +95,40 @@ class Room extends BaseController
             }
         }
 
-        if(!isset($data['room_type']) || !in_array($data['room_type'],[0,1,4])){
+        if (!isset($data['room_type']) || !in_array($data['room_type'], [0, 1, 4])) {
             $data['room_type'] = 1;
         }
-        
-        if(!empty(input('room_addsongcd')) && intval(input('room_addsongcd')) < 60 && intval(input('room_addsongcd')) > 0){
+
+        if (!empty(input('room_addsongcd')) && intval(input('room_addsongcd')) < 60 && intval(input('room_addsongcd')) > 0) {
             $data['room_addsongcd'] = intval($data['room_addsongcd']);
-        }else{
+        } else {
             $data['room_addsongcd'] = 60;
         }
-        
-        if(!empty(input('room_pushsongcd'))  && intval(input('room_pushsongcd')) > 0){
+
+        if (!empty(input('room_pushsongcd'))  && intval(input('room_pushsongcd')) > 0) {
             $data['room_pushsongcd'] = intval($data['room_pushsongcd']);
-        }else{
+        } else {
             $data['room_pushsongcd'] = 60;
         }
-        
-        if(!empty(input('room_pushdaycount')) && intval(input('room_pushdaycount')) > 0){
+
+        if (!empty(input('room_pushdaycount')) && intval(input('room_pushdaycount')) > 0) {
             $data['room_pushdaycount'] = intval($data['room_pushdaycount']);
-        }else{
+        } else {
             $data['room_pushdaycount'] = 5;
         }
 
-        if(!empty(input('room_addcount')) && intval(input('room_addcount')) > 0){
+        if (!empty(input('room_addcount')) && intval(input('room_addcount')) > 0) {
             $data['room_addcount'] = intval($data['room_addcount']);
-        }else{
+        } else {
             $data['room_addcount'] = 5;
         }
 
         if (input('room_background')) {
             $data['room_background'] = input('room_background');
-            if(strpos(strtolower($data['room_background']),'.jpg')===FALSE && strpos(strtolower($data['room_background']),'.png')===FALSE){
+            if (strpos(strtolower($data['room_background']), '.jpg') === FALSE && strpos(strtolower($data['room_background']), '.png') === FALSE) {
                 return jerr('房间背景支持JPG/PNG图片');
             }
-            if(strpos(strtolower($data['room_background']),config('startadmin.api_url'))===FALSE && strpos(strtolower($data['room_background']),config('startadmin.static_url'))===FALSE){
+            if (strpos(strtolower($data['room_background']), config('startadmin.api_url')) === FALSE && strpos(strtolower($data['room_background']), config('startadmin.static_url')) === FALSE) {
                 return jerr('房间背景不支持站外图');
             }
         }
@@ -142,7 +142,7 @@ class Room extends BaseController
             'user' => getUserData($this->user),
         ];
 
-        sendWebsocketMessage('channel',$this->pk_value,$msg);
+        sendWebsocketMessage('channel', $this->pk_value, $msg);
 
         return jok('房间信息修改成功');
     }
@@ -177,8 +177,8 @@ class Room extends BaseController
         //     $data['room_public'] = 0;
         // }
         $room_id = $this->insertRow($data);
-        return jok('你的私人房间创建成功!',[
-            'room_id'=>$room_id
+        return jok('你的私人房间创建成功!', [
+            'room_id' => $room_id
         ]);
     }
     public function getWebsocketUrl()
@@ -193,11 +193,11 @@ class Room extends BaseController
             return jerr('没有查询到房间信息');
         }
         if (input('access_token') == getTempToken()) {
-            if($item['room_public'] == 1){
+            if ($item['room_public'] == 1) {
                 return jerr('禁止游客进入密码房间');
             }
             $ip = getClientIp();
-            $user_id = preg_replace("/[^\.]{1,3}$/","*",$ip).$_SERVER['REMOTE_PORT'];
+            $user_id = preg_replace("/[^\.]{1,3}$/", "*", $ip) . $_SERVER['REMOTE_PORT'];
             // $user_id = $ip.":".$_SERVER['REMOTE_PORT'];
             $lastSend = cache('channel_' . $channel . '_user_' . $user_id) ?? false;
             if (!$lastSend) {
@@ -206,7 +206,7 @@ class Room extends BaseController
                     'content' => "临时用户 " . $user_id . " 进入房间",
                 ];
 
-                sendWebsocketMessage('channel',$channel,$msg);
+                sendWebsocketMessage('channel', $channel, $msg);
                 cache('channel_' . $channel . '_user_' . $user_id, time(), 10);
             }
 
@@ -236,8 +236,8 @@ class Room extends BaseController
                 'content' => "用户 " . rawurldecode($this->user['user_name']) . " 进入房间",
             ];
 
-            if ($this->user['user_id'] > 1) {
-                sendWebsocketMessage('channel',$channel,$msg);
+            if ($this->user['user_id'] > 1 && $this->user['user_id'] != 10000) {
+                sendWebsocketMessage('channel', $channel, $msg);
             }
             cache('channel_' . $channel . '_user_' . $this->user['user_id'], time(), 10);
         }
@@ -302,7 +302,7 @@ class Room extends BaseController
     public function getRoomInfo()
     {
         $userModel = new UserModel();
-        if($this->pk_value!=888){
+        if ($this->pk_value != 888) {
             // return jerr("子房间维护中");
         }
         if (input('access_token') == getTempToken()) {
@@ -319,11 +319,11 @@ class Room extends BaseController
             }
             unset($item['room_password']);
             if ($item['room_status'] == 1) {
-                return jerr($item['room_reason'],301);
+                return jerr($item['room_reason'], 301);
             }
-            $admin = $userModel->where("user_id",$item['room_user'])->find();
+            $admin = $userModel->where("user_id", $item['room_user'])->find();
             $item['admin'] = getUserData($admin);
-            
+
             return jok('数据加载成功', $item);
         }
         //校验Access与RBAC
@@ -343,19 +343,19 @@ class Room extends BaseController
             $savedPassword = cache('password_room_' . $item['room_id'] . "_password_" . $this->user['user_id']) ?? '';
             $inputPassword = input('room_password');
             if ($item['room_password'] != $savedPassword && $item['room_password'] != $inputPassword) {
-                cache('password_room_' . $item['room_id'] . "_password_" . $this->user['user_id'],null);
+                cache('password_room_' . $item['room_id'] . "_password_" . $this->user['user_id'], null);
                 return jerr("房间密码错误，进入房间失败", 302);
             }
             cache('password_room_' . $item['room_id'] . "_password_" . $this->user['user_id'], $item['room_password'], 86400);
         }
         if ($item['room_status'] == 1) {
-            return jerr($item['room_reason'],301);
+            return jerr($item['room_reason'], 301);
         }
         unset($item['room_password']);
-        
-        $admin = $userModel->where("user_id",$item['room_user'])->find();
+
+        $admin = $userModel->where("user_id", $item['room_user'])->find();
         $item['admin'] = getUserData($admin);
-        
+
         return jok('数据加载成功', $item);
     }
 }
