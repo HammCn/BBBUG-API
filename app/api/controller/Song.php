@@ -73,7 +73,7 @@ class Song extends BaseController
         $kuwo_list = [];
 
         $cacheList = cache("music_search_list_keyword_" . sha1($keyword)) ?? false;
-        if ($cacheList && count($cacheList)>0) {
+        if ($cacheList && count($cacheList) > 0) {
             $kuwo_list = $cacheList;
         } else {
             $randNumber = rand(10000000, 99999999);
@@ -106,8 +106,8 @@ class Song extends BaseController
                 cache('song_detail_' . $song['rid'], $temp, 3600);
             }
             return jok('', $list);
-        }else{
-            return jok('success',$list);
+        } else {
+            return jok('success', $list);
         }
     }
     public function deleteMySong()
@@ -227,11 +227,11 @@ class Song extends BaseController
             if ($item['song']['mid'] == $mid) {
                 array_splice($songList, $i, 1);
                 array_unshift($songList, $item);
-                $isPushed=true;
+                $isPushed = true;
                 break;
             }
         }
-        if(!$isPushed){
+        if (!$isPushed) {
             array_unshift($songList, [
                 'user' => getUserData($this->user),
                 'song' => $song,
@@ -241,7 +241,7 @@ class Song extends BaseController
         cache('SongList_' . $room_id, $songList, 86400);
         //切掉正在播放
         cache('SongNow_' . $room_id, null);
-        
+
         $songModel = new SongModel();
         $songExist = $songModel->where('song_mid', $song['mid'])->where('song_user', $this->user['user_id'])->find();
         if (!$songExist) {
@@ -343,7 +343,7 @@ class Song extends BaseController
             return jerr('歌曲《' . $existSong . '》正在等待播放呢!');
         }
         $addSongCDTime = $room['room_addsongcd'];
-        
+
         if (!getIsAdmin($this->user)) {
             //不是管理员 判断是否是房主
             if ($room['room_user'] != $this->user['user_id']) {
@@ -372,7 +372,7 @@ class Song extends BaseController
             'at' => $at ?? false,
             "time" => date('H:i:s'),
         ];
-        sendWebsocketMessage('channel',$room_id,$msg);
+        sendWebsocketMessage('channel', $room_id, $msg);
 
         $songModel = new SongModel();
         $songExist = $songModel->where('song_mid', $song['mid'])->where('song_user', $this->user['user_id'])->find();
@@ -419,8 +419,9 @@ class Song extends BaseController
         $list = $songModel->field('song_mid as mid,song_length as length,song_name as name,song_singer as singer,song_play as played,song_pic as pic')->where('song_user', $this->user['user_id'])->order('song_updatetime desc,song_play desc,song_id desc')->limit($per_page)->page($page)->select();
         return jok('success', $list);
     }
-    public function getUserSongs(){
-        if(!input("user_id")){
+    public function getUserSongs()
+    {
+        if (!input("user_id")) {
             return jerr("user_id 为必传参数");
         }
         $user_id = intval(input('user_id'));
@@ -545,7 +546,7 @@ class Song extends BaseController
             }
             $ret = curlHelper(getWebsocketApiUrl() . "?channel=" . $room_id);
             $arr = json_decode($ret['body'], true);
-            $onlineCount = count($arr) - 1;//取消机器人的在线数
+            $onlineCount = count($arr) - 1; //取消机器人的在线数
             $limitCount = intval($onlineCount * $room['room_votepercent'] / 100);
             if ($limitCount > 10) {
                 $limitCount = 10;
@@ -570,7 +571,7 @@ class Song extends BaseController
                     "type" => "system",
                     "time" => date('H:i:s'),
                 ];
-                sendWebsocketMessage('channel',$room_id,$msg);
+                sendWebsocketMessage('channel', $room_id, $msg);
             }
             cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid'], $songNextCount, 3600);
 
@@ -584,7 +585,7 @@ class Song extends BaseController
             "type" => "pass",
             "time" => date('H:i:s'),
         ];
-        sendWebsocketMessage('channel',$room_id,$msg);
+        sendWebsocketMessage('channel', $room_id, $msg);
 
         return jok('切歌成功');
     }
@@ -709,7 +710,7 @@ class Song extends BaseController
             "type" => "push",
             "time" => date('H:i:s'),
         ];
-        sendWebsocketMessage('channel',$room_id,$msg);
+        sendWebsocketMessage('channel', $room_id, $msg);
 
         if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
             return jok('顶歌成功,今日剩余' . ($pushCount - $pushCache) . '次顶歌机会!');
@@ -763,7 +764,7 @@ class Song extends BaseController
             "type" => "removeSong",
             "time" => date('H:i:s'),
         ];
-        sendWebsocketMessage('channel',$room_id,$msg);
+        sendWebsocketMessage('channel', $room_id, $msg);
         return jok('移除成功');
     }
     public function getPlayUrl()
@@ -773,12 +774,25 @@ class Song extends BaseController
             exit;
         }
         $mid = input('mid');
+        $url = cache('song_play_temp_url_' . $mid) ?? false;
+        if ($url) {
+            return jok('', [
+                'url' => $url,
+            ]);
+        }
         $url = 'http://bd.kuwo.cn/url?rid=' . $mid . '&type=convert_url3&br=128kmp3';
         $result = curlHelper($url)['body'];
         $arr = json_decode($result, true);
         if ($arr['code'] != 200) {
             return jerr('歌曲链接获取失败');
         }
+        $tempList = cache('song_waiting_download_list') ?? [];
+        array_push($tempList, [
+            'mid' => $mid,
+            'url' => $arr['url']
+        ]);
+        cache('song_waiting_download_list', $tempList);
+        cache('song_play_temp_url_' . $mid, $arr['url'], 30);
         return jok('', [
             'url' => $arr['url'],
         ]);
@@ -799,29 +813,29 @@ class Song extends BaseController
             exit;
         }
         $mid = input('mid');
-        $url = cache('song_play_temp_url_'.$mid) ?? false;
-        if($url){
+        $url = cache('song_play_temp_url_' . $mid) ?? false;
+        if ($url) {
             header("Cache: From Redis");
             header("Location: " . $url);
             die;
         }
-        $url = 'http://kuwo.cn/url?rid=' . $mid . '&type=convert_url3&br=128kmp3';
+        $url = 'http://bd.kuwo.cn/url?rid=' . $mid . '&type=convert_url3&br=128kmp3';
         $result = curlHelper($url)['body'];
         $arr = json_decode($result, true);
         if ($arr['code'] != 200) {
             //获取播放地址失败了
             die;
-        }else{
-            if($arr['url']){
+        } else {
+            if ($arr['url']) {
                 $tempList = cache('song_waiting_download_list') ?? [];
-                array_push($tempList,[
-                    'mid'=>$mid,
-                    'url'=>$arr['url']
+                array_push($tempList, [
+                    'mid' => $mid,
+                    'url' => $arr['url']
                 ]);
-                cache('song_waiting_download_list',$tempList);
-                cache('song_play_temp_url_'.$mid,$arr['url'],30);
+                cache('song_waiting_download_list', $tempList);
+                cache('song_play_temp_url_' . $mid, $arr['url'], 30);
                 header("Location: " . $arr['url']);
-            }else{
+            } else {
                 header("status: 404 Not Found");
             }
         }
