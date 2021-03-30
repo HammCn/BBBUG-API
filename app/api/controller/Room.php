@@ -58,8 +58,7 @@ class Room extends BaseController
         if (!$this->pk_value) {
             return jerr($this->pk . "参数必须填写", 400);
         }
-        //根据主键获取一行数据
-        $item = $this->getRowByPk();
+        $item = $this->model->getRoomById($this->pk_value);
         if (empty($item)) {
             return jerr("数据查询失败", 404);
         }
@@ -93,6 +92,9 @@ class Room extends BaseController
                     unset($data['room_password']);
                 }
             }
+        }
+        if ($item['room_password'] && (strlen($item['room_password']) > 16 || strlen($item['room_password']) < 4)) {
+            return jerr('密码长度应为4-16位');
         }
 
         if (!isset($data['room_type']) || !in_array($data['room_type'], [0, 1, 4])) {
@@ -131,6 +133,16 @@ class Room extends BaseController
             if (strpos(strtolower($data['room_background']), config('startadmin.api_url')) === FALSE && strpos(strtolower($data['room_background']), config('startadmin.static_url')) === FALSE) {
                 return jerr('房间背景不支持站外图');
             }
+        }
+
+        if ($data['room_name']) {
+            $data['room_name'] = mb_substr($data['room_name'], 0, 20, 'utf-8');
+            $data['room_name'] = rawurlencode($data['room_name']);
+        }
+
+        if ($data['room_notice']) {
+            $data['room_notice'] = mb_substr($data['room_notice'], 0, 600, 'utf-8');
+            $data['room_notice'] = rawurlencode($data['room_notice']);
         }
 
         $this->updateByPk($data);
@@ -192,22 +204,70 @@ class Room extends BaseController
         if (!$item) {
             return jerr('没有查询到房间信息');
         }
+        $ip = getClientIp();
+        $data = curlHelper('https://ipchaxun.com/' . $ip . '/', 'GET', [], [
+            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Safari/537.36'
+        ]);
+        $where = '';
+        $plat = '';
+        if ($data['body']) {
+            if (preg_match('/归属地：<\/span><span class="value">(.*?)</', $data['body'], $matches)) {
+                $where = $matches[1];
+                $where = str_replace('中国', '', $where);
+                $where = str_replace('区', '', $where);
+                $where = str_replace('县', '', $where);
+                $where = str_replace('市', '', $where);
+            }
+        }
+
+        if (input('referer')) {
+            $referer = (input('referer'));
+            if (strpos($referer, 'v2ex.com') !== false) {
+                $plat = 'v2ex';
+            } else if (strpos($referer, 'juejin.cn') !== false) {
+                $plat = '掘金';
+            } else if (strpos($referer, 'oschina.net') !== false) {
+                $plat = 'OSChina';
+            } else if (strpos($referer, 'gitee.com') !== false) {
+                $plat = 'Gitee';
+            } else if (strpos($referer, 'jianshu.com') !== false) {
+                $plat = '简书';
+            } else if (strpos($referer, 'csdn.net') !== false) {
+                $plat = 'CSDN';
+            } else if (strpos($referer, 'segmentfault.com') !== false) {
+                $plat = '思否';
+            } else if (strpos($referer, 'github.com') !== false) {
+                $plat = 'Github';
+            }
+        }
         if (input('access_token') == getTempToken()) {
             if ($item['room_public'] == 1) {
                 return jerr('禁止游客进入密码房间');
             }
-            $ip = getClientIp();
             $user_id = preg_replace("/[^\.]{1,3}$/", "*", $ip) . $_SERVER['REMOTE_PORT'];
             // $user_id = $ip.":".$_SERVER['REMOTE_PORT'];
-            $lastSend = cache('channel_' . $channel . '_user_' . $user_id) ?? false;
+            $lastSend = cache('channel_' . $channel . '_user_' . $ip) ?? false;
             if (!$lastSend) {
+                $string = '欢迎';
+                if ($where) {
+                    $string .= '来自' . $where . '的';
+                }
+                if ($plat) {
+                    $string .= $plat . '用户';
+                } else {
+                    $string .= '临时用户';
+                }
                 $msg = [
                     'type' => 'join',
-                    'content' => "临时用户 " . $user_id . " 进入房间",
+                    'name' => $user_id,
+                    'where' => $where,
+                    'plat' => $plat,
+                    'user' => null,
+                    'content' => $string,
                 ];
 
                 sendWebsocketMessage('channel', $channel, $msg);
-                cache('channel_' . $channel . '_user_' . $user_id, time(), 10);
+                cache('channel_' . $channel . '_user_' . $ip, time(), 30);
             }
 
             return jok('success', [
@@ -230,16 +290,25 @@ class Room extends BaseController
         }
 
         $lastSend = cache('channel_' . $channel . '_user_' . $this->user['user_id']) ?? false;
-        if (!$lastSend) {
+        if (!$lastSend || true) {
+            $string = '欢迎';
+            if ($where) {
+                $string .=  $where . '的';
+            }
+            $string .= rawurldecode($this->user['user_name']) . '回来!';
             $msg = [
                 'type' => 'join',
-                'content' => "用户 " . rawurldecode($this->user['user_name']) . " 进入房间",
+                'name' => rawurldecode($this->user['user_name']),
+                'where' => $where,
+                'plat' => $plat,
+                'user' => getUserData($this->user),
+                'content' => $string,
             ];
 
-            if ($this->user['user_id'] > 1 && $this->user['user_id'] != 10000) {
+            if ($this->user['user_id'] > 1) {
                 sendWebsocketMessage('channel', $channel, $msg);
             }
-            cache('channel_' . $channel . '_user_' . $this->user['user_id'], time(), 10);
+            cache('channel_' . $channel . '_user_' . $this->user['user_id'], time(), 30);
         }
 
         return jok('success', [
@@ -309,8 +378,7 @@ class Room extends BaseController
             if (!$this->pk_value) {
                 return jerr($this->pk . "必须填写", 400);
             }
-            //根据主键获取一行数据
-            $item = $this->getRowByPk();
+            $item = $this->model->getRoomById($this->pk_value);
             if (empty($item)) {
                 return jerr("没有查询到数据", 404);
             }
@@ -334,8 +402,7 @@ class Room extends BaseController
         if (!$this->pk_value) {
             return jerr($this->pk . "必须填写", 400);
         }
-        //根据主键获取一行数据
-        $item = $this->getRowByPk();
+        $item = $this->model->getRoomById($this->pk_value);
         if (empty($item)) {
             return jerr("没有查询到数据", 404);
         }
