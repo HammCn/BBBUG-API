@@ -9,3 +9,5 @@
 composer.lock
 .DS_Store
 /app/api/controller/Test.php
+/app/api/command/Test.php
+/app/api/view//Test
