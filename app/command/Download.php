@@ -28,7 +28,7 @@ class Download extends BaseCommand
                     $url = $cacheList[0]['url'];
                     $mid = $cacheList[0]['mid'];
                     try{
-                        file_put_contents(__dir__ . "/../../public/music/" . $mid . ".mp3", file_get_contents($url));
+                        file_put_contents(__dir__ . "/../../public/music/" . $mid . ".jpg", file_get_contents($url));
                         
                         $downloaded_song_list = cache('song_downloaded_list') ?? [];
                         $isExist = false;
@@ -63,7 +63,7 @@ class Download extends BaseCommand
                 if ($songCache) {
                     if (time() - $songCache > 600) {
                         echo "超时" . PHP_EOL;
-                        $fileName = __dir__ . "/../../public/music/" . $_mid . ".mp3";
+                        $fileName = __dir__ . "/../../public/music/" . $_mid . ".jpg";
                         if (file_exists($fileName)) {
                             unlink($fileName);
                             cache('song_download_mid_' . $_mid, null);
