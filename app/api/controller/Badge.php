@@ -13,35 +13,35 @@ class Badge extends BaseController
         header('Content-Type:image/svg+xml');
         $now = cache('SongNow_' . $room_id) ?? false;
         $song = [
-            'name'=>'歌曲读取中',
-            'singer'=>'Loading...',
-            'pic'=>'https://bbbug.hamm.cn/new/images/loading.png'
+            'name' => '歌曲读取中',
+            'singer' => 'Loading...',
+            'pic' => 'https://bbbug.hamm.cn/new/images/loading.png'
         ];
         $userName = '';
-        if($now){
+        if ($now) {
             $song = [
-                'name'=>htmlentities($now['song']['name']),
-                'singer'=>htmlentities($now['song']['singer']),
-                'pic'=> str_replace("http://","https://", $now['song']['pic']),
+                'name' => htmlentities($now['song']['name']),
+                'singer' => htmlentities($now['song']['singer']),
+                'pic' => str_replace("http://", "https://", $now['song']['pic']),
             ];
-            $userName = '点歌人: '.urldecode($now['user']['user_name']);
+            $userName = '点歌人: ' . urldecode($now['user']['user_name']);
         }
         $userName = htmlentities($userName);
-        $song["pic"] = "data:image/jpeg;base64,".base64_encode(file_get_contents( $song["pic"] ));
-        
-        $song["bg"] = "data:image/jpeg;base64,".base64_encode(file_get_contents("https://bbbug.hamm.cn//new/images/player_bg.png"));
-        
-        $song["bar"] = "data:image/jpeg;base64,".base64_encode(file_get_contents("https://bbbug.hamm.cn//new/images/player_bar.png"));
+        $song["pic"] = "data:image/jpeg;base64," . base64_encode(file_get_contents($song["pic"]));
+
+        $song["bg"] = "data:image/jpeg;base64," . base64_encode(file_get_contents("https://bbbug.hamm.cn//new/images/player_bg.png"));
+
+        $song["bar"] = "data:image/jpeg;base64," . base64_encode(file_get_contents("https://bbbug.hamm.cn//new/images/player_bar.png"));
         $roomModel = new RoomModel();
-        $room = $roomModel -> where('room_id',$room_id) -> find();
-        if(!$room){
+        $room = $roomModel->getRoomById($room_id);
+        if (!$room) {
             $room = [
                 'room_name' => '房间信息读取失败',
-                'room_id'=> 888
+                'room_id' => 888
             ];
         }
         header('Content-Type:image/svg+xml');
-        $xmlData =<<<XMLDATA
+        $xmlData = <<<XMLDATA
 
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="160">
 <defs>
@@ -106,14 +106,15 @@ XMLDATA;
         echo $xmlData;
         die;
     }
-    public function player(){
-        $room_id = str_replace('//api/badge/player/','',$_REQUEST['s']);
-        if(!$room_id){
+    public function player()
+    {
+        $room_id = str_replace('//api/badge/player/', '', $_REQUEST['s']);
+        if (!$room_id) {
             $room_id = 888;
         }
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id',$room_id)->find();
-        if(!$room){
+        $room = $roomModel->getRoomById($room_id);
+        if (!$room) {
             header('Location: https://bbbug.com');
             return;
         }
@@ -121,8 +122,10 @@ XMLDATA;
         View::assign('access_token', getTempToken());
         return View::fetch();
     }
-    public function bg(){
+    public function bg()
+    {
         header('Content-Type:image/svg+xml');
-        echo View::fetch();die;
+        echo View::fetch();
+        die;
     }
 }

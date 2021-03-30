@@ -351,7 +351,7 @@ class User extends BaseController
                 if (!input('user_device')) {
                     $device = getOs();
                 }
-                $this->model->where('user_id', $user['user_id'])->where('user_id not like 10000')->update([
+                $this->model->where('user_id', $user['user_id'])->update([
                     'user_device' => $device,
                 ]);
 
@@ -427,7 +427,7 @@ class User extends BaseController
         }
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -437,7 +437,7 @@ class User extends BaseController
 
         $ret = $this->model->view('user', 'user_id,user_name,user_head,user_group,user_remark,user_device,user_sex,user_extra,user_icon,user_vip')->view('app', 'app_id,app_name,app_url', 'user.user_app = app.app_id')->where([
             ['user_id', 'in', $arr ?? []],
-        ])->where('user_group', 1)->whereOr("user_id", 1)->order($order)->where('user_id', 'not like', 10000)->select();
+        ])->where('user_group', 1)->whereOr("user_id", 1)->order($order)->select();
         $ret = $ret ? $ret->toArray() : [];
         for ($i = 0; $i < count($ret); $i++) {
             $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
@@ -622,7 +622,7 @@ class User extends BaseController
 
         $myInfo = $this->user;
         $roomModel = new RoomModel();
-        $myRoom = $roomModel->where('room_user', $this->user['user_id'])->find();
+        $myRoom = $roomModel->getRoomByUser($this->user['user_id']);
         $myRoom = $myRoom ? $myRoom->toArray() : false;
         $needMotify = false;
         if ($myInfo['user_password'] == '123456') {
@@ -656,7 +656,7 @@ class User extends BaseController
         $data = [];
         if (input('user_name')) {
             $data['user_name'] = rawurldecode(input('user_name'));
-            $data['user_name'] = mb_substr($data['user_name'], 0, 30, 'utf-8');
+            $data['user_name'] = mb_substr($data['user_name'], 0, 20, 'utf-8');
             $data['user_name'] = rawurlencode($data['user_name']);
         }
         $data['user_touchtip'] = rawurldecode(input('user_touchtip'));
@@ -746,7 +746,7 @@ class User extends BaseController
         }
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -800,7 +800,7 @@ class User extends BaseController
         }
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -842,7 +842,7 @@ class User extends BaseController
         }
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -882,7 +882,7 @@ class User extends BaseController
         }
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -931,7 +931,7 @@ class User extends BaseController
         $user = array_merge($user, $app);
 
         $roomModel = new RoomModel();
-        $myRoom = $roomModel->where('room_user', $user_id)->find();
+        $myRoom = $roomModel->getRoomByUser($user_id);
         $myRoom = $myRoom ? $myRoom->toArray() : false;
         if ($myRoom) {
             $myRoom['room_password'] = null;
