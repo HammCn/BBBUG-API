@@ -477,6 +477,7 @@ function curlHelper($url, $method = 'GET', $data = null, $header = [], $cookies 
     }
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_HEADER, 1);
+    curl_setopt($ch, CURLOPT_TIMEOUT,3);   //只需要设置一个秒的数量就可以 
     $response = curl_exec($ch);
     $output = [];
     $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
