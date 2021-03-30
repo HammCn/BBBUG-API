@@ -74,7 +74,7 @@ class Message extends BaseController
         $room_id = input('room_id');
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -115,7 +115,7 @@ class Message extends BaseController
         $room_id = input('room_id');
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -142,7 +142,7 @@ class Message extends BaseController
             return jerr("请传入room_id", 400);
         }
 
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
 
         if (!$room) {
             return jerr("房间信息查询失败");
@@ -240,7 +240,7 @@ class Message extends BaseController
         $where = '';
         $msg_resource = (input('msg'));
         $msg_decode = rawurldecode($msg_resource);
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
 
         if (!$room) {
             return jerr("房间信息查询失败");
@@ -347,7 +347,7 @@ class Message extends BaseController
                 if (strpos(rawurldecode(input('msg')), config('startadmin.frontend_url')) !== false) {
                     if (preg_match('/com\/(\d+)/', rawurldecode(input('msg')), $match)) {
                         $jump_id = $match[1];
-                        $jump_room = $roomModel->where('room_id', $jump_id)->find();
+                        $jump_room = $roomModel->getRoomById($jump_id);
                         if ($jump_room) {
                             $lastJump = cache('chat_message_jump_' . $this->user['user_id']) ?? false;
                             if ($lastJump && !getIsAdmin($this->user) && false) {
@@ -431,6 +431,35 @@ class Message extends BaseController
                                 ]);
                                 return jok('');
                             }
+                        } else {
+                            //未识别到关键词
+                            $message_id = $this->model->insertGetId([
+                                'message_user' => $this->user['user_id'],
+                                'message_type' => 'text',
+                                'message_content' => '',
+                                'message_to' => $room_id,
+                                'message_where' => $where,
+                                'message_status' => 1,
+                                'message_createtime' => time(),
+                                'message_updatetime' => time(),
+                            ]);
+                            $msg = [
+                                'type' => 'link',
+                                'desc' => rawurlencode('没有读取到网页信息,你就将就着自己点进去再慢慢看吧~'),
+                                'title' => rawurlencode('分享一个链接给你呀'),
+                                'img' => rawurlencode(""),
+                                'link' => rawurlencode($filterUrl),
+                                'message_id' => $message_id,
+                                'message_time' => time(),
+                                'user' => getUserData($this->user),
+                            ];
+                            sendWebsocketMessage($where, $room_id, $msg);
+                            $this->model->where('message_id', $message_id)->update([
+                                'message_type' => 'link',
+                                'message_content' => json_encode($msg),
+                                'message_status' => 0,
+                            ]);
+                            return jok('');
                         }
                     }
                 } catch (\Exception $e) {
@@ -508,7 +537,7 @@ class Message extends BaseController
                     //机器人被@
                     $robotShutdown = cache('shutdown_room_' . $room_id . '_user_1') ?? false;
                     $rand = rand(100000, 999999);
-                    if (!$robotShutdown && $rand < 900000) {
+                    if (!$robotShutdown && $rand < 800000) {
                         $url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat";
                         $tencentAiArray = [
                             "app_id" => config('startadmin.tencent_ai_appid'),
@@ -548,7 +577,7 @@ class Message extends BaseController
                 } else {
                     $robotShutdown = cache('shutdown_room_' . $room_id . '_user_1') ?? false;
                     $rand = rand(100000, 999999);
-                    if (!$robotShutdown && $rand % 8 == 0) {
+                    if (!$robotShutdown && $rand % 10 == 0) {
                         $url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat";
                         $tencentAiArray = [
                             "app_id" => config("startadmin.tencent_ai_appid"),
@@ -646,7 +675,7 @@ class Message extends BaseController
         $room_id = input('room_id');
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
