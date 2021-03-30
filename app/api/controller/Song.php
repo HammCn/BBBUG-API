@@ -6,6 +6,7 @@ use app\api\BaseController;
 use app\model\Room as RoomModel;
 use app\model\Song as SongModel;
 use app\model\User as UserModel;
+use app\model\Attach as AttachModel;
 use think\App;
 
 class Song extends BaseController
@@ -45,21 +46,21 @@ class Song extends BaseController
     public function search()
     {
 
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
-        $error = $this->access();
-        if ($error) {
-            return $error;
-        }
+        // if (input('access_token') == getTempToken()) {
+        //     return jerr('请登录后体验完整功能!', 401);
+        // }
+        // $error = $this->access();
+        // if ($error) {
+        //     return $error;
+        // }
 
         // cache('search_song_cache_'.$this->user['user_id'],null);
 
-        $search_song_cache = cache('search_song_cache_' . $this->user['user_id']) ?? false;
-        if ($search_song_cache) {
-            return jerr('哥们你搜索太快了,歇会!');
-        }
-        cache('search_song_cache_' . $this->user['user_id'], $this->user['user_id'], 1);
+        // $search_song_cache = cache('search_song_cache_' . $this->user['user_id']) ?? false;
+        // if ($search_song_cache) {
+        //     return jerr('哥们你搜索太快了,歇会!');
+        // }
+        // cache('search_song_cache_' . $this->user['user_id'], $this->user['user_id'], 1);
 
         $list = [];
         $keywordArray = ['周杰伦', '林俊杰', '张学友', '林志炫', '梁静茹', '周华健', '华晨宇', '张宇', '张杰', '李宇春', '六哲', '阿杜', '伍佰', '五月天', '毛不易', '梁咏琪', '艾薇儿', '陈奕迅', '李志', '胡夏'];
@@ -126,7 +127,7 @@ class Song extends BaseController
         $room_id = input('room_id');
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -151,7 +152,7 @@ class Song extends BaseController
         $room_id = input('room_id');
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -180,6 +181,35 @@ class Song extends BaseController
 
         return jok('歌曲搜藏成功，快去你的已点列表看看吧');
     }
+    public function addNewSong()
+    {
+        if (input('access_token') == getTempToken()) {
+            return jerr('请登录后体验完整功能!', 401);
+        }
+        $error = $this->access();
+        if ($error) {
+            return $error;
+        }
+
+        if (!input('song_length') || !input('song_name') || !input('song_singer') || !input('song_mid')) {
+            return jerr("参数错误，缺少 song_length/song_name/song_singer/song_mid");
+        }
+
+        $song = [
+            'song_mid' => 0 - intval(input('song_mid')),
+            'song_name' => input('song_name'),
+            'song_singer' => input('song_singer'),
+            'song_pic' => input('song_pic'),
+            'song_length' => intval(input('song_length')),
+            'song_user' => $this->user['user_id'],
+            'song_createtime' => time(),
+            'song_updatetime' => time(),
+        ];
+
+        $this->model->insert($song);
+
+        return jok('添加成功');
+    }
     public function playSong()
     {
         if (input('access_token') == getTempToken()) {
@@ -196,7 +226,7 @@ class Song extends BaseController
         $room_id = input('room_id');
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -280,7 +310,7 @@ class Song extends BaseController
         $room_id = input('room_id');
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -436,7 +466,7 @@ class Song extends BaseController
         }
         $room_id = input('room_id');
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -509,7 +539,7 @@ class Song extends BaseController
         $room_id = input('room_id');
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -567,7 +597,7 @@ class Song extends BaseController
             if ($songNextCount >= $limitCount) {
                 cache('SongNow_' . $room_id, null);
                 $msg = [
-                    "content" => rawurlencode('30%在线用户(' . $limitCount . '人)不想听这首歌，系统已自动切歌!'),
+                    "content" => rawurlencode($room['room_votepercent'] . '%在线用户(' . $limitCount . '人)不想听这首歌，系统已自动切歌!'),
                     "type" => "system",
                     "time" => date('H:i:s'),
                 ];
@@ -604,6 +634,14 @@ class Song extends BaseController
             return jerr('参数错误,mid缺失');
         }
         $mid = input('mid');
+        if (intval($mid) < 0) {
+            return jok('', [
+                [
+                    'lineLyric' => '歌曲为用户上传,暂无歌词',
+                    'time' => 0
+                ],
+            ]);
+        }
         $randNumber = rand(10000000, 99999999);
         $res = curlHelper("http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=" . $mid, 'GET', null, [
             'csrf: ' . $randNumber,
@@ -611,7 +649,6 @@ class Song extends BaseController
         $data = json_decode($res['body'], true);
         if ($data['status'] == 200) {
             if (count($data['data']['lrclist']) > 0) {
-                // unset($data['data']['lrclist'][0]);
                 $data['data']['lrclist'][0] = [
                     'lineLyric' => '歌词加载成功',
                     'time' => 0,
@@ -619,7 +656,12 @@ class Song extends BaseController
             }
             return jok('', $data['data']['lrclist']);
         } else {
-            return jerr('没有查询到歌词');
+            return jok('', [
+                [
+                    'lineLyric' => '很尴尬呀,没有查到歌词~',
+                    'time' => 0
+                ],
+            ]);
         }
     }
     public function push()
@@ -638,7 +680,7 @@ class Song extends BaseController
         $room_id = input('room_id');
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -733,7 +775,7 @@ class Song extends BaseController
         $room_id = input('room_id');
 
         $roomModel = new RoomModel();
-        $room = $roomModel->where('room_id', $room_id)->find();
+        $room = $roomModel->getRoomById($room_id);
         if (!$room) {
             return jerr("房间信息查询失败");
         }
@@ -780,6 +822,21 @@ class Song extends BaseController
                 'url' => $url,
             ]);
         }
+        if ($mid < 0) {
+            //自己上传的
+            $attachModel = new AttachModel();
+            $attach = $attachModel->where('attach_id', (0 - intval($mid)))->find();
+            if (!$attach) {
+                header("status: 404 Not Found");
+                die;
+            }
+            $path = config('startadmin.static_url') . 'uploads/' . $attach['attach_path'];
+            cache('song_play_temp_url_' . $mid, $path, 30);
+            return jok('', [
+                'url' => $path,
+            ]);
+            die;
+        }
         $url = 'http://bd.kuwo.cn/url?rid=' . $mid . '&type=convert_url3&br=128kmp3';
         $result = curlHelper($url)['body'];
         $arr = json_decode($result, true);
@@ -817,6 +874,19 @@ class Song extends BaseController
         if ($url) {
             header("Cache: From Redis");
             header("Location: " . $url);
+            die;
+        }
+        if ($mid < 0) {
+            //自己上传的
+            $attachModel = new AttachModel();
+            $attach = $attachModel->where('attach_id', (0 - intval($mid)))->find();
+            if (!$attach) {
+                header("status: 404 Not Found");
+                die;
+            }
+            $path = config('startadmin.static_url') . 'uploads/' . $attach['attach_path'];
+            cache('song_play_temp_url_' . $mid, $path, 30);
+            header("Location: " . $path);
             die;
         }
         $url = 'http://bd.kuwo.cn/url?rid=' . $mid . '&type=convert_url3&br=128kmp3';
