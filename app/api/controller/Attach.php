@@ -78,12 +78,12 @@ class Attach extends BaseController
                 $image = \think\Image::open($file);
                 if (!$attach_data) {
                     $saveName = Filesystem::putFile('image', $file);
-                    
+
                     $path = "thumb/" . $saveName;
-                    if(strtolower($file->extension()) == 'gif'){
+                    if (strtolower($file->extension()) == 'gif') {
                         $path = $saveName;
-                    }else{
-                         $dir = "./uploads/thumb/image/" . date('Ymd');
+                    } else {
+                        $dir = "./uploads/thumb/image/" . date('Ymd');
                         if (!is_dir($dir)) {
                             mkdir(iconv("UTF-8", "GBK", $dir), 0777, true);
                         }
@@ -141,22 +141,22 @@ class Attach extends BaseController
                 $this->model->where('attach_sha', $sha)->where('attach_user', $this->user['user_id'])->inc('attach_used')->update();
                 $attach_data = $this->model->where('attach_sha', $sha)->where('attach_user', $this->user['user_id'])->find();
                 $image = \think\Image::open($file);
-                
-                if(strtolower($file->extension()) == 'gif'){
+
+                if (strtolower($file->extension()) == 'gif') {
                     return jerr("头像不支持Gif头像,请换其他的格式");
                 }
-                
+
                 if (!$attach_data) {
                     $saveName = Filesystem::putFile('image', $file);
-                    
+
                     $path = "thumb/" . $saveName;
-                    
+
                     $dir = "./uploads/thumb/image/" . date('Ymd');
                     if (!is_dir($dir)) {
                         mkdir(iconv("UTF-8", "GBK", $dir), 0777, true);
                     }
                     $image->thumb(400, 400, \think\Image::THUMB_CENTER)->save('./uploads/' . $path);
-                    
+
                     $attach_data = array(
                         'attach_path' => $saveName,
                         'attach_thumb' => $path,
@@ -174,10 +174,10 @@ class Attach extends BaseController
                     $attach_data['extend'] = input("extend");
                 }
 
-                
-                $obj = getimagesize('./uploads/'.$attach_data['attach_path']);
 
-                if(end($obj) == "image/gif"){
+                $obj = getimagesize('./uploads/' . $attach_data['attach_path']);
+
+                if (end($obj) == "image/gif") {
                     return jerr("不要尝试钻空子上传Gif图片当头像,那真的不高端 - Hamm");
                 }
 
@@ -187,6 +187,45 @@ class Attach extends BaseController
             }
         } catch (\Exception $error) {
             return jerr('上传文件失败，请检查你的文件！' . $error->getMessage());
+        }
+    }
+    /**
+     * 上传文件
+     *
+     * @return void
+     */
+    public function uploadMusic()
+    {
+        $error = $this->access();
+        if ($error) {
+            return $error;
+        }
+        try {
+            $file = request()->file('file');
+            try {
+                validate(['file' => 'filesize:5242880' . '|fileExt:mp3'])
+                    ->check(['file' => $file]);
+                $saveName = Filesystem::putFile('normal', $file);
+                copy('./uploads/' . $saveName, str_replace('.mp3', '.jpg', './uploads/' . $saveName)); //拷贝到新目录
+                unlink('./uploads/' . $saveName); //删除旧目录下的文件
+                $saveName = str_replace('.mp3', '.jpg', $saveName);
+                $attach_data = array(
+                    'attach_path' => $saveName,
+                    'attach_type' => $file->extension(),
+                    'attach_size' => $file->getSize(),
+                    'attach_user' => $this->user['user_id'],
+                );
+                $attach_id = $this->insertRow($attach_data);
+                $attach_data = $this->getRowByPk($attach_id);
+                if (input("?extend")) {
+                    $attach_data['extend'] = input("extend");
+                }
+                return jok('上传成功！', $attach_data);
+            } catch (ValidateException $e) {
+                return jerr($e);
+            }
+        } catch (\Exception $error) {
+            return jerr('上传文件失败，请检查你的文件！');
         }
     }
     /**
