@@ -170,8 +170,11 @@ class Message extends BaseController
             if (input('per_page')) {
                 $per_page = intval(input('per_page'));
             }
-            if ($per_page > 20) {
-                $per_page = 20;
+            if ($per_page > 100) {
+                $per_page = 100;
+            }
+            if ($per_page < 1) {
+                $per_page = 1;
             }
             $map = [
                 'message_status' => 0,
@@ -206,8 +209,11 @@ class Message extends BaseController
         if (input('per_page')) {
             $per_page = intval(input('per_page'));
         }
-        if ($per_page > 20) {
-            $per_page = 20;
+        if ($per_page > 100) {
+            $per_page = 100;
+        }
+        if ($per_page < 1) {
+            $per_page = 1;
         }
         $map = [
             'message_status' => 0,
