@@ -5,6 +5,7 @@ namespace app\api\controller;
 use app\api\BaseController;
 use app\model\Room as RoomModel;
 use app\model\User as UserModel;
+use app\model\Song as SongModel;
 use think\App;
 
 class Room extends BaseController
@@ -174,7 +175,14 @@ class Room extends BaseController
         if ($error) {
             return $error;
         }
-
+        $songModel = new SongModel();
+        $song = $songModel->field('song_id')->where('song_user', $this->user['user_id'])->select();
+        if (count($song) < 30) {
+            return jerr('点歌超过30首才可能建房间!');
+        }
+        if (time() - $this->user['user_createtime'] < 86400 * 3) {
+            return jerr('注册时间超过3天才能创建房间!');
+        }
         $myRoom = $this->model->where('room_user', $this->user['user_id'])->find();
         if ($myRoom) {
             return jerr('创建失败,你已经有了一个房间');

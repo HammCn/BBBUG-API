@@ -8,19 +8,24 @@ class Index extends BaseController
 {
     public function index()
     {
-        return jok("Hello World!",[
-             'hide'=>1
-        ]);
-        return jok("Hello World!",[
-            'hide'=>0,
-            'data'=>json_decode(file_get_contents('https://h5.oschina.net/apiv3/projectRecommend?size=50&page=1'),true)['data']['items']
-        ]);
+        $wechat_app_enabled = cache('wechat_app_enabled') ?? 'close';
+        if ($wechat_app_enabled == 'open') {
+            return jok($wechat_app_enabled, [
+                'hide' => 1
+            ]);
+        } else {
+            return jok($wechat_app_enabled, [
+                'hide' => 0,
+                'data' => json_decode(file_get_contents('https://h5.oschina.net/apiv3/projectRecommend?size=50&page=1'), true)['data']['items']
+            ]);
+        }
     }
-    public function detail(){
-        if(!input('id')){
+    public function detail()
+    {
+        if (!input('id')) {
             return jerr('参数错误');
         }
         $id = intval(input('id'));
-        return jok("Hello World!",json_decode(file_get_contents('https://h5.oschina.net/apiv3/projectDetail?id='.$id),true)['data']['project']);
+        return jok("Hello World!", json_decode(file_get_contents('https://h5.oschina.net/apiv3/projectDetail?id=' . $id), true)['data']['project']);
     }
 }
