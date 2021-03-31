@@ -206,6 +206,9 @@ class Message extends BaseController
         if (input('per_page')) {
             $per_page = intval(input('per_page'));
         }
+        if ($per_page > 20) {
+            $per_page = 20;
+        }
         $map = [
             'message_status' => 0,
         ];
@@ -238,8 +241,6 @@ class Message extends BaseController
         $room_id = input('to');
         $roomModel = new RoomModel();
 
-        $jump = [];
-
         if (!input("where")) {
             return jerr("消息范围参数缺失");
         }
@@ -262,7 +263,6 @@ class Message extends BaseController
         if (!getIsAdmin($this->user) && $this->user['user_id'] != $room['room_user'] && $room['room_sendmsg'] == 1) {
             return jerr('全员禁言中,你暂时无法发言');
         }
-
 
         if (!getIsAdmin($this->user) && $this->user['user_id'] != $room['room_user'] && $room['room_sendmsg'] == 2) {
             $isGuest = cache('guest_room_' . $room['room_id'] . '_user_' . $this->user['user_id']) ?? false;
@@ -564,6 +564,7 @@ class Message extends BaseController
                         return jok('');
                     }
                 }
+                return jok('');
                 break;
             case 'img':
                 if (cache('last_' . $this->user['user_id']) && !getIsAdmin($this->user) && $this->user['user_id'] != $room['room_user']) {
