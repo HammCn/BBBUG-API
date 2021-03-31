@@ -90,6 +90,9 @@ class Message extends BaseController
                 return jerr('你没有权限撤回该消息');
             }
         }
+        if (time() > $message['message_createtime'] + 300 && !getIsAdmin($this->user)) {
+            return jerr('你只能撤回5分钟内的消息');
+        }
         $msg = [
             'user' => getUserData($this->user),
             "message_id" => $message_id,
@@ -166,6 +169,9 @@ class Message extends BaseController
             $per_page = 100;
             if (input('per_page')) {
                 $per_page = intval(input('per_page'));
+            }
+            if ($per_page > 20) {
+                $per_page = 20;
             }
             $map = [
                 'message_status' => 0,
@@ -341,7 +347,6 @@ class Message extends BaseController
         }
         //全局预处理消息
         $jump_room = false;
-        $userModel = new UserModel();
         switch ($type) {
             case 'text':
                 if (strpos(rawurldecode(input('msg')), config('startadmin.frontend_url')) !== false) {
@@ -392,75 +397,48 @@ class Message extends BaseController
                 try {
                     $filterUrl = filter_var(str_replace(' ', '', $msg_decode), FILTER_VALIDATE_URL);
                     if ($filterUrl) {
+                        $title = "分享一个链接给你呀";
+                        $desc = '没有读取到网页信息,你就将就着自己点进去再慢慢看吧~';
+                        $img = '';
                         $result = file_get_contents($filterUrl);
                         if (preg_match('/<title>(.*?)<\/title>/', $result, $match)) {
                             $title = $match[1];
                             $metas = get_meta_tags($filterUrl);
                             $pattern = "/<[img|IMG].*?src=[\'|\"](.*?(?:[\.gif|\.jpg|\.png]))[\'|\"].*?[\/]?>/";
-                            $img = '';
                             if (preg_match($pattern, $result, $matchContent)) {
                                 $img = $matchContent[1];
                             }
                             if (array_key_exists('description', $metas)) {
                                 $desc = $metas['description'];
-                                $message_id = $this->model->insertGetId([
-                                    'message_user' => $this->user['user_id'],
-                                    'message_type' => 'text',
-                                    'message_content' => '',
-                                    'message_to' => $room_id,
-                                    'message_where' => $where,
-                                    'message_status' => 1,
-                                    'message_createtime' => time(),
-                                    'message_updatetime' => time(),
-                                ]);
-                                $msg = [
-                                    'type' => 'link',
-                                    'desc' => rawurlencode($desc),
-                                    'title' => rawurlencode($title),
-                                    'img' => rawurlencode($img),
-                                    'link' => rawurlencode($filterUrl),
-                                    'message_id' => $message_id,
-                                    'message_time' => time(),
-                                    'user' => getUserData($this->user),
-                                ];
-                                sendWebsocketMessage($where, $room_id, $msg);
-                                $this->model->where('message_id', $message_id)->update([
-                                    'message_type' => 'link',
-                                    'message_content' => json_encode($msg),
-                                    'message_status' => 0,
-                                ]);
-                                return jok('');
                             }
-                        } else {
-                            //未识别到关键词
-                            $message_id = $this->model->insertGetId([
-                                'message_user' => $this->user['user_id'],
-                                'message_type' => 'text',
-                                'message_content' => '',
-                                'message_to' => $room_id,
-                                'message_where' => $where,
-                                'message_status' => 1,
-                                'message_createtime' => time(),
-                                'message_updatetime' => time(),
-                            ]);
-                            $msg = [
-                                'type' => 'link',
-                                'desc' => rawurlencode('没有读取到网页信息,你就将就着自己点进去再慢慢看吧~'),
-                                'title' => rawurlencode('分享一个链接给你呀'),
-                                'img' => rawurlencode(""),
-                                'link' => rawurlencode($filterUrl),
-                                'message_id' => $message_id,
-                                'message_time' => time(),
-                                'user' => getUserData($this->user),
-                            ];
-                            sendWebsocketMessage($where, $room_id, $msg);
-                            $this->model->where('message_id', $message_id)->update([
-                                'message_type' => 'link',
-                                'message_content' => json_encode($msg),
-                                'message_status' => 0,
-                            ]);
-                            return jok('');
                         }
+                        $message_id = $this->model->insertGetId([
+                            'message_user' => $this->user['user_id'],
+                            'message_type' => 'text',
+                            'message_content' => '',
+                            'message_to' => $room_id,
+                            'message_where' => $where,
+                            'message_status' => 1,
+                            'message_createtime' => time(),
+                            'message_updatetime' => time(),
+                        ]);
+                        $msg = [
+                            'type' => 'link',
+                            'desc' => rawurlencode($desc),
+                            'title' => rawurlencode($title),
+                            'img' => rawurlencode($img),
+                            'link' => rawurlencode($filterUrl),
+                            'message_id' => $message_id,
+                            'message_time' => time(),
+                            'user' => getUserData($this->user),
+                        ];
+                        sendWebsocketMessage($where, $room_id, $msg);
+                        $this->model->where('message_id', $message_id)->update([
+                            'message_type' => 'link',
+                            'message_content' => json_encode($msg),
+                            'message_status' => 0,
+                        ]);
+                        return jok('');
                     }
                 } catch (\Exception $e) {
                 }
@@ -533,89 +511,59 @@ class Message extends BaseController
                 cache('message_' . $this->user['user_id'], $msg_decode, 10);
 
                 //彩蛋区域
+                $ifRobotEnable = false;
                 if ($at && $at['user_id'] == 1) {
                     //机器人被@
                     $robotShutdown = cache('shutdown_room_' . $room_id . '_user_1') ?? false;
                     $rand = rand(100000, 999999);
                     if (!$robotShutdown && $rand < 800000) {
-                        $url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat";
-                        $tencentAiArray = [
-                            "app_id" => config('startadmin.tencent_ai_appid'),
-                            "time_stamp" => time(),
-                            "nonce_str" => md5(time() . rand(100000, 999999)),
-                            "session" => $this->user['user_id'],
-                            "question" => $msg_decode
-                        ];
-                        $postData = http_build_query([
-                            "app_id" => $tencentAiArray['app_id'],
-                            "time_stamp" => $tencentAiArray['time_stamp'],
-                            "nonce_str" => $tencentAiArray['nonce_str'],
-                            "sign" => getTencentAiSign($tencentAiArray, config('startadmin.tencent_ai_appkey')),
-                            "session" => $tencentAiArray['session'],
-                            "question" => $tencentAiArray['question']
-                        ]);
-                        $ret = curlHelper($url, 'POST', $postData);
-                        $json = json_decode($ret['body'], true);
-                        if ($json['ret'] == 0) {
-                            $robotInfo = $this->userModel->where("user_id", 1)->find();
-                            $msg = [
-                                'type' => 'text',
-                                'content' => rawurlencode(rawurlencode($json['data']['answer'])),
-                                'where' => $where,
-                                'at' => [
-                                    'user_id' => $this->user['user_id'],
-                                    'user_name' => $this->user['user_name']
-                                ],
-                                'message_id' => 0,
-                                'message_time' => time(),
-                                'resource' => rawurlencode(rawurlencode($json['data']['answer'])),
-                                'user' => getUserData($robotInfo),
-                            ];
-                            sendWebsocketMessage('channel', $room_id, $msg);
-                        }
+                        $ifRobotEnable = true;
                     }
                 } else {
                     $robotShutdown = cache('shutdown_room_' . $room_id . '_user_1') ?? false;
                     $rand = rand(100000, 999999);
                     if (!$robotShutdown && $rand % 10 == 0) {
-                        $url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat";
-                        $tencentAiArray = [
-                            "app_id" => config("startadmin.tencent_ai_appid"),
-                            "time_stamp" => time(),
-                            "nonce_str" => md5(time() . rand(100000, 999999)),
-                            "session" => $this->user['user_id'],
-                            "question" => $msg_decode
-                        ];
-                        $postData = http_build_query([
-                            "app_id" => $tencentAiArray['app_id'],
-                            "time_stamp" => $tencentAiArray['time_stamp'],
-                            "nonce_str" => $tencentAiArray['nonce_str'],
-                            "sign" => getTencentAiSign($tencentAiArray, config("startadmin.tencent_ai_appkey")),
-                            "session" => $tencentAiArray['session'],
-                            "question" => $tencentAiArray['question']
-                        ]);
-                        $ret = curlHelper($url, 'POST', $postData);
-                        $json = json_decode($ret['body'], true);
-                        if ($json['ret'] == 0) {
-                            $robotInfo = $this->userModel->where("user_id", 1)->find();
-                            $msg = [
-                                'type' => 'text',
-                                'content' => rawurlencode(rawurlencode($json['data']['answer'])),
-                                'where' => $where,
-                                'at' => [
-                                    'user_id' => $this->user['user_id'],
-                                    'user_name' => $this->user['user_name']
-                                ],
-                                'message_id' => 0,
-                                'message_time' => time(),
-                                'resource' => rawurlencode(rawurlencode($json['data']['answer'])),
-                                'user' => getUserData($robotInfo),
-                            ];
-                            sendWebsocketMessage('channel', $room_id, $msg);
-                        }
+                        $ifRobotEnable = true;
                     }
                 }
-                return jok('');
+                if ($ifRobotEnable) {
+                    $url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat";
+                    $tencentAiArray = [
+                        "app_id" => config('startadmin.tencent_ai_appid'),
+                        "time_stamp" => time(),
+                        "nonce_str" => md5(time() . rand(100000, 999999)),
+                        "session" => $this->user['user_id'],
+                        "question" => $msg_decode
+                    ];
+                    $postData = http_build_query([
+                        "app_id" => $tencentAiArray['app_id'],
+                        "time_stamp" => $tencentAiArray['time_stamp'],
+                        "nonce_str" => $tencentAiArray['nonce_str'],
+                        "sign" => getTencentAiSign($tencentAiArray, config('startadmin.tencent_ai_appkey')),
+                        "session" => $tencentAiArray['session'],
+                        "question" => $tencentAiArray['question']
+                    ]);
+                    $ret = curlHelper($url, 'POST', $postData);
+                    $json = json_decode($ret['body'], true);
+                    if ($json['ret'] == 0) {
+                        $robotInfo = $this->userModel->where("user_id", 1)->find();
+                        $msg = [
+                            'type' => 'text',
+                            'content' => rawurlencode(rawurlencode($json['data']['answer'])),
+                            'where' => $where,
+                            'at' => [
+                                'user_id' => $this->user['user_id'],
+                                'user_name' => $this->user['user_name']
+                            ],
+                            'message_id' => 0,
+                            'message_time' => time(),
+                            'resource' => rawurlencode(rawurlencode($json['data']['answer'])),
+                            'user' => getUserData($robotInfo),
+                        ];
+                        sendWebsocketMessage('channel', $room_id, $msg);
+                        return jok('');
+                    }
+                }
                 break;
             case 'img':
                 if (cache('last_' . $this->user['user_id']) && !getIsAdmin($this->user) && $this->user['user_id'] != $room['room_user']) {
