@@ -331,6 +331,10 @@ class Room extends BaseController
             $order = 'room_order desc,room_online desc,room_id asc';
             //设置Model中的 per_page
             $this->setGetListPerPage();
+            $dataList = cache('room_list_guest') ?? false;
+            if ($dataList) {
+                return jok('from cache', $dataList);
+            }
             $dataList = $this->model->getHotRooms($order, $this->selectList);
             for ($i = 0; $i < count($dataList); $i++) {
                 if (in_array($dataList[$i]['user_group'], [1])) {
@@ -341,6 +345,7 @@ class Room extends BaseController
                 unset($dataList[$i]['user_group']);
                 unset($dataList[$i]['room_password']);
             }
+            cache('room_list_guest', $dataList, 60);
             return jok('数据获取成功', $dataList);
         }
         //校验Access与RBAC
@@ -351,6 +356,10 @@ class Room extends BaseController
         $order = 'room_order desc,room_online desc,room_id asc';
         //设置Model中的 per_page
         $this->setGetListPerPage();
+        $dataList = cache('room_list') ?? false;
+        if ($dataList) {
+            return jok('from cache', $dataList);
+        }
         $dataList = $this->model->getHotRooms($order, $this->selectList);
         for ($i = 0; $i < count($dataList); $i++) {
             if (in_array($dataList[$i]['user_group'], [1])) {
@@ -360,6 +369,7 @@ class Room extends BaseController
             }
             unset($dataList[$i]['room_password']);
         }
+        cache('room_list', $dataList, 10);
         return jok('数据获取成功', $dataList);
     }
     public function myRoom()

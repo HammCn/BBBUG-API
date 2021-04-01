@@ -431,11 +431,28 @@ class User extends BaseController
         if (!$room) {
             return jerr("房间信息查询失败");
         }
+
         $order = 'user_id asc';
 
         $list = [];
+        $ret = [];
+        $field = [
+            'user' => 'user_id,user_name,user_head,user_group,user_remark,user_device,user_sex,user_extra,user_icon,user_vip',
+            'app' => 'app_id,app_name,app_url'
+        ];
+        if (input('sync') == 'yes') {
+            $field = [
+                'user' => 'user_id,user_group',
+                'app' => 'app_id'
+            ];
+        }else{
+            $cache = cache('online_list_' . $room_id) ?? false;
+            if ($cache) {
+                return jok('from cache', $cache);
+            }
+        }
 
-        $ret = $this->model->view('user', 'user_id,user_name,user_head,user_group,user_remark,user_device,user_sex,user_extra,user_icon,user_vip')->view('app', 'app_id,app_name,app_url', 'user.user_app = app.app_id')->where([
+        $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
             ['user_id', 'in', $arr ?? []],
         ])->where('user_group', 1)->whereOr("user_id", 1)->order($order)->select();
         $ret = $ret ? $ret->toArray() : [];
@@ -447,7 +464,7 @@ class User extends BaseController
         }
         $list = array_merge($list, $ret);
 
-        $ret = $this->model->view('user', 'user_id,user_name,user_head,user_group,user_remark,user_device,user_sex,user_extra,user_icon,user_vip')->view('app', 'app_id,app_name,app_url', 'user.user_app = app.app_id')->where([
+        $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
             ['user_id', 'in', $arr ?? []],
         ])->where('user_group', 5)->where('user_id', 'like', $room['room_user'])->where('user_id', 'not like', 10000)->order($order)->select();
         $ret = $ret ? $ret->toArray() : [];
@@ -459,7 +476,7 @@ class User extends BaseController
         }
         $list = array_merge($list, $ret);
 
-        $ret = $this->model->view('user', 'user_id,user_name,user_head,user_group,user_remark,user_device,user_sex,user_extra,user_icon,user_vip')->view('app', 'app_id,app_name,app_url', 'user.user_app = app.app_id')->where([
+        $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
             ['user_id', 'in', $arr ?? []],
         ])->where('user_group', 5)->where('user_id', 'not like', $room['room_user'])->where('user_id', 'not like', 10000)->order($order)->select();
 
@@ -472,8 +489,9 @@ class User extends BaseController
         }
         $list = array_merge($list, $ret);
 
-
-
+        if (input('sync') != 'yes') {
+            cache('online_list_' . $room_id, $list, 10);
+        }
         return jok('success', $list);
     }
     protected function getCacheStatus($type, $room_id, $user_id)
