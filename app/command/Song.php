@@ -224,6 +224,9 @@ class Song extends BaseCommand
         $result = curlHelper('http://kuwo.cn/api/www/bang/bang/musicList?bangId=' . $bangId . '&pn=1&rn=100', 'GET', null, [
             'csrf: ' . $randNumber,
         ], "kw_token=" . $randNumber);
+        if (!$result['body']) {
+            return false;
+        }
         $arr = json_decode($result['body'], true);
         if ($arr['code'] != 200) {
             return false;
