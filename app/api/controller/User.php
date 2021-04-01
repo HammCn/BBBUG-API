@@ -412,12 +412,13 @@ class User extends BaseController
         if (!input('room_id')) {
             return jerr('缺少room_id');
         }
+        $simpleData = input('sync') == 'yes' ? true : false;
         $room_id = intval(input('room_id'));
         $ret = curlHelper(getWebsocketApiUrl() . "?channel=" . $room_id);
         $arr = json_decode($ret['body'], true);
         $count = $this->model->where('user_id', 'in', $arr)->count('user_id');
 
-        if (input('sync') == 'yes') {
+        if ($simpleData) {
             //同步一下该频道的在线人数
             $roomModel = new RoomModel();
             $myRoom = $roomModel->where('room_id', $room_id)->update([
@@ -435,63 +436,65 @@ class User extends BaseController
         $order = 'user_id asc';
 
         $list = [];
-        $ret = [];
         $field = [
             'user' => 'user_id,user_name,user_head,user_group,user_remark,user_device,user_sex,user_extra,user_icon,user_vip',
             'app' => 'app_id,app_name,app_url'
         ];
-        if (input('sync') == 'yes') {
+        if ($simpleData) {
             $field = [
                 'user' => 'user_id,user_group',
                 'app' => 'app_id'
             ];
-        }else{
+            $list = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
+                ['user_id', 'in', $arr ?? []],
+            ])->order($order)->select();
+        } else {
             $cache = cache('online_list_' . $room_id) ?? false;
             if ($cache) {
                 return jok('from cache', $cache);
             }
+            $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
+                ['user_id', 'in', $arr ?? []],
+            ])->where('user_group', 1)->whereOr("user_id", 1)->order($order)->select();
+            $ret = $ret ? $ret->toArray() : [];
+            for ($i = 0; $i < count($ret); $i++) {
+                $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
+                $ret[$i]['user_shutdown'] = $this->getCacheStatus('shutdown', $room_id, $ret[$i]['user_id']);
+                $ret[$i]['user_songdown'] = $this->getCacheStatus('songdown', $room_id, $ret[$i]['user_id']);
+                $ret[$i]['user_guest'] = $this->getCacheStatus('guestctrl', $room_id, $ret[$i]['user_id']);
+            }
+            $list = array_merge($list, $ret);
+
+            $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
+                ['user_id', 'in', $arr ?? []],
+            ])->where('user_group', 5)->where('user_id', 'like', $room['room_user'])->where('user_id', 'not like', 10000)->order($order)->select();
+            $ret = $ret ? $ret->toArray() : [];
+            for ($i = 0; $i < count($ret); $i++) {
+                $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
+                $ret[$i]['user_shutdown'] = $this->getCacheStatus('shutdown', $room_id, $ret[$i]['user_id']);
+                $ret[$i]['user_songdown'] = $this->getCacheStatus('songdown', $room_id, $ret[$i]['user_id']);
+                $ret[$i]['user_guest'] = $this->getCacheStatus('guestctrl', $room_id, $ret[$i]['user_id']);
+            }
+            $list = array_merge($list, $ret);
+
+            $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
+                ['user_id', 'in', $arr ?? []],
+            ])->where('user_group', 5)->where('user_id', 'not like', $room['room_user'])->where('user_id', 'not like', 10000)->order($order)->select();
+
+            $ret = $ret ? $ret->toArray() : [];
+            for ($i = 0; $i < count($ret); $i++) {
+                $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
+                $ret[$i]['user_shutdown'] = $this->getCacheStatus('shutdown', $room_id, $ret[$i]['user_id']);
+                $ret[$i]['user_songdown'] = $this->getCacheStatus('songdown', $room_id, $ret[$i]['user_id']);
+                $ret[$i]['user_guest'] = $this->getCacheStatus('guestctrl', $room_id, $ret[$i]['user_id']);
+            }
+            $list = array_merge($list, $ret);
+
+            if (input('sync') != 'yes') {
+                cache('online_list_' . $room_id, $list, 5);
+            }
         }
 
-        $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
-            ['user_id', 'in', $arr ?? []],
-        ])->where('user_group', 1)->whereOr("user_id", 1)->order($order)->select();
-        $ret = $ret ? $ret->toArray() : [];
-        for ($i = 0; $i < count($ret); $i++) {
-            $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
-            $ret[$i]['user_shutdown'] = $this->getCacheStatus('shutdown', $room_id, $ret[$i]['user_id']);
-            $ret[$i]['user_songdown'] = $this->getCacheStatus('songdown', $room_id, $ret[$i]['user_id']);
-            $ret[$i]['user_guest'] = $this->getCacheStatus('guestctrl', $room_id, $ret[$i]['user_id']);
-        }
-        $list = array_merge($list, $ret);
-
-        $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
-            ['user_id', 'in', $arr ?? []],
-        ])->where('user_group', 5)->where('user_id', 'like', $room['room_user'])->where('user_id', 'not like', 10000)->order($order)->select();
-        $ret = $ret ? $ret->toArray() : [];
-        for ($i = 0; $i < count($ret); $i++) {
-            $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
-            $ret[$i]['user_shutdown'] = $this->getCacheStatus('shutdown', $room_id, $ret[$i]['user_id']);
-            $ret[$i]['user_songdown'] = $this->getCacheStatus('songdown', $room_id, $ret[$i]['user_id']);
-            $ret[$i]['user_guest'] = $this->getCacheStatus('guestctrl', $room_id, $ret[$i]['user_id']);
-        }
-        $list = array_merge($list, $ret);
-
-        $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
-            ['user_id', 'in', $arr ?? []],
-        ])->where('user_group', 5)->where('user_id', 'not like', $room['room_user'])->where('user_id', 'not like', 10000)->order($order)->select();
-
-        $ret = $ret ? $ret->toArray() : [];
-        for ($i = 0; $i < count($ret); $i++) {
-            $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
-            $ret[$i]['user_shutdown'] = $this->getCacheStatus('shutdown', $room_id, $ret[$i]['user_id']);
-            $ret[$i]['user_songdown'] = $this->getCacheStatus('songdown', $room_id, $ret[$i]['user_id']);
-            $ret[$i]['user_guest'] = $this->getCacheStatus('guestctrl', $room_id, $ret[$i]['user_id']);
-        }
-        $list = array_merge($list, $ret);
-
-        if (input('sync') != 'yes') {
-            cache('online_list_' . $room_id, $list, 10);
-        }
         return jok('success', $list);
     }
     protected function getCacheStatus($type, $room_id, $user_id)

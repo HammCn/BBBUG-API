@@ -278,7 +278,11 @@ class Message extends BaseController
         }
 
         $type = input('type');
-
+        if ($type == 'text') {
+            if (!str_replace(' ', '', $msg_decode)) {
+                return jerr("咱好歹说点啥吧？");
+            }
+        }
         switch (input('where')) {
             case 'channel':
                 $where = 'channel';
