@@ -93,9 +93,9 @@ class Room extends BaseController
                     unset($data['room_password']);
                 }
             }
-        }
-        if ($item['room_password'] && (strlen($item['room_password']) > 16 || strlen($item['room_password']) < 4)) {
-            return jerr('密码长度应为4-16位');
+            if ($data['room_password'] && (strlen($data['room_password']) > 16 || strlen($data['room_password']) < 4)) {
+                return jerr('密码长度应为4-16位');
+            }
         }
 
         if (!isset($data['room_type']) || !in_array($data['room_type'], [0, 1, 4])) {
@@ -175,13 +175,15 @@ class Room extends BaseController
         if ($error) {
             return $error;
         }
-        $songModel = new SongModel();
-        $song = $songModel->field('song_id')->where('song_user', $this->user['user_id'])->select();
-        if (count($song) < 30) {
-            return jerr('点歌超过30首才可能建房间!');
-        }
-        if (time() - $this->user['user_createtime'] < 86400 * 3) {
-            return jerr('注册时间超过3天才能创建房间!');
+        if (!in_array($this->user['user_id'], [1, 13413, 13372])) {
+            $songModel = new SongModel();
+            $song = $songModel->field('song_id')->where('song_user', $this->user['user_id'])->select();
+            if (count($song) < 30) {
+                return jerr('点歌超过30首才可能建房间!');
+            }
+            if (time() - $this->user['user_createtime'] < 86400 * 3) {
+                return jerr('注册时间超过3天才能创建房间!');
+            }
         }
         $myRoom = $this->model->where('room_user', $this->user['user_id'])->find();
         if ($myRoom) {
@@ -246,6 +248,8 @@ class Room extends BaseController
                 $plat = '思否';
             } else if (strpos($referer, 'github.com') !== false) {
                 $plat = 'Github';
+            } else if (strpos($referer, 'gitee.io') !== false) {
+                $plat = 'OSC动弹';
             }
         }
         if (input('access_token') == getTempToken()) {
