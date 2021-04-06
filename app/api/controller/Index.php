@@ -11,14 +11,14 @@ class Index extends BaseController
         $wechat_app_enabled = cache('wechat_app_enabled') ?? 'close';
         if ($wechat_app_enabled == 'open') {
             return jok($wechat_app_enabled, [
-                'hide' => 1
-            ]);
-        } else {
-            return jok($wechat_app_enabled, [
-                'hide' => 0,
-                'data' => json_decode(file_get_contents('https://h5.oschina.net/apiv3/projectRecommend?size=50&page=1'), true)['data']['items']
+                'success' => 1,
+                'systemVersion'=>time()
             ]);
         }
+        return jok($wechat_app_enabled, [
+            'success' => 0,
+            'data' => json_decode(file_get_contents('https://h5.oschina.net/apiv3/projectRecommend?size=50&page=1'), true)['data']['items']
+        ]);
     }
     public function detail()
     {
