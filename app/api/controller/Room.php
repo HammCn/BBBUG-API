@@ -73,6 +73,10 @@ class Room extends BaseController
         }
         //从请求中获取Update数据
         $data = $this->getUpdateDataFromRequest();
+        
+        $reConnect = false;
+        
+        
         //根据主键更新这条数据
         if (empty($data['room_public'])) {
             $data['room_public'] = 0;
@@ -83,17 +87,24 @@ class Room extends BaseController
         } else {
             //设置加密
             if (empty($item['room_password'])) {
-                //原来也没设置密码
+                //原来没设置密码
                 if (empty($data['room_password'])) {
                     return jerr('请输入一个房间密码');
+                }else{
+                    //输入了密码 需要用户重新连接
+                    $reConnect=true;
                 }
             } else {
-                //原来设置了密码 如果不输入 则不修改
+                //原来设置了密码
                 if (empty($data['room_password'])) {
+                    //没有输入 不修改密码
                     unset($data['room_password']);
+                }else{
+                    // 输入了密码 需要修改
+                    $reConnect=true;
                 }
             }
-            if ($data['room_password'] && (strlen($data['room_password']) > 16 || strlen($data['room_password']) < 4)) {
+            if (!empty($data['room_password']) && (strlen($data['room_password']) > 16 || strlen($data['room_password']) < 4)) {
                 return jerr('密码长度应为4-16位');
             }
         }
@@ -147,11 +158,9 @@ class Room extends BaseController
         }
 
         $this->updateByPk($data);
-        if ($data['room_type'] != 1) {
-            cache('SongNow_' . $this->pk_value, null);
-        }
         $msg = [
             'type' => 'roomUpdate',
+            'reConnect'=> $reConnect?1:0,
             'user' => getUserData($this->user),
         ];
 
