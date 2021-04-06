@@ -777,7 +777,7 @@ class User extends BaseController
         if (getIsAdmin($user)) {
             return jerr("你无权操作管理员");
         }
-
+        cache('online_list_' . $room_id, null);
         $isSet = cache('guest_room_' . $room_id . '_user_' . $user_id) ?? false;
         if ($isSet) {
             cache('guest_room_' . $room_id . '_user_' . $user_id, null);
@@ -834,6 +834,7 @@ class User extends BaseController
             }
         }
 
+        cache('online_list_' . $room_id, null);
         cache('shutdown_room_' . $room_id . '_user_' . $user_id, time());
         $msg = [
             'user' => getUserData($this->user),
@@ -874,6 +875,7 @@ class User extends BaseController
             return jerr("你无权操作管理员");
         }
 
+        cache('online_list_' . $room_id, null);
         cache('songdown_room_' . $room_id . '_user_' . $user_id, time());
         $msg = [
             'user' => getUserData($this->user),
@@ -917,6 +919,7 @@ class User extends BaseController
             }
         }
 
+        cache('online_list_' . $room_id, null);
         cache('shutdown_room_' . $room_id . '_user_' . $user_id, null);
         cache('songdown_room_' . $room_id . '_user_' . $user_id, null);
         $msg = [
@@ -1088,7 +1091,6 @@ class User extends BaseController
                     $obj = json_decode($result['body'], true);
                     $access_token = $obj['access_token'];
                     //关注Hamm
-
                     curlHelper("https://gitee.com/api/v5/user/following/hamm", "PUT", http_build_query([
                         "access_token" => $access_token,
                     ]));
