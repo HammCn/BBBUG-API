@@ -3,6 +3,7 @@
 namespace app\api\controller;
 
 use app\api\BaseController;
+use think\facade\Db;
 use app\model\Room as RoomModel;
 use app\model\Song as SongModel;
 use app\model\User as UserModel;
@@ -19,17 +20,12 @@ class Song extends BaseController
         //查询详情时允许的字段
         $this->selectDetail = "*";
         //筛选字段
-        $this->searchFilter = [
-            "song_id" => "=",
-            "song_contentid" => "like", "song_copyid" => "like", "song_source" => "like", "song_name" => "like", "song_singer" => "like", "song_plat" => "like", "song_playcount" => "like", "song_passcount" => "like",
-        ];
+        $this->searchFilter = [];
         $this->insertFields = [
             //允许添加的字段列表
-            "song_contentid", "song_copyid", "song_source", "song_name", "song_singer", "song_plat", "song_playcount", "song_passcount",
         ];
         $this->updateFields = [
             //允许更新的字段列表
-            "song_contentid", "song_copyid", "song_source", "song_name", "song_singer", "song_plat", "song_playcount", "song_passcount",
         ];
         $this->insertRequire = [
             //添加时必须填写的字段
@@ -45,23 +41,16 @@ class Song extends BaseController
     }
     public function search()
     {
-
-        // if (input('access_token') == getTempToken()) {
-        //     return jerr('请登录后体验完整功能!', 401);
-        // }
-        // $error = $this->access();
-        // if ($error) {
-        //     return $error;
-        // }
-
-        // cache('search_song_cache_'.$this->user['user_id'],null);
-
-        // $search_song_cache = cache('search_song_cache_' . $this->user['user_id']) ?? false;
-        // if ($search_song_cache) {
-        //     return jerr('哥们你搜索太快了,歇会!');
-        // }
-        // cache('search_song_cache_' . $this->user['user_id'], $this->user['user_id'], 1);
-
+        if (input('isHots')) {
+            //获取本周热门歌曲
+            $cache = cache('week_song_play_rank') ?? false;
+            if ($cache && false) {
+                return jok('from redis', $cache);
+            }
+            $result = Db::query("select sum(song_week) as week,song_mid as mid,song_id as id,song_pic as pic,song_singer as singer,song_name as name from sa_song where song_week > 0 group by song_mid order by week desc limit 0,50");
+            cache('week_song_play_rank', $result, 10);
+            return jok('success', $result);
+        }
         $list = [];
         $keywordArray = ['周杰伦', '林俊杰', '张学友', '林志炫', '梁静茹', '周华健', '华晨宇', '张宇', '张杰', '李宇春', '六哲', '阿杜', '伍佰', '五月天', '毛不易', '梁咏琪', '艾薇儿', '陈奕迅', '李志', '胡夏'];
         // $keywordArray = [];
@@ -287,7 +276,6 @@ class Song extends BaseController
                 'song_updatetime' => time(),
             ]);
         } else {
-            $songModel->where('song_id', $songExist['song_id'])->inc('song_play')->update();
             $songModel->where('song_id', $songExist['song_id'])->update([
                 'song_updatetime' => time(),
             ]);
@@ -418,6 +406,7 @@ class Song extends BaseController
             ]);
         } else {
             $songModel->where('song_id', $songExist['song_id'])->inc('song_play')->update();
+            $songModel->where('song_id', $songExist['song_id'])->inc('song_week')->update();
             $songModel->where('song_id', $songExist['song_id'])->update([
                 'song_updatetime' => time(),
             ]);
