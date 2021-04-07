@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: 2021-03-30 15:50:25
+-- Generation Time: 2021-04-07 14:36:59
 -- 服务器版本： 5.6.48-log
 -- PHP Version: 7.1.32
 
@@ -545,7 +545,7 @@ CREATE TABLE `sa_room` (
   `room_type` int(11) NOT NULL DEFAULT '1' COMMENT '房间类型',
   `room_public` int(11) NOT NULL DEFAULT '0',
   `room_password` varchar(255) NOT NULL DEFAULT '' COMMENT '房间密码',
-  `room_notice` varchar(255) NOT NULL DEFAULT '' COMMENT '进入房间提醒',
+  `room_notice` text COMMENT '进入房间提醒',
   `room_addsong` int(11) NOT NULL DEFAULT '0',
   `room_sendmsg` int(11) NOT NULL DEFAULT '0',
   `room_robot` int(11) NOT NULL DEFAULT '0',
@@ -582,6 +582,7 @@ CREATE TABLE `sa_song` (
   `song_pic` varchar(255) NOT NULL DEFAULT '',
   `song_length` int(11) NOT NULL DEFAULT '0',
   `song_play` int(11) NOT NULL DEFAULT '1' COMMENT '被点次数',
+  `song_week` int(9) NOT NULL DEFAULT '0' COMMENT '本周被点次数',
   `song_fav` int(11) NOT NULL DEFAULT '0' COMMENT '0点歌 1收藏',
   `song_status` int(11) NOT NULL DEFAULT '0' COMMENT '状态',
   `song_createtime` int(11) NOT NULL DEFAULT '0' COMMENT '创建时间',
