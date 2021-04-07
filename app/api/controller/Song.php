@@ -401,6 +401,8 @@ class Song extends BaseController
                 'song_singer' => $song['singer'],
                 'song_mid' => $song['mid'],
                 'song_pic' => $song['pic'],
+                'song_play' => 1,
+                'song_week' => 1,
                 'song_length' => $song['length'],
                 'song_user' => $this->user['user_id'],
             ]);
