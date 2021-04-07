@@ -44,7 +44,7 @@ class Song extends BaseController
         if (input('isHots')) {
             //获取本周热门歌曲
             $cache = cache('week_song_play_rank') ?? false;
-            if ($cache && false) {
+            if ($cache) {
                 return jok('from redis', $cache);
             }
             $result = Db::query("select sum(song_week) as week,song_mid as mid,song_id as id,song_pic as pic,song_singer as singer,song_name as name from sa_song where song_week > 0 group by song_mid order by week desc limit 0,50");
