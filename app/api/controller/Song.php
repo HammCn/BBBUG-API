@@ -597,7 +597,7 @@ class Song extends BaseController
             if ($songNextCount >= $limitCount) {
                 cache('SongNow_' . $room_id, null);
                 $msg = [
-                    "content" => rawurlencode($room['room_votepercent'] . '%在线用户(' . $limitCount . '人)不想听这首歌，系统已自动切歌!'),
+                    "content" => $room['room_votepercent'] . '%在线用户(' . $limitCount . '人)不想听这首歌，系统已自动切歌!',
                     "type" => "system",
                     "time" => date('H:i:s'),
                 ];
