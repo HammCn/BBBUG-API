@@ -18,7 +18,7 @@
 
 ### 介绍
 
-此仓库为BBBUG项目后端API部分，其他客户端代码请查看组织下的对应仓库。
+此仓库为BBBUG项目后端API部分，其他客户端代码请查看组织下的对应仓库。QQ群1140258698
 
 体验一下：<a href="https://www.bbbug.com/" target="_blank">www.bbbug.com</a>
 
