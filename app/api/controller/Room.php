@@ -73,10 +73,10 @@ class Room extends BaseController
         }
         //从请求中获取Update数据
         $data = $this->getUpdateDataFromRequest();
-        
+
         $reConnect = false;
-        
-        
+
+
         //根据主键更新这条数据
         if (empty($data['room_public'])) {
             $data['room_public'] = 0;
@@ -90,18 +90,18 @@ class Room extends BaseController
                 //原来没设置密码
                 if (empty($data['room_password'])) {
                     return jerr('请输入一个房间密码');
-                }else{
+                } else {
                     //输入了密码 需要用户重新连接
-                    $reConnect=true;
+                    $reConnect = true;
                 }
             } else {
                 //原来设置了密码
                 if (empty($data['room_password'])) {
                     //没有输入 不修改密码
                     unset($data['room_password']);
-                }else{
+                } else {
                     // 输入了密码 需要修改
-                    $reConnect=true;
+                    $reConnect = true;
                 }
             }
             if (!empty($data['room_password']) && (strlen($data['room_password']) > 16 || strlen($data['room_password']) < 4)) {
@@ -160,7 +160,7 @@ class Room extends BaseController
         $this->updateByPk($data);
         $msg = [
             'type' => 'roomUpdate',
-            'reConnect'=> $reConnect?1:0,
+            'reConnect' => $reConnect ? 1 : 0,
             'user' => getUserData($this->user),
         ];
 
@@ -184,7 +184,8 @@ class Room extends BaseController
         if ($error) {
             return $error;
         }
-        if (!in_array($this->user['user_id'], [1, 13413, 13372])) {
+        $canCreateRoom = cache('create_room_user_' . $this->user['user_id']) ?? false;
+        if (!$canCreateRoom) {
             $songModel = new SongModel();
             $song = $songModel->field('song_id')->where('song_user', $this->user['user_id'])->select();
             if (count($song) < 30) {
