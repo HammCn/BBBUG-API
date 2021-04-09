@@ -76,8 +76,10 @@ class Song extends BaseController
                 try {
                     $kuwo_list = $arr['data']['list'];
                 } catch (\Exception $e) {
-                    $kuwo_list = [];
+                    return jerr('搜索失败,建议重试');
                 }
+            }else{
+                return jerr('搜索失败,建议重试');
             }
         }
         if (count($kuwo_list) > 0) {
