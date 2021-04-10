@@ -467,7 +467,7 @@ class User extends BaseController
 
             $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
                 ['user_id', 'in', $arr ?? []],
-            ])->where('user_group', 5)->where('user_id', 'like', $room['room_user'])->where('user_id', 'not like', 10000)->order($order)->select();
+            ])->where('user_group', 5)->where('user_id', 'like', $room['room_user'])->order($order)->select();
             $ret = $ret ? $ret->toArray() : [];
             for ($i = 0; $i < count($ret); $i++) {
                 $ret[$i]['user_admin'] = getIsAdmin($ret[$i]);
@@ -479,7 +479,7 @@ class User extends BaseController
 
             $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
                 ['user_id', 'in', $arr ?? []],
-            ])->where('user_group', 5)->where('user_id', 'not like', $room['room_user'])->where('user_id', 'not like', 10000)->order($order)->select();
+            ])->where('user_group', 5)->where('user_id', 'not like', $room['room_user'])->order($order)->select();
 
             $ret = $ret ? $ret->toArray() : [];
             for ($i = 0; $i < count($ret); $i++) {
