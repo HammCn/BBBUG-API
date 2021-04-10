@@ -226,8 +226,8 @@ class Room extends BaseController
         }
         $ip = getClientIp();
         $where = '';
-        $where = cache('ip_addr_'.$ip) ?? false;
-        if(!$where){
+        $where = cache('ip_addr_' . $ip) ?? false;
+        if (!$where) {
             $data = curlHelper('https://ipchaxun.com/' . $ip . '/', 'GET', [], [
                 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Safari/537.36'
             ]);
@@ -238,10 +238,10 @@ class Room extends BaseController
                     $where = str_replace('区', '', $where);
                     $where = str_replace('县', '', $where);
                     $where = str_replace('市', '', $where);
-                    cache('ip_addr_'.$ip,$where);
+                    cache('ip_addr_' . $ip, $where);
                 }
             }
-        }else{
+        } else {
             $where = '';
         }
         $plat = '';
@@ -272,7 +272,7 @@ class Room extends BaseController
                 return jerr('禁止游客进入密码房间');
             }
             // $user_id = preg_replace("/[^\.]{1,3}$/", "*", $ip) . $_SERVER['REMOTE_PORT'];
-            $user_id = $ip.":".$_SERVER['REMOTE_PORT'];
+            $user_id = $ip . ":" . $_SERVER['REMOTE_PORT'];
             $lastSend = cache('channel_' . $channel . '_user_' . $ip) ?? false;
             if (!$lastSend) {
                 $string = '欢迎';
