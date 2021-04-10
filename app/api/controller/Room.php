@@ -225,21 +225,26 @@ class Room extends BaseController
             return jerr('没有查询到房间信息');
         }
         $ip = getClientIp();
-        $data = curlHelper('https://ipchaxun.com/' . $ip . '/', 'GET', [], [
-            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Safari/537.36'
-        ]);
         $where = '';
-        $plat = '';
-        if ($data['body']) {
-            if (preg_match('/归属地：<\/span><span class="value">(.*?)</', $data['body'], $matches)) {
-                $where = $matches[1];
-                $where = str_replace('中国', '', $where);
-                $where = str_replace('区', '', $where);
-                $where = str_replace('县', '', $where);
-                $where = str_replace('市', '', $where);
+        $where = cache('ip_addr_'.$ip) ?? false;
+        if(!$where){
+            $data = curlHelper('https://ipchaxun.com/' . $ip . '/', 'GET', [], [
+                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Safari/537.36'
+            ]);
+            if ($data['body']) {
+                if (preg_match('/归属地：<\/span><span class="value">(.*?)</', $data['body'], $matches)) {
+                    $where = $matches[1];
+                    $where = str_replace('中国', '', $where);
+                    $where = str_replace('区', '', $where);
+                    $where = str_replace('县', '', $where);
+                    $where = str_replace('市', '', $where);
+                    cache('ip_addr_'.$ip,$where);
+                }
             }
+        }else{
+            $where = '';
         }
-
+        $plat = '';
         if (input('referer')) {
             $referer = (input('referer'));
             if (strpos($referer, 'v2ex.com') !== false) {
@@ -266,8 +271,8 @@ class Room extends BaseController
             if ($item['room_public'] == 1) {
                 return jerr('禁止游客进入密码房间');
             }
-            $user_id = preg_replace("/[^\.]{1,3}$/", "*", $ip) . $_SERVER['REMOTE_PORT'];
-            // $user_id = $ip.":".$_SERVER['REMOTE_PORT'];
+            // $user_id = preg_replace("/[^\.]{1,3}$/", "*", $ip) . $_SERVER['REMOTE_PORT'];
+            $user_id = $ip.":".$_SERVER['REMOTE_PORT'];
             $lastSend = cache('channel_' . $channel . '_user_' . $ip) ?? false;
             if (!$lastSend) {
                 $string = '欢迎';
@@ -281,7 +286,7 @@ class Room extends BaseController
                 }
                 $msg = [
                     'type' => 'join',
-                    'name' => $user_id,
+                    'name' => '临时用户',
                     'where' => $where,
                     'plat' => $plat,
                     'user' => null,
