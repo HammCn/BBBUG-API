@@ -695,7 +695,7 @@ class User extends BaseController
             $data['user_remark'] = rawurldecode(input('user_remark'));
             $data['user_remark'] = mb_substr($data['user_remark'], 0, 50, 'utf-8');
         } else {
-            $data['user_remark'] = '每个人都应该有签名,但偏偏我没有.';
+            $data['user_remark'] = $this->model->getOneRemark();
         }
         if (input('?user_sex')) {
             $data['user_sex'] = input('user_sex');
