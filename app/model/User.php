@@ -20,7 +20,7 @@ class User extends BaseModel
             "user_account" => $user_account,
         ])->find();
 
-        if(preg_match("/^[1-9][0-9]*$/" ,$user_account)){
+        if (preg_match("/^[1-9][0-9]*$/", $user_account)) {
             $user = $this->where([
                 "user_id" => $user_account,
             ])->find();
@@ -59,9 +59,21 @@ class User extends BaseModel
             "user_name" => $name,
             "user_group" => config('startadmin.default_group') ?? 0,
             "user_ipreg" => request()->ip(),
+            "user_remark" => $this->getOneRemark(),
             "user_createtime" => time(),
             "user_updatetime" => time(),
         ]);
+    }
+    public function getOneRemark()
+    {
+        $url = 'https://www.meiriyiyan.com/api/v1/one.svg';
+        $result = curlHelper($url);
+        if (key_exists('body', $result)) {
+            if (preg_match('/fill="#000000">(.*?)<\/text>/', $result['body'], $matches)) {
+                return $matches[1];
+            }
+        }
+        return '每个人都应该有签名,但偏偏我没有.';
     }
     public function regByLogin($account, $name)
     {
@@ -74,11 +86,12 @@ class User extends BaseModel
             "user_name" => $name,
             "user_group" => config('startadmin.default_group') ?? 0,
             "user_ipreg" => request()->ip(),
+            "user_remark" => $this->getOneRemark(),
             "user_createtime" => time(),
             "user_updatetime" => time(),
         ]);
     }
-    public function regByOpen($account, $name, $head, $sex,$appid, $extra = '')
+    public function regByOpen($account, $name, $head, $sex, $appid, $extra = '')
     {
         $name = mb_substr($name, 0, $this->maxNickName, 'utf-8');
         $name = rawurlencode($name);
@@ -94,6 +107,7 @@ class User extends BaseModel
             "user_group" => config('startadmin.default_group') ?? 0,
             "user_ipreg" => request()->ip(),
             "user_extra" => $extra,
+            "user_remark" => $this->getOneRemark(),
             "user_createtime" => time(),
             "user_updatetime" => time(),
         ]);
