@@ -225,24 +225,22 @@ class Room extends BaseController
             return jerr('没有查询到房间信息');
         }
         $ip = getClientIp();
-        $where = '';
-        $where = cache('ip_addr_' . $ip) ?? false;
+        $where = cache('ip_addr_' . $ip) ?? '';
         if (!$where) {
             $data = curlHelper('https://ipchaxun.com/' . $ip . '/', 'GET', [], [
-                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Safari/537.36'
+                'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Safari/537.36',
+
             ]);
             if ($data['body']) {
-                if (preg_match('/归属地：<\/span><span class="value">(.*?)</', $data['body'], $matches)) {
+                if (preg_match('/<span class="name">归属地：<\/span><span class="value">(.*?)<\/span>/', $data['body'], $matches)) {
                     $where = $matches[1];
                     $where = str_replace('中国', '', $where);
                     $where = str_replace('区', '', $where);
                     $where = str_replace('县', '', $where);
                     $where = str_replace('市', '', $where);
-                    cache('ip_addr_' . $ip, $where);
+                    cache('ip_addr_' . $ip, $where, 3600);
                 }
             }
-        } else {
-            $where = '';
         }
         $plat = '';
         if (input('referer')) {
@@ -317,7 +315,7 @@ class Room extends BaseController
         }
 
         $lastSend = cache('channel_' . $channel . '_user_' . $this->user['user_id']) ?? false;
-        if (!$lastSend || true) {
+        if (!$lastSend) {
             $string = '欢迎';
             if ($where) {
                 $string .=  $where . '的';
