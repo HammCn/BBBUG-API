@@ -205,7 +205,7 @@ class Attach extends BaseController
             try {
                 validate(['file' => 'filesize:8388608' . '|fileExt:mp3'])
                     ->check(['file' => $file]);
-                $saveName = Filesystem::putFile('normal', $file);
+                $saveName = strtolower(Filesystem::putFile('normal', $file));
                 copy('./uploads/' . $saveName, str_replace('.mp3', '.jpg', './uploads/' . $saveName)); //拷贝到新目录
                 unlink('./uploads/' . $saveName); //删除旧目录下的文件
                 $saveName = str_replace('.mp3', '.jpg', $saveName);
