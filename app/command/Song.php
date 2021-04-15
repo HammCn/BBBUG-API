@@ -114,26 +114,56 @@ class Song extends BaseCommand
             return;
         }
         $preMid = $song['song']['mid'];
-        $preSong = cache('song_play_temp_url_' . $preMid) ?? false;
-        $preCount = cache('song_pre_load_count') ?? 0;
-        if (!$preSong && $preCount < 5) {
-            print_r("请缓存 " . $room['room_id'] . " " . $preMid);
-            cache('song_pre_load_count', $preCount + 1, 60);
-            $url = 'http://kuwo.cn/url?rid=' . $preMid . '&type=convert_url3&br=128kmp3';
-            $result = curlHelper($url)['body'];
-            $arr = json_decode($result, true);
-            if ($arr['code'] == 200) {
-                if ($arr['url']) {
-                    $tempList = cache('song_waiting_download_list') ?? [];
-                    array_push($tempList, [
-                        'mid' => $preMid,
-                        'url' => $arr['url']
-                    ]);
-                    cache('song_waiting_download_list', $tempList);
-                    cache('song_play_temp_url_' . $preMid, $arr['url'], 3600);
-                    print_r($preRoomId . " 歌曲预缓存成功 " . $preMid . PHP_EOL);
+        if ($preMid > 0) {
+            $preSong = cache('song_play_temp_url_' . $preMid) ?? false;
+            $preCount = cache('song_pre_load_count') ?? 0;
+            if (!$preSong && $preCount < 5) {
+                print_r("请缓存 " . $room['room_id'] . " " . $preMid);
+                cache('song_pre_load_count', $preCount + 1, 60);
+                $url = 'http://kuwo.cn/url?rid=' . $preMid . '&type=convert_url3&br=128kmp3';
+                $result = curlHelper($url)['body'];
+                $arr = json_decode($result, true);
+                if ($arr['code'] == 200) {
+                    if ($arr['url']) {
+                        $tempList = cache('song_waiting_download_list') ?? [];
+                        array_push($tempList, [
+                            'mid' => $preMid,
+                            'url' => $arr['url']
+                        ]);
+                        cache('song_waiting_download_list', $tempList);
+                        cache('song_play_temp_url_' . $preMid, $arr['url'], 3600);
+                    }
                 }
             }
+        } else {
+            //用户自己上传的歌曲 刷新一遍CDN
+            $isCdnLoaded = cache('cdn_load_mid_' . $preMid) ?? false;
+            if (!$isCdnLoaded) {
+                $loadUrl = config('startadmin.api_url') . "/api/song/playurl?mid=" . $preMid;
+                echo $loadUrl . PHP_EOL;
+                $ch = curl_init();
+                $curl_opt = array(
+                    CURLOPT_URL, $loadUrl,
+                    CURLOPT_RETURNTRANSFER, 1,
+                    CURLOPT_TIMEOUT, 1,
+                    CURLOPT_SSL_VERIFYPEER, false,
+                    CURLOPT_SSL_VERIFYHOST, false
+                );
+                curl_setopt_array($ch, $curl_opt);
+                curl_exec($ch);
+                curl_close($ch);
+                cache('cdn_load_mid_' . $preMid, 1, 60);
+            }
+        }
+        $isPreloadSend = cache('pre_load_mid_' . $preMid) ?? false;
+        if (!$isPreloadSend) {
+            $msg = [
+                "url" => config('startadmin.api_url') . "/api/song/playurl?mid=" . $preMid,
+                "type" => "preload",
+                "time" => date('H:i:s'),
+            ];
+            sendWebsocketMessage('channel', $preRoomId, $msg);
+            cache('pre_load_mid_' . $preMid, 1, 60);
         }
     }
     protected function getSongByUser($user_id)
