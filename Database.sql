@@ -548,7 +548,6 @@ CREATE TABLE `sa_room` (
   `room_notice` text COMMENT '进入房间提醒',
   `room_addsong` int(11) NOT NULL DEFAULT '0',
   `room_sendmsg` int(11) NOT NULL DEFAULT '0',
-  `room_pass` int(1) NOT NULL DEFAULT '0' COMMENT '所有成员可切歌',
   `room_robot` int(11) NOT NULL DEFAULT '0',
   `room_order` int(11) NOT NULL DEFAULT '0',
   `room_reason` varchar(255) NOT NULL DEFAULT '',

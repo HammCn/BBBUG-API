@@ -795,8 +795,7 @@ class Song extends BaseController
             return jerr("移除失败，歌曲ID不存在");
         }
 
-        $isVip = cache('guest_room_' . $room_id . '_user_' . $this->user['user_id']) ?? false;
-        if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && $this->user['user_id'] != $removeSong['user']['user_id'] && $this->user['user_id'] != $removeSong['at']['user_id'] && !$isVip) {
+        if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && $this->user['user_id'] != $removeSong['user']['user_id'] && $this->user['user_id'] != $removeSong['at']['user_id']) {
             return jerr("你没有权限操作");
         }
         cache('SongList_' . $room_id, $songList, 86400);
