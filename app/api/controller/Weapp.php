@@ -70,12 +70,13 @@ class Weapp extends BaseController
         $this->easyWeApp = Factory::miniProgram($weapp_config);
         return null;
     }
-    public function qrcode(){
+    public function qrcode()
+    {
         $error = $this->initWeAppConfig();
         if ($error) {
             return $error;
         }
-        if(!input('room_id')){
+        if (!input('room_id')) {
             return jerr('room_id missing');
         }
         $room_id = input('room_id');
@@ -83,15 +84,16 @@ class Weapp extends BaseController
             'page'  => 'pages/index/index',
             'width' => 600,
         ]);
-        $filename = $response->save('./weapp_code/',$room_id.'.jpg');
-        header('Location: https://bbbug.hamm.cn/weapp_code/'.$filename);
+        $filename = $response->save('./weapp_code/', $room_id . '.jpg');
+        header('Location: https://bbbug.hamm.cn/weapp_code/' . $filename);
     }
-    public function test(){
+    public function test()
+    {
         $error = $this->initWeAppConfig();
         if ($error) {
             return $error;
         }
-        if(!input('room_id')){
+        if (!input('room_id')) {
             return jerr('room_id missing');
         }
         $room_id = input('room_id');
@@ -100,7 +102,7 @@ class Weapp extends BaseController
             'width' => 600,
         ]);
         print_r($response);
-        $filename = $response->save('./weapp_code/',$room_id.'.jpg');
+        $filename = $response->save('./weapp_code/', $room_id . '.jpg');
         echo $filename;
     }
     /**
@@ -123,7 +125,7 @@ class Weapp extends BaseController
                 $session_key = $ret['session_key'];
                 $openid = $ret['openid'];
                 $app_id = 1005;
-                $nickname = '游客'.rand(1000,9999);
+                $nickname = '小程序' . rand(1000, 9999);
                 $head = 'https://bbbug.hamm.cn/new/images/nohead.jpg';
                 $extra = $openid;
                 $sex = 0;
