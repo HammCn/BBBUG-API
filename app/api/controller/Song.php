@@ -224,6 +224,13 @@ class Song extends BaseController
         if ($room['room_type'] != 4) {
             return jerr("该房间下不允许播放");
         }
+
+        $isVip = cache('guest_room_' . $room_id . '_user_' . $this->user['user_id']) ?? false;
+
+        if (!getIsAdmin($this->user) && $this->user['user_id'] != $room['room_user'] && !$isVip) {
+            return jerr("你没有权限播放");
+        }
+
         $mid = input('mid');
         $song = cache('song_detail_' . $mid) ?? false;
         if (!$song) {
@@ -340,10 +347,6 @@ class Song extends BaseController
         } else {
             $at = false;
         }
-        if (!getIsAdmin($this->user) && $this->user['user_id'] != $room['room_user'] && $room['room_addsong'] == 1) {
-            return jerr('点歌失败,当前房间仅房主可点歌');
-        }
-
         $isBan = cache('songdown_room_' . $room_id . '_user_' . $this->user['user_id']);
         if ($isBan) {
             return jerr("你被房主禁止了点歌权限!");
@@ -364,19 +367,22 @@ class Song extends BaseController
         }
         $addSongCDTime = $room['room_addsongcd'];
 
-        if (!getIsAdmin($this->user)) {
-            //不是管理员 判断是否是房主
-            if ($room['room_user'] != $this->user['user_id']) {
-                $addSongLastTime = cache('song_' . $this->user['user_id']) ?? 0;
-                $addSongNeedTime = $addSongCDTime - (time() - $addSongLastTime);
-                if ($addSongNeedTime > 0) {
-                    return jerr('点歌太频繁，请' . $addSongNeedTime . 's后再试');
-                }
-                if ($mySong >= $room['room_addcount']) {
-                    return jerr('你还有' . $mySong . '首歌没有播，请稍候再点歌吧~');
-                }
+        $isVip = cache('guest_room_' . $room_id . '_user_' . $this->user['user_id']) ?? false;
+
+        if (!getIsAdmin($this->user) && $this->user['user_id'] != $room['room_user'] && !$isVip) {
+            if ($room['room_addsong'] == 1) {
+                return jerr('点歌失败,当前房间仅房主可点歌');
+            }
+            $addSongLastTime = cache('song_' . $this->user['user_id']) ?? 0;
+            $addSongNeedTime = $addSongCDTime - (time() - $addSongLastTime);
+            if ($addSongNeedTime > 0) {
+                return jerr('点歌太频繁，请' . $addSongNeedTime . 's后再试');
+            }
+            if ($mySong >= $room['room_addcount']) {
+                return jerr('你还有' . $mySong . '首歌没有播，请稍候再点歌吧~');
             }
         }
+
         cache('song_' . $this->user['user_id'], time(), $addSongCDTime);
         array_push($songList, [
             'user' => getUserData($this->user),
@@ -416,10 +422,6 @@ class Song extends BaseController
             ]);
         }
         return jok('歌曲' . $song['name'] . '已经添加到播放列表！', $song);
-    }
-    public function index()
-    {
-        cache('SongNow_1002', null);
     }
     public function mySongList()
     {
@@ -571,7 +573,7 @@ class Song extends BaseController
                 }
                 $ret = curlHelper(getWebsocketApiUrl() . "?channel=" . $room_id);
                 $arr = json_decode($ret['body'], true);
-                $onlineCount = count($arr) - 1; //取消机器人的在线数
+                $onlineCount = count($arr) - 2; //取消机器人的在线数
                 $limitCount = intval($onlineCount * $room['room_votepercent'] / 100);
                 if ($limitCount > 10) {
                     $limitCount = 10;
@@ -680,6 +682,7 @@ class Song extends BaseController
         if (!$room) {
             return jerr("房间信息查询失败");
         }
+        $isVip = cache('guest_room_' . $room_id . '_user_' . $this->user['user_id']) ?? false;
 
         $mid = input('mid');
         $song = cache('song_detail_' . $mid) ?? false;
@@ -712,7 +715,7 @@ class Song extends BaseController
         if (!$pushSong) {
             return jerr("顶歌失败，歌曲ID不存在");
         }
-        if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
+        if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && !$isVip) {
             $pushCount = $room['room_pushdaycount'];
             $pushCache = cache('push_' . date('Ymd') . '_' . $this->user['user_id']);
             $pushCache = $pushCache ? intval($pushCache) : 0;
@@ -750,7 +753,7 @@ class Song extends BaseController
         ];
         sendWebsocketMessage('channel', $room_id, $msg);
 
-        if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user)) {
+        if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && !$isVip) {
             return jok('顶歌成功,今日剩余' . ($pushCount - $pushCache) . '次顶歌机会!');
         }
         return jok('顶歌成功');
@@ -792,7 +795,8 @@ class Song extends BaseController
             return jerr("移除失败，歌曲ID不存在");
         }
 
-        if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && $this->user['user_id'] != $removeSong['user']['user_id'] && $this->user['user_id'] != $removeSong['at']['user_id']) {
+        $isVip = cache('guest_room_' . $room_id . '_user_' . $this->user['user_id']) ?? false;
+        if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && $this->user['user_id'] != $removeSong['user']['user_id'] && $this->user['user_id'] != $removeSong['at']['user_id'] && !$isVip) {
             return jerr("你没有权限操作");
         }
         cache('SongList_' . $room_id, $songList, 86400);
