@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: 2021-04-07 14:36:59
+-- Generation Time: 2021-04-16 12:22:32
 -- 服务器版本： 5.6.48-log
 -- PHP Version: 7.1.32
 
@@ -538,8 +538,8 @@ CREATE TABLE `sa_room` (
   `room_addcount` int(5) NOT NULL DEFAULT '5' COMMENT '点歌数量',
   `room_pushdaycount` int(11) NOT NULL DEFAULT '5' COMMENT '顶歌日限额',
   `room_pushsongcd` int(11) NOT NULL DEFAULT '3600' COMMENT '顶歌CD',
-  `room_online` int(11) NOT NULL DEFAULT '0',
-  `room_realonline` int(11) NOT NULL DEFAULT '0',
+  `room_online` int(11) NOT NULL DEFAULT '0' COMMENT '已登录在线',
+  `room_realonline` int(11) NOT NULL DEFAULT '0' COMMENT '所有在线',
   `room_hide` int(1) NOT NULL DEFAULT '0' COMMENT '是否从列表隐藏',
   `room_name` varchar(255) NOT NULL DEFAULT '' COMMENT '房间名称',
   `room_type` int(11) NOT NULL DEFAULT '1' COMMENT '房间类型',
@@ -548,6 +548,7 @@ CREATE TABLE `sa_room` (
   `room_notice` text COMMENT '进入房间提醒',
   `room_addsong` int(11) NOT NULL DEFAULT '0',
   `room_sendmsg` int(11) NOT NULL DEFAULT '0',
+  `room_pass` int(1) NOT NULL DEFAULT '0' COMMENT '所有成员可切歌',
   `room_robot` int(11) NOT NULL DEFAULT '0',
   `room_order` int(11) NOT NULL DEFAULT '0',
   `room_reason` varchar(255) NOT NULL DEFAULT '',
@@ -564,8 +565,8 @@ CREATE TABLE `sa_room` (
 -- 转存表中的数据 `sa_room`
 --
 
-INSERT INTO `sa_room` (`room_id`, `room_user`, `room_addsongcd`, `room_addcount`, `room_pushdaycount`, `room_pushsongcd`, `room_online`, `room_realonline`, `room_hide`, `room_name`, `room_type`, `room_public`, `room_password`, `room_notice`, `room_addsong`, `room_sendmsg`, `room_robot`, `room_order`, `room_reason`, `room_playone`, `room_votepass`, `room_votepercent`, `room_background`, `room_status`, `room_createtime`, `room_updatetime`) VALUES
-(888, 1, 60, 5, 5, 3600, 2, 5, 0, 'BBBUG音乐大厅', 1, 0, '', '大厅为电台播放模式，欢迎大家点歌，房间已支持自定义点歌/顶歌等CD和数量，快去房间管理页面看看吧~', 0, 0, 0, 10000000, '', 0, 1, 30, '', 0, 1598539777, 1604990895);
+INSERT INTO `sa_room` (`room_id`, `room_user`, `room_addsongcd`, `room_addcount`, `room_pushdaycount`, `room_pushsongcd`, `room_online`, `room_realonline`, `room_hide`, `room_name`, `room_type`, `room_public`, `room_password`, `room_notice`, `room_addsong`, `room_sendmsg`, `room_pass`, `room_robot`, `room_order`, `room_reason`, `room_playone`, `room_votepass`, `room_votepercent`, `room_background`, `room_status`, `room_createtime`, `room_updatetime`) VALUES
+(888, 1, 60, 5, 5, 3600, 2, 5, 0, 'BBBUG音乐大厅', 1, 0, '', '大厅为电台播放模式，欢迎大家点歌，房间已支持自定义点歌/顶歌等CD和数量，快去房间管理页面看看吧~', 0, 0, 0, 0, 10000000, '', 0, 1, 30, '', 0, 1598539777, 1604990895);
 
 -- --------------------------------------------------------
 
@@ -576,7 +577,7 @@ INSERT INTO `sa_room` (`room_id`, `room_user`, `room_addsongcd`, `room_addcount`
 CREATE TABLE `sa_song` (
   `song_id` int(11) NOT NULL,
   `song_user` int(11) NOT NULL DEFAULT '0',
-  `song_mid` int(11) NOT NULL DEFAULT '0',
+  `song_mid` bigint(20) NOT NULL DEFAULT '0',
   `song_name` varchar(255) NOT NULL DEFAULT '' COMMENT '歌曲名称',
   `song_singer` varchar(255) NOT NULL DEFAULT '' COMMENT '歌手',
   `song_pic` varchar(255) NOT NULL DEFAULT '',
@@ -603,7 +604,7 @@ CREATE TABLE `sa_user` (
   `user_password` varchar(255) CHARACTER SET utf8 NOT NULL COMMENT '密码',
   `user_salt` varchar(4) CHARACTER SET utf8 NOT NULL DEFAULT '' COMMENT '密码盐',
   `user_name` varchar(255) CHARACTER SET utf8 NOT NULL COMMENT '用户昵称',
-  `user_head` varchar(255) NOT NULL DEFAULT 'https://cdn.bbbug.com/images/nohead.jpg',
+  `user_head` varchar(255) NOT NULL DEFAULT 'https://bbbug.hamm.cn/images/nohead.jpg',
   `user_remark` varchar(255) NOT NULL DEFAULT '每个人都应该有签名,但偏偏我没有.',
   `user_group` int(11) NOT NULL DEFAULT '0' COMMENT '用户组',
   `user_ipreg` varchar(255) NOT NULL COMMENT '注册IP',
@@ -730,7 +731,9 @@ ALTER TABLE `sa_room`
 -- Indexes for table `sa_song`
 --
 ALTER TABLE `sa_song`
-  ADD PRIMARY KEY (`song_id`);
+  ADD PRIMARY KEY (`song_id`),
+  ADD KEY `song_mid` (`song_mid`) USING BTREE,
+  ADD KEY `song_user` (`song_user`) USING BTREE;
 
 --
 -- Indexes for table `sa_user`

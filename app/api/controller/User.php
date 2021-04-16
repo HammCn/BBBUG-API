@@ -777,6 +777,9 @@ class User extends BaseController
         if (getIsAdmin($user)) {
             return jerr("你无权操作管理员");
         }
+        if ($this->user['user_id'] == $user_id) {
+            return jerr("自己给自己设置嘉宾是不是太没意思了?");
+        }
         cache('online_list_' . $room_id, null);
         $isSet = cache('guest_room_' . $room_id . '_user_' . $user_id) ?? false;
         if ($isSet) {

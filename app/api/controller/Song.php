@@ -78,7 +78,7 @@ class Song extends BaseController
                 } catch (\Exception $e) {
                     return jerr('搜索失败,建议重试');
                 }
-            }else{
+            } else {
                 return jerr('搜索失败,建议重试');
             }
         }
@@ -564,41 +564,44 @@ class Song extends BaseController
         cache('SongNextTime_' . $room_id, time());
         if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && $now['user']['user_id'] != $this->user['user_id']) {
             //其他人
-            if ($room['room_votepass'] == 0) {
-                return jok("该房间未开启投票切歌");
-            }
-            $ret = curlHelper(getWebsocketApiUrl() . "?channel=" . $room_id);
-            $arr = json_decode($ret['body'], true);
-            $onlineCount = count($arr) - 1; //取消机器人的在线数
-            $limitCount = intval($onlineCount * $room['room_votepercent'] / 100);
-            if ($limitCount > 10) {
-                $limitCount = 10;
-            }
-            if ($limitCount < 2) {
-                $limitCount = 2;
-            }
-            // $limitCount = 0;
-            // cache('song_next_user_' . $this->user['user_id'], null);
-            // cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid'], null);
-            $songNextCount = cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid']) ?? 0;
-            $isMeNexted = cache('song_next_user_' . $this->user['user_id']) ?? '';
-            if ($isMeNexted == $now['song']['mid']) {
-                return jok('已有' . $songNextCount . '人不想听,在线' . $room['room_votepercent'] . '%(' . $limitCount . '人)不想听即可自动切歌');
-            }
-            cache('song_next_user_' . $this->user['user_id'], $now['song']['mid'], 3600);
-            $songNextCount++;
-            if ($songNextCount >= $limitCount) {
-                cache('SongNow_' . $room_id, null);
-                $msg = [
-                    "content" => $room['room_votepercent'] . '%在线用户(' . $limitCount . '人)不想听这首歌，系统已自动切歌!',
-                    "type" => "system",
-                    "time" => date('H:i:s'),
-                ];
-                sendWebsocketMessage('channel', $room_id, $msg);
-            }
-            cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid'], $songNextCount, 3600);
+            $isVip = cache('guest_room_' . $room_id . '_user_' . $this->user['user_id']) ?? false;
+            if (!$isVip) {
+                if ($room['room_votepass'] == 0) {
+                    return jok("该房间未开启投票切歌");
+                }
+                $ret = curlHelper(getWebsocketApiUrl() . "?channel=" . $room_id);
+                $arr = json_decode($ret['body'], true);
+                $onlineCount = count($arr) - 1; //取消机器人的在线数
+                $limitCount = intval($onlineCount * $room['room_votepercent'] / 100);
+                if ($limitCount > 10) {
+                    $limitCount = 10;
+                }
+                if ($limitCount < 2) {
+                    $limitCount = 2;
+                }
+                // $limitCount = 0;
+                // cache('song_next_user_' . $this->user['user_id'], null);
+                // cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid'], null);
+                $songNextCount = cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid']) ?? 0;
+                $isMeNexted = cache('song_next_user_' . $this->user['user_id']) ?? '';
+                if ($isMeNexted == $now['song']['mid']) {
+                    return jok('已有' . $songNextCount . '人不想听,在线' . $room['room_votepercent'] . '%(' . $limitCount . '人)不想听即可自动切歌');
+                }
+                cache('song_next_user_' . $this->user['user_id'], $now['song']['mid'], 3600);
+                $songNextCount++;
+                if ($songNextCount >= $limitCount) {
+                    cache('SongNow_' . $room_id, null);
+                    $msg = [
+                        "content" => $room['room_votepercent'] . '%在线用户(' . $limitCount . '人)不想听这首歌，系统已自动切歌!',
+                        "type" => "system",
+                        "time" => date('H:i:s'),
+                    ];
+                    sendWebsocketMessage('channel', $room_id, $msg);
+                }
+                cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid'], $songNextCount, 3600);
 
-            return jok('你的不想听态度表态成功!');
+                return jok('你的不想听态度表态成功!');
+            }
         }
 
         cache('SongNow_' . $room_id, null);
