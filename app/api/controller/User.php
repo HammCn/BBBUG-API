@@ -780,6 +780,9 @@ class User extends BaseController
         if ($this->user['user_id'] == $user_id) {
             return jerr("自己给自己设置嘉宾是不是太没意思了?");
         }
+        if ($user_id == $room['room_user']) {
+            return jerr("他是房主,你没必要给他设置嘉宾.");
+        }
         cache('online_list_' . $room_id, null);
         $isSet = cache('guest_room_' . $room_id . '_user_' . $user_id) ?? false;
         if ($isSet) {

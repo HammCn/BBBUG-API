@@ -521,7 +521,7 @@ INSERT INTO `sa_node` (`node_id`, `node_title`, `node_desc`, `node_module`, `nod
 (1224, '摸一摸接口', '', 'api', 'message', 'touch', 0, 0, 1, '', NULL, 1, 0, 0, 1600668831, 1600668831),
 (1225, '搜藏歌曲到我的歌单', '', 'api', 'song', 'addmysong', 0, 0, 1, '', NULL, 1, 0, 0, 1600668831, 1600668831),
 (1227, '域名查询房间接口', '', 'api', 'room', 'getRoomByDomain', 0, 0, 1, '', NULL, 1, 1, 0, 0, 0),
-(1228, '设置/取消嘉宾身份接口', '', 'api', 'user', 'guestctrl', 0, 0, 1, '', NULL, 1, 1, 0, 0, 0),
+(1228, '设置/取消嘉宾身份接口', '', 'api', 'user', 'guestctrl', 0, 0, 1, '', NULL, 1, 0, 0, 0, 0),
 (1229, '上传音乐mp3', '', 'api', 'attach', 'uploadMusic', 0, 0, 1, '', NULL, 1, 0, 0, 0, 0),
 (1230, '添加音乐', '', 'api', 'song', 'addNewSong', 0, 0, 1, '', NULL, 1, 0, 0, 0, 0);
 
