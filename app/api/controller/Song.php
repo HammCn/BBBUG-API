@@ -571,19 +571,14 @@ class Song extends BaseController
                 if ($room['room_votepass'] == 0) {
                     return jok("该房间未开启投票切歌");
                 }
-                $ret = curlHelper(getWebsocketApiUrl() . "?channel=" . $room_id);
-                $arr = json_decode($ret['body'], true);
-                $onlineCount = count($arr) - 2; //取消机器人的在线数
-                $limitCount = intval($onlineCount * $room['room_votepercent'] / 100);
+                $onlineCount = $room['room_online'] - 2; //取消机器人的在线数
+                $limitCount = ceil($onlineCount * $room['room_votepercent'] / 100);
                 if ($limitCount > 10) {
                     $limitCount = 10;
                 }
                 if ($limitCount < 2) {
                     $limitCount = 2;
                 }
-                // $limitCount = 0;
-                // cache('song_next_user_' . $this->user['user_id'], null);
-                // cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid'], null);
                 $songNextCount = cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid']) ?? 0;
                 $isMeNexted = cache('song_next_user_' . $this->user['user_id']) ?? '';
                 if ($isMeNexted == $now['song']['mid']) {
