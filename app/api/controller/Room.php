@@ -306,7 +306,7 @@ class Room extends BaseController
             return $error;
         }
 
-        if ($item['room_public'] == 1 && $this->user['user_id'] != $item['room_user'] && !getIsAdmin($this->user)) {
+        if ($item['room_public'] == 1 && $this->user['user_id'] != $item['room_user']) {
             $savedPassword = cache('password_room_' . $item['room_id'] . "_password_" . $this->user['user_id']) ?? '';
             $inputPassword = input('room_password');
             if ($item['room_password'] != $savedPassword && $item['room_password'] != $inputPassword) {
@@ -441,7 +441,7 @@ class Room extends BaseController
         if (empty($item)) {
             return jerr("没有查询到数据", 404);
         }
-        if ($item['room_public'] == 1 && $this->user['user_id'] != $item['room_user'] && !getIsAdmin($this->user)) {
+        if ($item['room_public'] == 1 && $this->user['user_id'] != $item['room_user']) {
             $savedPassword = cache('password_room_' . $item['room_id'] . "_password_" . $this->user['user_id']) ?? '';
             $inputPassword = input('room_password');
             if ($item['room_password'] != $savedPassword && $item['room_password'] != $inputPassword) {
