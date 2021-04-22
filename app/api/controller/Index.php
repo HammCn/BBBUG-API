@@ -12,7 +12,7 @@ class Index extends BaseController
         if ($wechat_app_enabled == 'open') {
             return jok($wechat_app_enabled, [
                 'success' => 1,
-                'systemVersion'=>time()
+                'systemVersion' => time()
             ]);
         }
         return jok($wechat_app_enabled, [

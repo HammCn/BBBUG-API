@@ -79,7 +79,7 @@ class Sms extends BaseController
             //$mail->addBCC("xxx@163.com");// 设置秘密抄送人(这个人也能收到邮件)
             //$mail->addAttachment("bug0.jpg");// 添加附件
 
-            $mail->Subject = "[".$email_remark."]验证码"; // 邮件标题
+            $mail->Subject = "[" . $email_remark . "]验证码"; // 邮件标题
             $mail->Body = "您的验证码是 【" . $code . "】\n\n你可以使用这个验证码临时登录."; // 邮件正文
 
             //$mail->AltBody = "This is the plain text纯文本";// 这个是设置纯文本方式显示的正文内容，如果不支持Html方式，就会用到这个，基本无用

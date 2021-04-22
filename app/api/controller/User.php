@@ -453,15 +453,15 @@ class User extends BaseController
             if ($cache) {
                 return jok('from cache', $cache);
             }
-            if($room['room_public']){
+            if ($room['room_public']) {
                 $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
                     ['user_id', 'in', $arr ?? []],
-                    ['user_id','not in',[]]
+                    ['user_id', 'not in', []]
                 ])->where('user_group', 1)->whereOr("user_id", 1)->order($order)->select();
-            }else{
+            } else {
                 $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
                     ['user_id', 'in', $arr ?? []],
-                    ['user_id','not in',[]]
+                    ['user_id', 'not in', []]
                 ])->where('user_group', 1)->whereOr("user_id", 1)->order($order)->select();
             }
             $ret = $ret ? $ret->toArray() : [];
