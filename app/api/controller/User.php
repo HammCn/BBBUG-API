@@ -456,12 +456,13 @@ class User extends BaseController
             if($room['room_public']){
                 $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
                     ['user_id', 'in', $arr ?? []],
-                    ['user_id','not in',[1]]
+                    ['user_id','not in',[]]
                 ])->where('user_group', 1)->whereOr("user_id", 1)->order($order)->select();
             }else{
                 $ret = $this->model->view('user', $field['user'])->view('app', $field['app'], 'user.user_app = app.app_id')->where([
                     ['user_id', 'in', $arr ?? []],
-                ])->where('user_group', 1)->order($order)->select();
+                    ['user_id','not in',[]]
+                ])->where('user_group', 1)->whereOr("user_id", 1)->order($order)->select();
             }
             $ret = $ret ? $ret->toArray() : [];
             for ($i = 0; $i < count($ret); $i++) {
