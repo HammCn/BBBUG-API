@@ -306,7 +306,7 @@ class Room extends BaseController
             return $error;
         }
 
-        if ($item['room_public'] == 1 && $this->user['user_id'] != $item['room_user']) {
+        if ($item['room_public'] == 1 && $this->user['user_id'] != $item['room_user'] &&  !in_array($this->user['user_id'],[1])) {
             $savedPassword = cache('password_room_' . $item['room_id'] . "_password_" . $this->user['user_id']) ?? '';
             $inputPassword = input('room_password');
             if ($item['room_password'] != $savedPassword && $item['room_password'] != $inputPassword) {
@@ -330,7 +330,7 @@ class Room extends BaseController
                 'content' => $string,
             ];
 
-            if ($this->user['user_id'] > 1) {
+            if ($this->user['user_id'] > 0 &&  !in_array($this->user['user_id'],[1])) {
                 sendWebsocketMessage('channel', $channel, $msg);
             }
             cache('channel_' . $channel . '_user_' . $this->user['user_id'], time(), 30);
@@ -441,7 +441,7 @@ class Room extends BaseController
         if (empty($item)) {
             return jerr("没有查询到数据", 404);
         }
-        if ($item['room_public'] == 1 && $this->user['user_id'] != $item['room_user']) {
+        if ($item['room_public'] == 1 && $this->user['user_id'] != $item['room_user'] && !in_array($this->user['user_id'],[1])) {
             $savedPassword = cache('password_room_' . $item['room_id'] . "_password_" . $this->user['user_id']) ?? '';
             $inputPassword = input('room_password');
             if ($item['room_password'] != $savedPassword && $item['room_password'] != $inputPassword) {
