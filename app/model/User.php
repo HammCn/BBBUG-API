@@ -66,10 +66,10 @@ class User extends BaseModel
     }
     public function getOneRemark()
     {
-        $url = 'https://www.meiriyiyan.com/api/v1/one.svg';
+        $url = 'http://guozhivip.com/yy/api/api.php';
         $result = curlHelper($url);
-        if (key_exists('body', $result)) {
-            if (preg_match('/fill="#000000">(.*?)<\/text>/', $result['body'], $matches)) {
+        if ($result['body']) {
+            if (preg_match('/"(.*?)"/', $result['body'], $matches)) {
                 return $matches[1];
             }
         }
