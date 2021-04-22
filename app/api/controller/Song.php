@@ -170,6 +170,12 @@ class Song extends BaseController
             'song_updatetime' => time(),
         ]);
 
+        $msg = [
+            "content" => rawurldecode($this->user['user_name']) . ' 收藏了当前播放的歌曲',
+            "type" => "system",
+            "time" => date('H:i:s'),
+        ];
+        sendWebsocketMessage('channel', $room_id, $msg);
         return jok('歌曲搜藏成功，快去你的已点列表看看吧');
     }
     public function addNewSong()
@@ -586,6 +592,12 @@ class Song extends BaseController
                 }
                 cache('song_next_user_' . $this->user['user_id'], $now['song']['mid'], 3600);
                 $songNextCount++;
+                $msg = [
+                    "content" => rawurldecode($this->user['user_name']) . ' 表示不太喜欢当前播放的歌(' . $songNextCount . '/' . $limitCount . ')',
+                    "type" => "system",
+                    "time" => date('H:i:s'),
+                ];
+                sendWebsocketMessage('channel', $room_id, $msg);
                 if ($songNextCount >= $limitCount) {
                     cache('SongNow_' . $room_id, null);
                     $msg = [
