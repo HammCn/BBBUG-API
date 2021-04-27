@@ -51,6 +51,10 @@ class Song extends BaseController
             cache('week_song_play_rank', $result, 10);
             return jok('success', $result);
         }
+        $page = 1;
+        if(input('page')){
+            $page = intval(input('page'));
+        }
         $list = [];
         $keywordArray = ['周杰伦', '林俊杰', '张学友', '林志炫', '梁静茹', '周华健', '华晨宇', '张宇', '张杰', '李宇春', '六哲', '阿杜', '伍佰', '五月天', '毛不易', '梁咏琪', '艾薇儿', '陈奕迅', '李志', '胡夏'];
         // $keywordArray = [];
@@ -61,42 +65,49 @@ class Song extends BaseController
 
         $list = [];
         $kuwo_list = [];
-
-        $cacheList = cache("music_search_list_keyword_" . sha1($keyword)) ?? false;
-        if ($cacheList && count($cacheList) > 0) {
-            $kuwo_list = $cacheList;
-        } else {
-            $randNumber = rand(10000000, 99999999);
-            $result = curlHelper('http://bd.kuwo.cn/api/www/search/searchMusicBykeyWord?key=' . rawurlencode($keyword) . '&pn=1&rn=50', 'GET', null, [
-                'csrf: ' . $randNumber,
-                'Referer: http://bd.kuwo.cn',
-            ], "kw_token=" . $randNumber);
-            $arr = json_decode($result['body'], true);
-            if ($arr['code'] == 200) {
-                try {
-                    $kuwo_list = $arr['data']['list'];
-                } catch (\Exception $e) {
-                    return jerr('搜索失败,建议重试');
-                }
-            } else {
+        $randNumber = rand(10000000, 99999999);
+        $result = curlHelper('http://bd.kuwo.cn/api/www/search/searchMusicBykeyWord?key=' . rawurlencode($keyword) . '&pn='.$page.'&rn=50', 'GET', null, [
+            'csrf: ' . $randNumber,
+            'Referer: http://bd.kuwo.cn',
+        ], "kw_token=" . $randNumber);
+        $arr = json_decode($result['body'], true);
+        if ($arr['code'] == 200) {
+            try {
+                $kuwo_list = $arr['data']['list'];
+            } catch (\Exception $e) {
                 return jerr('搜索失败,建议重试');
             }
+        } else {
+            return jerr('搜索失败,建议重试');
         }
         if (count($kuwo_list) > 0) {
-            cache("music_search_list_keyword_" . sha1($keyword), $kuwo_list, 3600);
+            $songModel = new SongModel();
             for ($i = 0; $i < count($kuwo_list); $i++) {
                 $song = $kuwo_list[$i];
+                $songPicture = config('startadmin.static_url') . '/new/images/logo.png';
+                $songPictureFromCache = cache("song_picture_" . $song['rid']) ?? false;
+                if($songPictureFromCache){
+                    $songPicture = $songPictureFromCache;
+                }else{
+                    $songFromDatabase = $songModel->where('song_mid',$song['rid'])->find();
+                    if($songFromDatabase){
+                        $songPicture = $songFromDatabase['song_pic'];
+                    }
+                }
+
+
                 $temp = [
                     'mid' => $song['rid'],
-                    'name' => $song['name'],
-                    'pic' => $song['pic'] ?? '',
+                    'name' => html_entity_decode($song['name']),
+                    'pic' => $songPicture,
                     'length' => $song['duration'],
-                    'singer' => $song['artist'],
-                    'album' => $song['album'] ?? ""
+                    'singer' => str_replace('&apos;', "'", html_entity_decode($song['artist'])),
+                    'album' => str_replace('&apos;', "'", html_entity_decode($song['album'] ?? ""))
                 ];
                 array_push($list, $temp);
                 cache('song_detail_' . $song['rid'], $temp, 3600);
             }
+            cache("music_search_list_keyword_new_" . sha1($keyword), $kuwo_list, 3600);
             return jok('', $list);
         } else {
             return jok('success', $list);
@@ -265,6 +276,31 @@ class Song extends BaseController
                 break;
             }
         }
+
+
+        $songModel = new SongModel();
+        if ($song['mid'] > 0) {
+            //尝试同步一个图片回来
+            $result = curlHelper("http://wapi.kuwo.cn/api/www/music/musicInfo?mid=" . $song['mid'] . "&httpsStatus=1", "GET");
+            $arr = json_decode($result['body'], true);
+            if ($arr['code'] != 200) {
+                return jerr("歌曲信息获取失败");
+            }
+            try {
+                $songDetailTemp = $arr['data'];
+                $songModel->where('song_mid', $song['mid'])->update([
+                    'song_pic' => $songDetailTemp['pic'],
+                    'song_length' => $songDetailTemp['duration'],
+                    'song_updatetime' => time(),
+                ]);
+                $song['pic'] = $songDetailTemp['pic'];
+                cache("song_picture_" . $song['rid'], $song['pic']);
+            } catch (\Exception $e) {
+            }
+        }
+        cache('song_detail_' . $song['mid'], $song, 3600);
+
+
         if (!$isPushed) {
             array_unshift($songList, [
                 'user' => getUserData($this->user),
@@ -276,7 +312,6 @@ class Song extends BaseController
         //切掉正在播放
         cache('SongNow_' . $room_id, null);
 
-        $songModel = new SongModel();
         $songExist = $songModel->where('song_mid', $song['mid'])->where('song_user', $this->user['user_id'])->find();
         if (!$songExist) {
             $songModel->insert([
@@ -338,6 +373,27 @@ class Song extends BaseController
                 ];
             }
         }
+        $songModel = new SongModel();
+        if ($song['mid'] > 0) {
+            //尝试同步一个图片回来
+            $result = curlHelper("http://wapi.kuwo.cn/api/www/music/musicInfo?mid=" . $song['mid'] . "&httpsStatus=1", "GET");
+            $arr = json_decode($result['body'], true);
+            if ($arr['code'] != 200) {
+                return jerr("歌曲信息获取失败");
+            }
+            try {
+                $songDetailTemp = $arr['data'];
+                $songModel->where('song_mid', $song['mid'])->update([
+                    'song_pic' => $songDetailTemp['pic'],
+                    'song_length' => $songDetailTemp['duration'],
+                    'song_updatetime' => time(),
+                ]);
+                $song['pic'] = $songDetailTemp['pic'];
+                cache("song_picture_" . $song['rid'], $song['pic']);
+            } catch (\Exception $e) {
+            }
+        }
+        cache('song_detail_' . $song['mid'], $song, 3600);
 
         $at = input('at');
         if ($at) {
@@ -406,7 +462,6 @@ class Song extends BaseController
         ];
         sendWebsocketMessage('channel', $room_id, $msg);
 
-        $songModel = new SongModel();
         $songExist = $songModel->where('song_mid', $song['mid'])->where('song_user', $this->user['user_id'])->find();
         if (!$songExist) {
             $songModel->insert([
@@ -843,22 +898,30 @@ class Song extends BaseController
             ]);
             die;
         }
-        $url = 'http://bd.kuwo.cn/url?rid=' . $mid . '&type=convert_url3&br=128kmp3';
-        $result = curlHelper($url)['body'];
+        
+        $url = 'http://m.kuwo.cn/newh5app/api/mobile/v1/music/src/' . $mid ;
+        $result = curlHelper($url,'GET',null,[
+            'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36',
+        ])['body'];
         $arr = json_decode($result, true);
         if ($arr['code'] != 200) {
             return jerr('歌曲链接获取失败');
+        } else {
+            if ($arr['data']['url']) {
+                $tempList = cache('song_waiting_download_list') ?? [];
+                array_push($tempList, [
+                    'mid' => $mid,
+                    'url' => $arr['data']['url']
+                ]);
+                cache('song_waiting_download_list', $tempList);
+                cache('song_play_temp_url_' . $mid, $arr['data']['url'], 30);
+                return jok('', [
+                    'url' => $arr['url'],
+                ]);
+            } else {
+                return jerr('歌曲链接获取失败');
+            }
         }
-        $tempList = cache('song_waiting_download_list') ?? [];
-        array_push($tempList, [
-            'mid' => $mid,
-            'url' => $arr['url']
-        ]);
-        cache('song_waiting_download_list', $tempList);
-        cache('song_play_temp_url_' . $mid, $arr['url'], 30);
-        return jok('', [
-            'url' => $arr['url'],
-        ]);
     }
     public function getSongList()
     {
@@ -877,7 +940,7 @@ class Song extends BaseController
         }
         $mid = input('mid');
         $url = cache('song_play_temp_url_' . $mid) ?? false;
-        if ($url) {
+        if ($url && $mid != 7149583) {
             header("Cache: From Redis");
             header("Location: " . $url);
             die;
@@ -895,6 +958,31 @@ class Song extends BaseController
             header("Location: " . $path);
             die;
         }
+        
+        $url = 'http://m.kuwo.cn/newh5app/api/mobile/v1/music/src/' . $mid ;
+        $result = curlHelper($url,'GET',null,[
+            'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36',
+        ])['body'];
+        $arr = json_decode($result, true);
+        if ($arr['code'] != 200) {
+            //获取播放地址失败了
+            die;
+        } else {
+            if ($arr['data']['url']) {
+                $tempList = cache('song_waiting_download_list') ?? [];
+                array_push($tempList, [
+                    'mid' => $mid,
+                    'url' => $arr['data']['url']
+                ]);
+                cache('song_waiting_download_list', $tempList);
+                cache('song_play_temp_url_' . $mid, $arr['data']['url'], 30);
+                header("Location: " . $arr['data']['url']);
+            } else {
+                header("status: 404 Not Found");
+            }
+        }
+        die;
+        //原api暂时废弃
         $url = 'http://bd.kuwo.cn/url?rid=' . $mid . '&type=convert_url3&br=128kmp3';
         $result = curlHelper($url)['body'];
         $arr = json_decode($result, true);
