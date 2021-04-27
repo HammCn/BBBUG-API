@@ -877,7 +877,7 @@ class Song extends BaseController
             exit;
         }
         $mid = input('mid');
-        $url = cache('song_play_temp_url_' . $mid) ?? false;
+        $url = cache('song_play_temp_url_new_' . $mid) ?? false;
         if ($url) {
             return jok('', [
                 'url' => $url,
@@ -892,13 +892,36 @@ class Song extends BaseController
                 die;
             }
             $path = config('startadmin.static_url') . 'uploads/' . $attach['attach_path'];
-            cache('song_play_temp_url_' . $mid, $path, 30);
+            cache('song_play_temp_url_new_' . $mid, $path, 30);
             return jok('', [
                 'url' => $path,
             ]);
             die;
         }
         
+        $url = 'http://bd.kuwo.cn/url?rid=' . $mid . '&type=convert_url3&br=128kmp3';
+        $result = curlHelper($url)['body'];
+        $arr = json_decode($result, true);
+        if ($arr['code'] != 200) {
+            return jerr('歌曲链接获取失败');
+        } else {
+            if ($arr['url']) {
+                $tempList = cache('song_waiting_download_list') ?? [];
+                array_push($tempList, [
+                    'mid' => $mid,
+                    'url' => $arr['url']
+                ]);
+                cache('song_waiting_download_list', $tempList);
+                cache('song_play_temp_url_new_' . $mid, $arr['url'], 30);
+                return jok('', [
+                    'url' => $arr['url'],
+                ]);
+            } else {
+                return jerr('歌曲链接获取失败');
+            }
+        }
+        die;
+
         $url = 'http://m.kuwo.cn/newh5app/api/mobile/v1/music/src/' . $mid ;
         $result = curlHelper($url,'GET',null,[
             'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36',
@@ -914,7 +937,7 @@ class Song extends BaseController
                     'url' => $arr['data']['url']
                 ]);
                 cache('song_waiting_download_list', $tempList);
-                cache('song_play_temp_url_' . $mid, $arr['data']['url'], 30);
+                cache('song_play_temp_url_new_' . $mid, $arr['data']['url'], 30);
                 return jok('', [
                     'url' => $arr['url'],
                 ]);
@@ -939,7 +962,7 @@ class Song extends BaseController
             exit;
         }
         $mid = input('mid');
-        $url = cache('song_play_temp_url_' . $mid) ?? false;
+        $url = cache('song_play_temp_url_new_' . $mid) ?? false;
         if ($url && $mid != 7149583) {
             header("Cache: From Redis");
             header("Location: " . $url);
@@ -954,10 +977,32 @@ class Song extends BaseController
                 die;
             }
             $path = config('startadmin.static_url') . 'uploads/' . $attach['attach_path'];
-            cache('song_play_temp_url_' . $mid, $path, 30);
+            cache('song_play_temp_url_new_' . $mid, $path, 30);
             header("Location: " . $path);
             die;
         }
+
+        $url = 'http://bd.kuwo.cn/url?rid=' . $mid . '&type=convert_url3&br=128kmp3';
+        $result = curlHelper($url)['body'];
+        $arr = json_decode($result, true);
+        if ($arr['code'] != 200) {
+            //获取播放地址失败了
+            die;
+        } else {
+            if ($arr['url']) {
+                $tempList = cache('song_waiting_download_list') ?? [];
+                array_push($tempList, [
+                    'mid' => $mid,
+                    'url' => $arr['url']
+                ]);
+                cache('song_waiting_download_list', $tempList);
+                cache('song_play_temp_url_new_' . $mid, $arr['url'], 30);
+                header("Location: " . $arr['url']);
+            } else {
+                header("status: 404 Not Found");
+            }
+        }
+        die;
         
         $url = 'http://m.kuwo.cn/newh5app/api/mobile/v1/music/src/' . $mid ;
         $result = curlHelper($url,'GET',null,[
@@ -977,28 +1022,6 @@ class Song extends BaseController
                 cache('song_waiting_download_list', $tempList);
                 cache('song_play_temp_url_' . $mid, $arr['data']['url'], 30);
                 header("Location: " . $arr['data']['url']);
-            } else {
-                header("status: 404 Not Found");
-            }
-        }
-        die;
-        //原api暂时废弃
-        $url = 'http://bd.kuwo.cn/url?rid=' . $mid . '&type=convert_url3&br=128kmp3';
-        $result = curlHelper($url)['body'];
-        $arr = json_decode($result, true);
-        if ($arr['code'] != 200) {
-            //获取播放地址失败了
-            die;
-        } else {
-            if ($arr['url']) {
-                $tempList = cache('song_waiting_download_list') ?? [];
-                array_push($tempList, [
-                    'mid' => $mid,
-                    'url' => $arr['url']
-                ]);
-                cache('song_waiting_download_list', $tempList);
-                cache('song_play_temp_url_' . $mid, $arr['url'], 30);
-                header("Location: " . $arr['url']);
             } else {
                 header("status: 404 Not Found");
             }
