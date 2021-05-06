@@ -290,8 +290,7 @@ class Song extends BaseController
                 $songDetailTemp = $arr['data'];
                 $songModel->where('song_mid', $song['mid'])->update([
                     'song_pic' => $songDetailTemp['pic'],
-                    'song_length' => $songDetailTemp['duration'],
-                    'song_updatetime' => time(),
+                    'song_length' => $songDetailTemp['duration']
                 ]);
                 $song['pic'] = $songDetailTemp['pic'];
                 cache("song_picture_" . $song['rid'], $song['pic']);
@@ -386,7 +385,6 @@ class Song extends BaseController
                 $songModel->where('song_mid', $song['mid'])->update([
                     'song_pic' => $songDetailTemp['pic'],
                     'song_length' => $songDetailTemp['duration'],
-                    'song_updatetime' => time(),
                 ]);
                 $song['pic'] = $songDetailTemp['pic'];
                 cache("song_picture_" . $song['rid'], $song['pic']);
