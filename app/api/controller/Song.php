@@ -648,7 +648,7 @@ class Song extends BaseController
                 cache('song_next_user_' . $this->user['user_id'], $now['song']['mid'], 3600);
                 $songNextCount++;
                 $msg = [
-                    "content" => rawurldecode($this->user['user_name']) . ' 表示不太喜欢当前播放的歌(' . $songNextCount . '/' . $limitCount . ')',
+                    "content" => '有人表示不太喜欢当前播放的歌(' . $songNextCount . '/' . $limitCount . ')',
                     "type" => "system",
                     "time" => date('H:i:s'),
                 ];
