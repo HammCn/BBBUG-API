@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+<ShortName>BBBUG音乐</ShortName>
+<Description>一个快捷的MP3歌曲搜索工具</Description>
+<Tags>BBBUG.COM</Tags>
+<Contact>admin@hamm.cn</Contact>
+<Url type="application/atom+xml" template="https://api.bbbug.com/api/song/searchChrome?keyword={searchTerms}" />
+<Url type="application/rss+xml" template="https://api.bbbug.com/api/song/searchChrome?keyword={searchTerms}" />
+<Url type="text/html" template="https://api.bbbug.com/api/song/searchChrome?keyword={searchTerms}" />
+<LongName>BBBUG开放音乐MP3搜索工具</LongName>
+<Query role="example" searchTerms="BBBUG" />
+<Query role="example" searchTerms="周杰伦" />
+<Query role="example" searchTerms="林俊杰" />
+<Query role="example" searchTerms="许嵩" />
+<Developer>admin@hamm.cn</Developer>
+<Attribution>
+所有资源来源第三方，请勿进行商业或非法用途!
+</Attribution>
+<SyndicationRight>open</SyndicationRight>
+<AdultContent>false</AdultContent>
+<Language>zh-cn</Language>
+<OutputEncoding>UTF-8</OutputEncoding>
+<InputEncoding>UTF-8</InputEncoding>
+</OpenSearchDescription>

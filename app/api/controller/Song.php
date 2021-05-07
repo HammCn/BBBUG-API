@@ -2,6 +2,7 @@
 
 namespace app\api\controller;
 
+use think\facade\View;
 use app\api\BaseController;
 use think\facade\Db;
 use app\model\Room as RoomModel;
@@ -38,6 +39,69 @@ class Song extends BaseController
 
         ];
         $this->model = new SongModel();
+    }
+    public function searchChrome()
+    {
+        if (!input("keyword")) {
+            header("Location: https://bbbug.com");
+            die;
+        }
+        $page = 1;
+        $list = [];
+        $kuwo_list = [];
+        $keyword = input('keyword');
+        $randNumber = rand(10000000, 99999999);
+        $result = curlHelper('http://bd.kuwo.cn/api/www/search/searchMusicBykeyWord?key=' . rawurlencode($keyword) . '&pn='.$page.'&rn=50', 'GET', null, [
+            'csrf: ' . $randNumber,
+            'Referer: http://bd.kuwo.cn',
+        ], "kw_token=" . $randNumber);
+        $arr = json_decode($result['body'], true);
+        if ($arr['code'] == 200) {
+            try {
+                $kuwo_list = $arr['data']['list'];
+            } catch (\Exception $e) {
+                echo '<center><h1>搜索失败,正在返回主站</h1><hr><br><br><img src="https://bbbug.hamm.cn/images/linus.jpg"
+                height="300px" /></center><script>setTimeout(function(){location.replace("https://bbbug.com");},3000);</script>';die;
+            }
+        } else {
+            echo '<center><h1>搜索失败,正在返回主站</h1><hr><br><br><img src="https://bbbug.hamm.cn/images/linus.jpg"
+            height="300px" /></center><script>setTimeout(function(){location.replace("https://bbbug.com");},3000);</script>';die;
+        }
+        if (count($kuwo_list) > 0) {
+            $songModel = new SongModel();
+            for ($i = 0; $i < count($kuwo_list); $i++) {
+                $song = $kuwo_list[$i];
+                $songPicture = config('startadmin.static_url') . '/new/images/logo.png';
+                $songPictureFromCache = cache("song_picture_" . $song['rid']) ?? false;
+                if($songPictureFromCache){
+                    $songPicture = $songPictureFromCache;
+                }else{
+                    $songFromDatabase = $songModel->where('song_mid',$song['rid'])->find();
+                    if($songFromDatabase){
+                        $songPicture = $songFromDatabase['song_pic'];
+                    }
+                }
+
+
+                $temp = [
+                    'mid' => $song['rid'],
+                    'name' => html_entity_decode($song['name']),
+                    'pic' => $songPicture,
+                    'length' => $song['duration'],
+                    'singer' => str_replace('&apos;', "'", html_entity_decode($song['artist'])),
+                    'album' => str_replace('&apos;', "'", html_entity_decode($song['album'] ?? ""))
+                ];
+                array_push($list, $temp);
+                cache('song_detail_' . $song['rid'], $temp, 3600);
+            }
+            cache("music_search_list_keyword_new_" . sha1($keyword), $kuwo_list, 3600);
+            View::assign('list', $list);
+    
+            return View::fetch();
+        } else {
+            echo '<center><h1>搜索失败,正在返回主站</h1><hr><br><br><img src="https://bbbug.hamm.cn/images/linus.jpg"
+            height="300px" /></center><script>setTimeout(function(){location.replace("https://bbbug.com");},3000);</script>';die;
+        }
     }
     public function search()
     {
