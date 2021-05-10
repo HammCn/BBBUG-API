@@ -607,36 +607,6 @@ class Song extends BaseController
                     $result['now'] = time();
                 }
                 break;
-            case 2:
-                $now = cache('MusicGameNow_' . $room_id) ?? [];
-                $result = [
-                    'type' => 'playSong',
-                    'time' => date('H:i:s'),
-                    'song' => null,
-                ];
-                if ($now) {
-                    $now['song']['name'] = '猜歌游戏';
-                    $now['song']['singer'] = '进行中';
-                    $now['song']['pic'] = '/images/nohead.jpg';
-                    $result['song'] = $now['song'];
-                    $result['since'] = $now['since'];
-                    $result['now'] = time();
-                }
-                break;
-            case 3:
-                $story = cache('story_play_' . $room_id) ?? false;
-                $result = [
-                    'type' => 'story',
-                    'time' => date('H:i:s'),
-                    'story' => null,
-                    'since' => 0,
-                    'now' => time(),
-                ];
-                if ($story) {
-                    $result['story'] = $story;
-                    $result['since'] = $story['since'];
-                }
-                break;
             default:
         }
 
