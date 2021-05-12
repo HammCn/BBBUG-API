@@ -828,6 +828,14 @@ class Song extends BaseController
 
             $push_last_time = cache('push_last_' . $this->user['user_id']) ?? 0;
             $pushTimeLimit = $room['room_pushsongcd'];
+            cache('push_last_' . $this->user['user_id'], time());
+            if ($pushCache >= $pushCount) {
+                if($pushCount > 0){
+                    return jerr("你的" . $pushCount . "次顶歌机会已使用完啦");
+                }else{
+                    return jerr("当前房间房主设置不允许顶歌");
+                }
+            }
             if (time() - $push_last_time < $pushTimeLimit) {
                 $timeStr = '';
                 $minute = floor(($pushTimeLimit - (time() - $push_last_time)) / 60);
@@ -839,12 +847,6 @@ class Song extends BaseController
                     $timeStr .= $second . "秒";
                 }
                 return jerr("顶歌太频繁啦，请" . $timeStr . "后再试！");
-            }
-            cache('push_last_' . $this->user['user_id'], time());
-            if ($pushCache >= $pushCount) {
-                if (!in_array($this->user['user_group'], [1, 6, 7])) {
-                    return jerr("你的" . $pushCount . "次顶歌机会已使用完啦");
-                }
             }
             $pushCache++;
             cache('push_' . date('Ymd') . '_' . $this->user['user_id'], $pushCache, 86400);
