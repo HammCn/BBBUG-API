@@ -111,7 +111,7 @@ class Song extends BaseController
             if ($cache) {
                 return jok('from redis', $cache);
             }
-            $result = Db::query("select sum(song_week) as week,song_mid as mid,song_id as id,song_pic as pic,song_singer as singer,song_name as name from sa_song where song_week > 0 group by song_mid order by week desc limit 0,50");
+            $result = Db::query("select count(song_week) as week,song_mid as mid,song_id as id,song_pic as pic,song_singer as singer,song_name as name from sa_song where song_week > 0 group by song_mid order by week desc limit 0,50");
             cache('week_song_play_rank', $result, 10);
             return jok('success', $result);
         }
@@ -508,6 +508,12 @@ class Song extends BaseController
         }
 
         cache('song_' . $this->user['user_id'], time(), $addSongCDTime);
+
+        if(count($songList) == 1 && $songList[0]["user"]["user_id"] == 1){
+            //如果待播放只有机器人点的歌了 删除
+            array_splice($songList, 0, 1);
+        }
+
         array_push($songList, [
             'user' => getUserData($this->user),
             'song' => $song,
