@@ -701,7 +701,13 @@ class Song extends BaseController
                     sendWebsocketMessage('channel', $room_id, $msg);
                 }
                 cache('song_next_count_' . $room_id . '_mid_' . $now['song']['mid'], $songNextCount, 3600);
-
+                $list = cache('song_pass_list') ?? [];
+                array_push($list,[
+                    'user'=>$this->user['user_id'],
+                    'name'=>urldecode($this->user['user_name']),
+                    'ip'=> getClientIp()
+                ]);
+                cache('song_pass_list',$list,3600);
                 return jok('你的不想听态度表态成功!');
             }
         }
