@@ -32,6 +32,7 @@ class Badge extends BaseController
         $song["bg"] = "data:image/jpeg;base64," . base64_encode(file_get_contents("https://bbbug.hamm.cn//new/images/player_bg.png"));
 
         $song["bar"] = "data:image/jpeg;base64," . base64_encode(file_get_contents("https://bbbug.hamm.cn//new/images/player_bar.png"));
+        $song['name'] = html_entity_decode($song['name']);
         $roomModel = new RoomModel();
         $room = $roomModel->getRoomById($room_id);
         if (!$room) {
