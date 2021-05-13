@@ -113,25 +113,25 @@ class Room extends BaseController
             $data['room_type'] = 1;
         }
 
-        if (!empty(input('room_addsongcd')) && intval(input('room_addsongcd')) < 60 && intval(input('room_addsongcd')) > 0) {
+        if (intval(input('room_addsongcd')) < 60 && intval(input('room_addsongcd')) > 0) {
             $data['room_addsongcd'] = intval($data['room_addsongcd']);
         } else {
             $data['room_addsongcd'] = 60;
         }
 
-        if (!empty(input('room_pushsongcd'))  && intval(input('room_pushsongcd')) > 0) {
+        if (intval(input('room_pushsongcd')) > 0) {
             $data['room_pushsongcd'] = intval($data['room_pushsongcd']);
         } else {
             $data['room_pushsongcd'] = 60;
         }
 
-        if (!empty(input('room_pushdaycount')) && intval(input('room_pushdaycount')) > 0) {
+        if (intval(input('room_pushdaycount')) >= 0) {
             $data['room_pushdaycount'] = intval($data['room_pushdaycount']);
         } else {
             $data['room_pushdaycount'] = 5;
         }
 
-        if (!empty(input('room_addcount')) && intval(input('room_addcount')) > 0) {
+        if (intval(input('room_addcount')) > 0) {
             $data['room_addcount'] = intval($data['room_addcount']);
         } else {
             $data['room_addcount'] = 5;
