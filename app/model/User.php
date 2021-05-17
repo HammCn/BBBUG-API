@@ -70,7 +70,9 @@ class User extends BaseModel
         $result = curlHelper($url);
         if ($result['body']) {
             if (preg_match('/"(.*?)"/', $result['body'], $matches)) {
-                return $matches[1];
+                $remark = $matches[1];
+                $remark = mb_substr($remark, 0, 100, 'utf-8');
+                return $remark;
             }
         }
         return '每个人都应该有签名,但偏偏我没有.';
