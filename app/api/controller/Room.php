@@ -184,17 +184,6 @@ class Room extends BaseController
         if ($error) {
             return $error;
         }
-        $canCreateRoom = cache('create_room_user_' . $this->user['user_id']) ?? false;
-        if (!$canCreateRoom) {
-            $songModel = new SongModel();
-            $song = $songModel->field('song_id')->where('song_user', $this->user['user_id'])->select();
-            if (count($song) < 30) {
-                return jerr('点歌超过30首才可能建房间!');
-            }
-            if (time() - $this->user['user_createtime'] < 86400 * 3) {
-                return jerr('注册时间超过3天才能创建房间!');
-            }
-        }
         $myRoom = $this->model->where('room_user', $this->user['user_id'])->find();
         if ($myRoom) {
             return jerr('创建失败,你已经有了一个房间');
@@ -417,13 +406,13 @@ class Room extends BaseController
             if (empty($item)) {
                 return jerr("没有查询到数据", 404);
             }
+            if ($item['room_status'] == 1) {
+                return jerr($item['room_reason']);
+            }
             if ($item['room_public'] == 1) {
                 return jerr("暂不支持游客进入密码房间");
             }
             unset($item['room_password']);
-            if ($item['room_status'] == 1) {
-                return jerr($item['room_reason'], 301);
-            }
             $admin = $userModel->where("user_id", $item['room_user'])->find();
             $item['admin'] = getUserData($admin);
 
@@ -441,6 +430,9 @@ class Room extends BaseController
         if (empty($item)) {
             return jerr("没有查询到数据", 404);
         }
+        if ($item['room_status'] == 1) {
+            return jerr($item['room_reason'], 301);
+        }
         if ($item['room_public'] == 1 && $this->user['user_id'] != $item['room_user'] && !in_array($this->user['user_id'], [1])) {
             $savedPassword = cache('password_room_' . $item['room_id'] . "_password_" . $this->user['user_id']) ?? '';
             $inputPassword = input('room_password');
@@ -449,9 +441,6 @@ class Room extends BaseController
                 return jerr("房间密码错误，进入房间失败", 302);
             }
             cache('password_room_' . $item['room_id'] . "_password_" . $this->user['user_id'], $item['room_password'], 86400);
-        }
-        if ($item['room_status'] == 1) {
-            return jerr($item['room_reason'], 301);
         }
         unset($item['room_password']);
 

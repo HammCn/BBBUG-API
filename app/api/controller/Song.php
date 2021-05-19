@@ -811,10 +811,19 @@ class Song extends BaseController
         $pushSong = false;
         for ($i = 0; $i < count($songList); $i++) {
             $item = $songList[$i];
+            if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && !$isVip) {
+                if($item['user']['user_id'] == $this->user['user_id']){
+                    return jerr("不要顶你自己点的歌啦~");
+                }
+            }
             if ($item['song']['mid'] == $mid) {
                 $pushSong = $item;
-                array_splice($songList, $i, 1);
-                array_unshift($songList, $item);
+                $songList[$i]['push_count'] = $songList[$i]['push_count'] ?? 0;
+                if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && !$isVip) {
+                    $songList[$i]['push_count']++;
+                }else{
+                    $songList[$i]['push_count'] = 888;
+                }
                 break;
             }
         }
@@ -851,7 +860,7 @@ class Song extends BaseController
             $pushCache++;
             cache('push_' . date('Ymd') . '_' . $this->user['user_id'], $pushCache, 86400);
         }
-
+        usort($songList, array($this,'pushSongSort'));
         cache('SongList_' . $room_id, $songList, 86400);
         $msg = [
             'user' => getUserData($this->user),
@@ -866,6 +875,13 @@ class Song extends BaseController
         }
         return jok('顶歌成功');
     }
+
+    private function pushSongSort($a, $b) {
+        $a['push_count'] = $a['push_count'] ?? 0;
+        $b['push_count'] = $b['push_count'] ?? 0;
+        return $a['push_count'] < $b['push_count'];
+    }
+
     public function remove()
     {
         if (input('access_token') == getTempToken()) {
