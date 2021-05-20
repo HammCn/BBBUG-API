@@ -139,7 +139,7 @@ class Room extends BaseController
 
         if (input('room_background')) {
             $data['room_background'] = input('room_background');
-            if (strpos(strtolower($data['room_background']), '.jpg') === FALSE && strpos(strtolower($data['room_background']), '.png') === FALSE) {
+            if (strpos(strtolower($data['room_background']), '.jpg') === FALSE && strpos(strtolower($data['room_background']), '.jpeg') === FALSE && strpos(strtolower($data['room_background']), '.png') === FALSE) {
                 return jerr('房间背景支持JPG/PNG图片');
             }
             if (strpos(strtolower($data['room_background']), config('startadmin.api_url')) === FALSE && strpos(strtolower($data['room_background']), config('startadmin.static_url')) === FALSE) {
