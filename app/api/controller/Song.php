@@ -837,7 +837,6 @@ class Song extends BaseController
 
             $push_last_time = cache('push_last_' . $this->user['user_id']) ?? 0;
             $pushTimeLimit = $room['room_pushsongcd'];
-            cache('push_last_' . $this->user['user_id'], time());
             if ($pushCache >= $pushCount) {
                 if($pushCount > 0){
                     return jerr("你的" . $pushCount . "次顶歌机会已使用完啦");
@@ -870,6 +869,7 @@ class Song extends BaseController
         ];
         sendWebsocketMessage('channel', $room_id, $msg);
 
+        cache('push_last_' . $this->user['user_id'], time());
         if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && !$isVip) {
             return jok('顶歌成功,今日剩余' . ($pushCount - $pushCache) . '次顶歌机会!');
         }
