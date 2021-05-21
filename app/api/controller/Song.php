@@ -819,6 +819,7 @@ class Song extends BaseController
                 }
                 $pushSong = $item;
                 $songList[$i]['push_count'] = $songList[$i]['push_count'] ?? 0;
+                $songList[$i]['push_time'] = time();
                 if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && !$isVip) {
                     $songList[$i]['push_count']++;
                 }else{
@@ -879,7 +880,19 @@ class Song extends BaseController
     private function pushSongSort($a, $b) {
         $a['push_count'] = $a['push_count'] ?? 0;
         $b['push_count'] = $b['push_count'] ?? 0;
-        return $a['push_count'] < $b['push_count'];
+        $a['push_time'] = $a['push_time'] ?? 0;
+        $b['push_time'] = $b['push_time'] ?? 0;
+        if($a['push_count'] < $b['push_count']){
+            return true;
+        }
+        if($a['push_count'] == $b['push_count']){
+            if($a['push_time'] > $b['push_time']){
+                return true;
+            }else{
+                return false;
+            }
+        }
+        return false;
     }
 
     public function remove()
