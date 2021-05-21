@@ -317,7 +317,7 @@ class Message extends BaseController
                 return jok('');
             }
         } else {
-            $blackIpList = ['112.64.12.121', '223.104.212.2', '223.104.213.93'];
+            $blackIpList = [];
             $ip = getClientIp();
             if (in_array($ip, $blackIpList)) {
                 return jerr("你所在的IP地址" . $ip . "被Ban,你无法发送消息。");
@@ -337,8 +337,12 @@ class Message extends BaseController
                 }
             }
             if ($type == 'img') {
-                if ((time() > strtotime(date('Y-m-d 18:00:00')) || time() < strtotime(date('Y-m-d 09:00:00'))) && strpos(rawurldecode(input('msg')), 'images/emoji') === false && strpos(rawurldecode(input('msg')), 'img.doutula.com') === false) {
-                    return jerr("18:00-09:00禁止发送自定义上传图片");
+                $isVip = cache('guest_room_' . $room_id . '_user_' . $this->user['user_id']) ?? false;
+                if ($this->user['user_id'] != $room['room_user'] && $isVip) {
+                    //非房主
+                    if ((time() > strtotime(date('Y-m-d 18:00:00')) || time() < strtotime(date('Y-m-d 09:00:00'))) && strpos(rawurldecode(input('msg')), 'images/emoji') === false && strpos(rawurldecode(input('msg')), 'img.doutula.com') === false) {
+                        return jerr("18:00-09:00禁止发送自定义上传图片");
+                    }
                 }
                 if (strpos(rawurldecode(input('msg')), rawurldecode(input('resource'))) !== false) {
                 } else {
