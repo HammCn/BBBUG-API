@@ -811,12 +811,12 @@ class Song extends BaseController
         $pushSong = false;
         for ($i = 0; $i < count($songList); $i++) {
             $item = $songList[$i];
-            if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && !$isVip) {
-                if($item['user']['user_id'] == $this->user['user_id']){
-                    return jerr("不要顶你自己点的歌啦~");
-                }
-            }
             if ($item['song']['mid'] == $mid) {
+                if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && !$isVip) {
+                    if($item['user']['user_id'] == $this->user['user_id']){
+                        return jerr("不要顶你自己点的歌啦~");
+                    }
+                }
                 $pushSong = $item;
                 $songList[$i]['push_count'] = $songList[$i]['push_count'] ?? 0;
                 if ($room['room_user'] != $this->user['user_id'] && !getIsAdmin($this->user) && !$isVip) {
