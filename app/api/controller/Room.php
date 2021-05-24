@@ -148,11 +148,21 @@ class Room extends BaseController
         }
 
         if ($data['room_name']) {
+            $weapp = new Weapp($this->app);
+            $error = $weapp->checkText(urldecode($data['room_name']));
+            if($error){
+                return $error;
+            }
             $data['room_name'] = mb_substr($data['room_name'], 0, 20, 'utf-8');
             $data['room_name'] = rawurlencode($data['room_name']);
         }
 
         if ($data['room_notice']) {
+            $weapp = new Weapp($this->app);
+            $error = $weapp->checkText(urldecode($data['room_notice']));
+            if($error){
+                return $error;
+            }
             $data['room_notice'] = mb_substr($data['room_notice'], 0, 600, 'utf-8');
             $data['room_notice'] = rawurlencode($data['room_notice']);
         }
@@ -197,6 +207,29 @@ class Room extends BaseController
         // } else {
         //     $data['room_public'] = 0;
         // }
+        if ($data['room_name']) {
+            $weapp = new Weapp($this->app);
+            $error = $weapp->checkText(urldecode($data['room_name']));
+            if($error){
+                return $error;
+            }
+            $data['room_name'] = mb_substr($data['room_name'], 0, 20, 'utf-8');
+            $data['room_name'] = rawurlencode($data['room_name']);
+        }else{
+            return jerr("房间名称必须输入");
+        }
+
+        if ($data['room_notice']) {
+            $weapp = new Weapp($this->app);
+            $error = $weapp->checkText(urldecode($data['room_notice']));
+            if($error){
+                return $error;
+            }
+            $data['room_notice'] = mb_substr($data['room_notice'], 0, 600, 'utf-8');
+            $data['room_notice'] = rawurlencode($data['room_notice']);
+        }else{
+            $data['room_notice'] = '';
+        }
         $room_id = $this->insertRow($data);
         return jok('你的私人房间创建成功!', [
             'room_id' => $room_id

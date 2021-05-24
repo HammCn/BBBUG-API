@@ -93,6 +93,11 @@ class Attach extends BaseController
                             $image->thumb(400, 400, \think\Image::THUMB_SCALING)->save('./uploads/' . $path);
                         }
                     }
+                    $weapp = new Weapp($this->app);
+                    $error = $weapp->checkImg("./uploads/".$saveName);
+                    if($error){
+                        return $error;
+                    }
                     $attach_data = array(
                         'attach_path' => $saveName,
                         'attach_thumb' => $path,

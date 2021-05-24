@@ -70,6 +70,30 @@ class Weapp extends BaseController
         $this->easyWeApp = Factory::miniProgram($weapp_config);
         return null;
     }
+    public function checkText($string){
+        $error = $this->initWeAppConfig();
+        if ($error) {
+            return $error;
+        }
+        $response = $this->easyWeApp->content_security->checkText($string);
+        if($response['errcode'] == 87014){
+            return jerr("你输入的内容过于敏感");
+        }else{
+            return false;
+        }
+    }
+    public function checkImg($img){
+        $error = $this->initWeAppConfig();
+        if ($error) {
+            return $error;
+        }
+        $response = $this->easyWeApp->content_security->checkImage($img);
+        if($response['errcode'] == 87014){
+            return jerr("图片过于敏感，发送失败");
+        }else{
+            return false;
+        }
+    }
     public function qrcode()
     {
         $error = $this->initWeAppConfig();

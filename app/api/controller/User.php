@@ -684,6 +684,11 @@ class User extends BaseController
         }
         $data = [];
         if (input('user_name')) {
+            $weapp = new Weapp($this->app);
+            $error = $weapp->checkText(input('user_name'));
+            if($error){
+                return $error;
+            }    
             $data['user_name'] = rawurldecode(input('user_name'));
             $data['user_name'] = mb_substr($data['user_name'], 0, 20, 'utf-8');
             $data['user_name'] = rawurlencode($data['user_name']);
@@ -699,6 +704,11 @@ class User extends BaseController
             }
         }
         if (input('user_remark')) {
+            $weapp = new Weapp($this->app);
+            $error = $weapp->checkText(input('user_remark'));
+            if($error){
+                return $error;
+            }
             $data['user_remark'] = input('user_remark');
             $data['user_remark'] = rawurldecode(input('user_remark'));
             $data['user_remark'] = mb_substr($data['user_remark'], 0, 50, 'utf-8');
@@ -713,7 +723,6 @@ class User extends BaseController
                 $data['user_sex'] = 0;
             }
         }
-
         if (!empty($data['user_head'])) {
             $domain = getTopHost(urldecode($data['user_head']));
             if ($domain) {
