@@ -130,7 +130,7 @@ class Room extends BaseController
         if ($data['room_name']) {
             $weapp = new Weapp($this->app);
             $error = $weapp->checkText(urldecode($data['room_name']));
-            if($error){
+            if ($error) {
                 return $error;
             }
             $data['room_name'] = mb_substr($data['room_name'], 0, 20, 'utf-8');
@@ -140,7 +140,7 @@ class Room extends BaseController
         if ($data['room_notice']) {
             $weapp = new Weapp($this->app);
             $error = $weapp->checkText(urldecode($data['room_notice']));
-            if($error){
+            if ($error) {
                 return $error;
             }
             $data['room_notice'] = mb_substr($data['room_notice'], 0, 600, 'utf-8');
@@ -171,10 +171,6 @@ class Room extends BaseController
         if ($error) {
             return $error;
         }
-        $canCreateRoom = cache('create_room_user_' . $this->user['user_id']) ?? false;
-        if (!$canCreateRoom) {
-            return jerr("你暂时没有创建房间权限，申请权限请加QQ群 1140258698");
-        }
         $myRoom = $this->model->where('room_user', $this->user['user_id'])->find();
         if ($myRoom) {
             return jerr('创建失败,你已经有了一个房间');
@@ -191,24 +187,24 @@ class Room extends BaseController
         if ($data['room_name']) {
             $weapp = new Weapp($this->app);
             $error = $weapp->checkText(urldecode($data['room_name']));
-            if($error){
+            if ($error) {
                 return $error;
             }
             $data['room_name'] = mb_substr($data['room_name'], 0, 20, 'utf-8');
             $data['room_name'] = rawurlencode($data['room_name']);
-        }else{
+        } else {
             return jerr("房间名称必须输入");
         }
 
         if ($data['room_notice']) {
             $weapp = new Weapp($this->app);
             $error = $weapp->checkText(urldecode($data['room_notice']));
-            if($error){
+            if ($error) {
                 return $error;
             }
             $data['room_notice'] = mb_substr($data['room_notice'], 0, 600, 'utf-8');
             $data['room_notice'] = rawurlencode($data['room_notice']);
-        }else{
+        } else {
             $data['room_notice'] = '';
         }
         $room_id = $this->insertRow($data);
@@ -454,18 +450,21 @@ class Room extends BaseController
 
         $admin = $userModel->where("user_id", $item['room_user'])->find();
         $item['admin'] = getUserData($admin);
-        
-        
+
+
 
         $item['room_app'] = $this->getRoomAppUrl($item['room_id']);
-        
+
         return jok('数据加载成功', $item);
     }
-    private function getRoomAppUrl($room_id){
-        switch($room_id){
+    private function getRoomAppUrl($room_id)
+    {
+        switch ($room_id) {
             case 888:
             case 10933:
                 return "https://test.hamm.cn/ac/";
+            case 10656:
+                return "https://www.orzdl.com/bbbug";
             case 110:
                 return "https://test.hamm.cn/html_js/bbbug_app/";
             case 6969:

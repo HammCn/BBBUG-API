@@ -217,6 +217,7 @@ class Message extends BaseController
         $where = '';
         $msg_resource = (input('msg'));
         $msg_decode = rawurldecode($msg_resource);
+        $msg_resource = rawurldecode(input('resource'));
         $room = $roomModel->getRoomById($room_id);
 
         if (!$room) {
@@ -307,13 +308,15 @@ class Message extends BaseController
             }
             if ($type == 'img') {
                 $isVip = cache('guest_room_' . $room_id . '_user_' . $this->user['user_id']) ?? false;
+                
+
                 if ($this->user['user_id'] != $room['room_user'] && $isVip) {
                     //非房主
                     if ((time() > strtotime(date('Y-m-d 18:00:00')) || time() < strtotime(date('Y-m-d 09:00:00'))) && strpos(rawurldecode(input('msg')), 'images/emoji') === false && strpos(rawurldecode(input('msg')), 'img.doutula.com') === false) {
                         return jerr("18:00-09:00禁止发送自定义上传图片");
                     }
                 }
-                if (strpos(rawurldecode(input('msg')), rawurldecode(input('resource'))) !== false) {
+                if (strpos(rawurldecode(input('msg')), rawurldecode($msg_resource)) !== false) {
                 } else {
                     return jerr('图片发送失败,我怀疑你在搞事情');
                 }
@@ -550,6 +553,10 @@ class Message extends BaseController
                 return jok('');
                 break;
             case 'img':
+                //解决小程序端CDN图片地址错误的问题
+                $msg_decode = urldecode(str_replace("//images/emoji/","/new/images/emoji/",$msg_decode));
+                $msg_resource = urldecode(str_replace("//images/emoji/","/new/images/emoji/",$msg_resource));
+
                 if (cache('last_' . $this->user['user_id']) && !getIsAdmin($this->user) && $this->user['user_id'] != $room['room_user']) {
                     return jerr('发送图片太频繁啦~');
                 }
@@ -573,7 +580,7 @@ class Message extends BaseController
                     'at' => $at,
                     'message_id' => $message_id,
                     'message_time' => time(),
-                    'resource' => rawurlencode(input('resource')) ?? '',
+                    'resource' => rawurlencode($msg_resource) ?? '',
                     'user' => getUserData($this->user),
                 ];
 
