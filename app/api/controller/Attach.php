@@ -13,14 +13,6 @@ class Attach extends BaseController
     public function __construct(App $app)
     {
         parent::__construct($app);
-        //筛选字段
-        $this->searchFilter = [
-            "attach_id" => "=", //相同筛选
-            "attach_key" => "like", //相似筛选
-            "attach_value" => "like", //相似筛选
-            "attach_desc" => "like", //相似筛选
-            "attach_readonly" => "=", //相似筛选
-        ];
         $this->model = new AttachModel();
     }
     public function search()
@@ -59,9 +51,6 @@ class Attach extends BaseController
      */
     public function uploadImage()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;
@@ -129,9 +118,6 @@ class Attach extends BaseController
      */
     public function uploadHead()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;

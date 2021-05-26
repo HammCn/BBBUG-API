@@ -16,28 +16,6 @@ class Song extends BaseController
     public function __construct(App $app)
     {
         parent::__construct($app);
-        //查询列表时允许的字段
-        $this->selectList = "*";
-        //查询详情时允许的字段
-        $this->selectDetail = "*";
-        //筛选字段
-        $this->searchFilter = [];
-        $this->insertFields = [
-            //允许添加的字段列表
-        ];
-        $this->updateFields = [
-            //允许更新的字段列表
-        ];
-        $this->insertRequire = [
-            //添加时必须填写的字段
-            // "字段名称"=>"该字段不能为空"
-
-        ];
-        $this->updateRequire = [
-            //修改时必须填写的字段
-            // "字段名称"=>"该字段不能为空"
-
-        ];
         $this->model = new SongModel();
     }
     public function searchChrome()
@@ -179,9 +157,6 @@ class Song extends BaseController
     }
     public function deleteMySong()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;
@@ -204,9 +179,6 @@ class Song extends BaseController
     }
     public function addMySong()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;
@@ -255,9 +227,6 @@ class Song extends BaseController
     }
     public function addNewSong()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;
@@ -284,9 +253,6 @@ class Song extends BaseController
     }
     public function playSong()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;
@@ -397,9 +363,6 @@ class Song extends BaseController
     }
     public function addSong()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;
@@ -562,9 +525,6 @@ class Song extends BaseController
         if (input('per_page')) {
             $per_page = intval(input('per_page'));
         }
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;
@@ -620,9 +580,6 @@ class Song extends BaseController
     }
     public function pass()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;
@@ -770,9 +727,6 @@ class Song extends BaseController
     }
     public function push()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;
@@ -897,9 +851,6 @@ class Song extends BaseController
 
     public function remove()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;

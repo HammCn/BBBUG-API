@@ -17,11 +17,6 @@ class Room extends BaseController
         $this->selectList = "*";
         //查询详情时允许的字段
         $this->selectDetail = "*";
-        //筛选字段
-        $this->searchFilter = [
-            "room_id" => "=",
-            "room_user" => "like", "room_name" => "like", "room_type" => "like", "room_password" => "like", "room_notice" => "like",
-        ];
         $this->insertFields = [
             //允许添加的字段列表
             "room_user", "room_name", "room_type", "room_password", "room_notice",
@@ -32,25 +27,10 @@ class Room extends BaseController
             "room_sendmsg", "room_public", "room_playone", "room_votepass", "room_votepercent",
             "room_addsongcd", "room_pushdaycount", "room_pushsongcd", "room_addcount", "room_hide", "room_background"
         ];
-        $this->insertRequire = [
-            //添加时必须填写的字段
-            // "字段名称"=>"该字段不能为空"
-            "room_name" => "房间名称必须填写呀",
-
-        ];
-        $this->updateRequire = [
-            //修改时必须填写的字段
-            // "字段名称"=>"该字段不能为空"
-            "room_name" => "房间名称必须填写呀",
-
-        ];
         $this->model = new RoomModel();
     }
     public function saveMyRoom()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         //校验Access与RBAC
         $error = $this->access();
         if ($error) {
@@ -180,9 +160,6 @@ class Room extends BaseController
     }
     public function create()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         //校验Access与RBAC
         $error = $this->access();
         if ($error) {
@@ -193,6 +170,10 @@ class Room extends BaseController
         $error = $this->validateInsertFields();
         if ($error) {
             return $error;
+        }
+        $canCreateRoom = cache('create_room_user_' . $this->user['user_id']) ?? false;
+        if (!$canCreateRoom) {
+            return jerr("你暂时没有创建房间权限，申请权限请加QQ群 1140258698");
         }
         $myRoom = $this->model->where('room_user', $this->user['user_id'])->find();
         if ($myRoom) {
@@ -368,8 +349,6 @@ class Room extends BaseController
     {
         if (input('access_token') == getTempToken()) {
             $order = 'room_order desc,room_online desc,room_id asc';
-            //设置Model中的 per_page
-            $this->setGetListPerPage();
             $dataList = cache('room_list_guest') ?? false;
             if ($dataList) {
                 return jok('from cache', $dataList);
@@ -393,8 +372,6 @@ class Room extends BaseController
             return $error;
         }
         $order = 'room_order desc,room_online desc,room_id asc';
-        //设置Model中的 per_page
-        $this->setGetListPerPage();
         $dataList = cache('room_list') ?? false;
         if ($dataList) {
             return jok('from cache', $dataList);
@@ -413,9 +390,6 @@ class Room extends BaseController
     }
     public function myRoom()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         //校验Access与RBAC
         $error = $this->access();
         if ($error) {
@@ -449,6 +423,7 @@ class Room extends BaseController
             $admin = $userModel->where("user_id", $item['room_user'])->find();
             $item['admin'] = getUserData($admin);
 
+            $item['room_app'] = $this->getRoomAppUrl($item['room_id']);
             return jok('数据加载成功', $item);
         }
         //校验Access与RBAC
@@ -479,7 +454,26 @@ class Room extends BaseController
 
         $admin = $userModel->where("user_id", $item['room_user'])->find();
         $item['admin'] = getUserData($admin);
+        
+        
 
+        $item['room_app'] = $this->getRoomAppUrl($item['room_id']);
+        
         return jok('数据加载成功', $item);
+    }
+    private function getRoomAppUrl($room_id){
+        switch($room_id){
+            case 888:
+            case 10933:
+                return "https://test.hamm.cn/ac/";
+            case 110:
+                return "https://test.hamm.cn/html_js/bbbug_app/";
+            case 6969:
+                return "https://bd.postlog.cn/";
+            case 10965:
+                return "https://demo.plugin.bbbug.mnorg.com/";
+            default:
+        }
+        return false;
     }
 }

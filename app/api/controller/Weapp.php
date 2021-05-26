@@ -17,33 +17,6 @@ class Weapp extends BaseController
     public function __construct(App $app)
     {
         parent::__construct($app);
-        //查询列表时允许的字段
-        $this->selectList = "*";
-        //查询详情时允许的字段
-        $this->selectDetail = "*";
-        //筛选字段
-        $this->searchFilter = [
-            "weapp_id" => "=",
-            "weapp_openid" => "like",
-        ];
-        $this->insertFields = [
-            //允许添加的字段列表
-            "weapp_openid",
-        ];
-        $this->updateFields = [
-            //允许更新的字段列表
-            "weapp_openid",
-        ];
-        $this->insertRequire = [
-            //添加时必须填写的字段
-            // "字段名称"=>"该字段不能为空"
-
-        ];
-        $this->updateRequire = [
-            //修改时必须填写的字段
-            // "字段名称"=>"该字段不能为空"
-
-        ];
         $this->model = new WeappModel();
     }
     /**
@@ -110,6 +83,7 @@ class Weapp extends BaseController
         ]);
         $filename = $response->save('./weapp_code/', $room_id . '.jpg');
         header('Location: https://bbbug.hamm.cn/weapp_code/' . $filename);
+        //FUCK YOUR BUG 上面的地址改成你自己的API地址
     }
     public function test()
     {

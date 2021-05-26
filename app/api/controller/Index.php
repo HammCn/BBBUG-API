@@ -9,6 +9,8 @@ class Index extends BaseController
     public function index()
     {
         $wechat_app_enabled = cache('wechat_app_enabled') ?? 'close';
+        //FUCK YOUR BUG
+        // $wechat_app_enabled = "open";//上线后请放开这一行
         if ($wechat_app_enabled == 'open') {
             return jok($wechat_app_enabled, [
                 'success' => 1,

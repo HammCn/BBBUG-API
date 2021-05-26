@@ -15,33 +15,6 @@ class Message extends BaseController
     public function __construct(App $app)
     {
         parent::__construct($app);
-        //查询列表时允许的字段
-        $this->selectList = "*";
-        //查询详情时允许的字段
-        $this->selectDetail = "*";
-        //筛选字段
-        $this->searchFilter = [
-            "message_id" => "=",
-            "message_user" => "like", "message_type" => "like", "message_content" => "like", "message_to" => "like", "message_where" => "like",
-        ];
-        $this->insertFields = [
-            //允许添加的字段列表
-            "message_user", "message_type", "message_content", "message_to", "message_where",
-        ];
-        $this->updateFields = [
-            //允许更新的字段列表
-            "message_user", "message_type", "message_content", "message_to", "message_where",
-        ];
-        $this->insertRequire = [
-            //添加时必须填写的字段
-            // "字段名称"=>"该字段不能为空"
-
-        ];
-        $this->updateRequire = [
-            //修改时必须填写的字段
-            // "字段名称"=>"该字段不能为空"
-
-        ];
         $this->model = new MessageModel();
     }
     public function translator()
@@ -57,9 +30,6 @@ class Message extends BaseController
     }
     public function back()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;
@@ -105,9 +75,6 @@ class Message extends BaseController
     }
     public function clear()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;
@@ -230,9 +197,6 @@ class Message extends BaseController
     }
     public function send()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;
@@ -545,7 +509,7 @@ class Message extends BaseController
                         $ifRobotEnable = true;
                     }
                 }
-                if ($ifRobotEnable) {
+                if ($ifRobotEnable && config('startadmin.tencent_ai_appid') && config('startadmin.tencent_ai_appkey')) {
                     $url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat";
                     $tencentAiArray = [
                         "app_id" => config('startadmin.tencent_ai_appid'),
@@ -629,9 +593,6 @@ class Message extends BaseController
     }
     public function touch()
     {
-        if (input('access_token') == getTempToken()) {
-            return jerr('请登录后体验完整功能!', 401);
-        }
         $error = $this->access();
         if ($error) {
             return $error;

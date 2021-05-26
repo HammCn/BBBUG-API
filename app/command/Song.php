@@ -247,6 +247,7 @@ class Song extends BaseCommand
     }
     protected function getSongByRobot()
     {
+        // 从热门榜单中随机点一首歌
         $bangIdArray = [278, 284, 26, 64, 187, 281, 153, 17, 16, 158, 145, 93, 185, 290, 279, 264, 283, 282, 255];
         $bangId = $bangIdArray[rand(0, count($bangIdArray) - 1)];
         $randNumber = rand(10000000, 99999999);

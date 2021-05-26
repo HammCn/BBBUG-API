@@ -114,28 +114,6 @@ class User extends BaseModel
             "user_updatetime" => time(),
         ]);
     }
-    public function getListByPage($maps, $order = null, $field = "*")
-    {
-        $resource = $this->view('user', $field)->view('group', '*', 'group.group_id = user.user_group', 'left');
-        foreach ($maps as $map) {
-            switch (count($map)) {
-                case 1:
-                    $resource = $resource->where($map[0]);
-                    break;
-                case 2:
-                    $resource = $resource->where($map[0], $map[1]);
-                    break;
-                case 3:
-                    $resource = $resource->where($map[0], $map[1], $map[2]);
-                    break;
-                default:
-            }
-        }
-        if ($order) {
-            $resource = $resource->order($order);
-        }
-        return $resource->paginate($this->per_page);
-    }
 
     /**
      * 重置密码
