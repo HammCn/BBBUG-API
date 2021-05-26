@@ -82,11 +82,17 @@ class Attach extends BaseController
                             $image->thumb(400, 400, \think\Image::THUMB_SCALING)->save('./uploads/' . $path);
                         }
                     }
-                    $weapp = new Weapp($this->app);
-                    $error = $weapp->checkImg("./uploads/".$saveName);
-                    if($error){
-                        return $error;
+                    $weapp_appid = config('startadmin.weapp_appid'); //小程序APPID
+                    $weapp_appkey = config("startadmin.weapp_appkey"); //小程序的APPKEY
+                    if ($weapp_appid && $weapp_appkey) {
+                        $weapp = new Weapp($this->app);
+                        $error = $weapp->checkImg("./uploads/".$saveName);
+                        if($error){
+                            return $error;
+                        }
                     }
+                    
+                    
                     $attach_data = array(
                         'attach_path' => $saveName,
                         'attach_thumb' => $path,
@@ -170,6 +176,16 @@ class Attach extends BaseController
 
                 if (end($obj) == "image/gif") {
                     return jerr("不要尝试钻空子上传Gif图片当头像,那真的不高端 - Hamm");
+                }
+                
+                $weapp_appid = config('startadmin.weapp_appid'); //小程序APPID
+                $weapp_appkey = config("startadmin.weapp_appkey"); //小程序的APPKEY
+                if ($weapp_appid && $weapp_appkey) {
+                    $weapp = new Weapp($this->app);
+                    $error = $weapp->checkImg("./uploads/".$saveName);
+                    if($error){
+                        return $error;
+                    }
                 }
 
                 return jok('上传成功！', $attach_data);

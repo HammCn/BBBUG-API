@@ -247,10 +247,14 @@ class Message extends BaseController
             if (!str_replace(' ', '', $msg_decode)) {
                 return jerr("咱好歹说点啥吧？");
             }
-            $weapp = new Weapp($this->app);
-            $error = $weapp->checkText($msg_decode);
-            if($error){
-                return $error;
+            $weapp_appid = config('startadmin.weapp_appid'); //小程序APPID
+            $weapp_appkey = config("startadmin.weapp_appkey"); //小程序的APPKEY
+            if ($weapp_appid && $weapp_appkey) {
+                $weapp = new Weapp($this->app);
+                $error = $weapp->checkText($msg_decode);
+                if($error){
+                    return $error;
+                }
             }
         }
         switch (input('where')) {
