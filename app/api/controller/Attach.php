@@ -153,6 +153,16 @@ class Attach extends BaseController
                         mkdir(iconv("UTF-8", "GBK", $dir), 0777, true);
                     }
                     $image->thumb(400, 400, \think\Image::THUMB_CENTER)->save('./uploads/' . $path);
+                
+                    $weapp_appid = config('startadmin.weapp_appid'); //小程序APPID
+                    $weapp_appkey = config("startadmin.weapp_appkey"); //小程序的APPKEY
+                    if ($weapp_appid && $weapp_appkey) {
+                        $weapp = new Weapp($this->app);
+                        $error = $weapp->checkImg("./uploads/".$saveName);
+                        if($error){
+                            return $error;
+                        }
+                    }
 
                     $attach_data = array(
                         'attach_path' => $saveName,
@@ -171,21 +181,10 @@ class Attach extends BaseController
                     $attach_data['extend'] = input("extend");
                 }
 
-
                 $obj = getimagesize('./uploads/' . $attach_data['attach_path']);
 
                 if (end($obj) == "image/gif") {
                     return jerr("不要尝试钻空子上传Gif图片当头像,那真的不高端 - Hamm");
-                }
-                
-                $weapp_appid = config('startadmin.weapp_appid'); //小程序APPID
-                $weapp_appkey = config("startadmin.weapp_appkey"); //小程序的APPKEY
-                if ($weapp_appid && $weapp_appkey) {
-                    $weapp = new Weapp($this->app);
-                    $error = $weapp->checkImg("./uploads/".$saveName);
-                    if($error){
-                        return $error;
-                    }
                 }
 
                 return jok('上传成功！', $attach_data);
