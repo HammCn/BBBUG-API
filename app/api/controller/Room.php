@@ -127,7 +127,7 @@ class Room extends BaseController
             }
         }
 
-        if ($data['room_name']) {
+        if (!empty($data['room_name'])) {
             $weapp = new Weapp($this->app);
             $error = $weapp->checkText(urldecode($data['room_name']));
             if ($error) {
@@ -137,7 +137,7 @@ class Room extends BaseController
             $data['room_name'] = rawurlencode($data['room_name']);
         }
 
-        if ($data['room_notice']) {
+        if (!empty($data['room_notice'])) {
             $weapp = new Weapp($this->app);
             $error = $weapp->checkText(urldecode($data['room_notice']));
             if ($error) {
@@ -196,7 +196,7 @@ class Room extends BaseController
             return jerr("房间名称必须输入");
         }
 
-        if ($data['room_notice']) {
+        if (!empty($data['room_notice'])) {
             $weapp = new Weapp($this->app);
             $error = $weapp->checkText(urldecode($data['room_notice']));
             if ($error) {
@@ -460,7 +460,6 @@ class Room extends BaseController
     private function getRoomAppUrl($room_id)
     {
         switch ($room_id) {
-            case 888:
             case 10933:
                 return "https://test.hamm.cn/ac/";
             case 10656:
