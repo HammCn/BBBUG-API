@@ -51,5 +51,10 @@ var BBBUG = {
         parent.window.postMessage({
             event: "getNowSong"
         }, "*");
+    },
+    getLrcObj() {
+        parent.window.postMessage({
+            event: "getLrcObj"
+        }, "*");
     }
 };
