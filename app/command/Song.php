@@ -199,6 +199,8 @@ class Song extends BaseCommand
         } else {
             cache('SongNow_' . $room_id, $song, 3600);
         }
+        $songList = $this -> getSongList($room_id);
+
         cache("song_detail_" . $song['song']['mid'], $song['song'], 3600);
         $msg = [
             'at' => $song['at'] ?? false,
@@ -207,6 +209,7 @@ class Song extends BaseCommand
             'since' => $song['since'],
             "type" => "playSong",
             "time" => date('H:i:s'),
+            'count' => count($songList) ?? 0
         ];
         sendWebsocketMessage('channel', $room_id, $msg);
     }
@@ -283,6 +286,7 @@ class Song extends BaseCommand
                 'singer' => $song['artist'],
             ],
             'since' => time(),
+            'count' => 1,
             'user' => [
                 "app_id" => 1,
                 "app_name" => "BBBUG",

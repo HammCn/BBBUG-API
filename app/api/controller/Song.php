@@ -490,6 +490,7 @@ class Song extends BaseController
             "type" => "addSong",
             'at' => $at ?? false,
             "time" => date('H:i:s'),
+            'count' => count($songList) ?? 0
         ];
         sendWebsocketMessage('channel', $room_id, $msg);
 
@@ -555,6 +556,7 @@ class Song extends BaseController
             return jerr("房间信息查询失败");
         }
         $result = [];
+        $songList = cache('SongList_' . $room_id) ?? [];
         switch ($room['room_type']) {
             case 1:
             case 4:
@@ -564,6 +566,7 @@ class Song extends BaseController
                     'time' => date('H:i:s'),
                     'user' => null,
                     'song' => null,
+                    'count' => count($songList) ?? 0
                 ];
                 if ($now) {
                     $result['user'] = $now['user'];
@@ -821,6 +824,7 @@ class Song extends BaseController
             'song' => $pushSong['song'],
             "type" => "push",
             "time" => date('H:i:s'),
+            'count' => count($songList) ?? 0
         ];
         sendWebsocketMessage('channel', $room_id, $msg);
 
@@ -892,6 +896,7 @@ class Song extends BaseController
             'song' => $removeSong['song'],
             "type" => "removeSong",
             "time" => date('H:i:s'),
+            'count' => count($songList) ?? 0
         ];
         sendWebsocketMessage('channel', $room_id, $msg);
         return jok('移除成功');

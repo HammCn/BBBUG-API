@@ -30,6 +30,7 @@ var webSocketServer = websocket.createServer(function (conn) {
                         song: JSON.parse(dataString).song || null,
                         story: JSON.parse(dataString).story || null,
                         since: JSON.parse(dataString).since || 0,
+                        count: JSON.parse(dataString).count || 0,
                         user: JSON.parse(dataString).user || null,
                         at: JSON.parse(dataString).at || false,
                     }));
