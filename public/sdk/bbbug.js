@@ -56,5 +56,10 @@ var BBBUG = {
         parent.window.postMessage({
             event: "getLrcObj"
         }, "*");
+    },
+    getThemeMode() {
+        parent.window.postMessage({
+            event: "getThemeMode"
+        }, "*");
     }
 };
