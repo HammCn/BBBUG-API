@@ -428,7 +428,6 @@ class Room extends BaseController
             $admin = $userModel->where("user_id", $item['room_user'])->find();
             $item['admin'] = getUserData($admin);
 
-            $item['room_app'] = $this->getRoomAppUrl($item['room_id']);
             return jok('数据加载成功', $item);
         }
         //校验Access与RBAC
