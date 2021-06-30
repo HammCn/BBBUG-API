@@ -126,7 +126,16 @@ class Room extends BaseController
                 return jerr('房间背景不支持站外图');
             }
         }
-
+        if (input('?room_app')) {
+            if(input('room_app')){ 
+                if(strpos(input('room_app'),'https://') !== 0){
+                    return jerr("插件地址请填写https有效网址");
+                }
+                $data['room_app'] = htmlspecialchars(input('room_app'));
+            }else{
+                $data['room_app'] = '';
+            }
+        }
         if (!empty($data['room_name'])) {
             $weapp = new Weapp($this->app);
             $error = $weapp->checkText(urldecode($data['room_name']));
@@ -450,10 +459,6 @@ class Room extends BaseController
 
         $admin = $userModel->where("user_id", $item['room_user'])->find();
         $item['admin'] = getUserData($admin);
-
-
-
-        $item['room_app'] = $this->getRoomAppUrl($item['room_id']);
 
         return jok('数据加载成功', $item);
     }
