@@ -61,5 +61,10 @@ var BBBUG = {
         parent.window.postMessage({
             event: "getThemeMode"
         }, "*");
+    },
+    hideAll() {
+        parent.window.postMessage({
+            event: "hideAll"
+        }, "*");
     }
 };

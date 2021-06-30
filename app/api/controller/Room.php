@@ -180,10 +180,6 @@ class Room extends BaseController
         if ($error) {
             return $error;
         }
-        $canCreateRoom = cache('create_room_user_' . $this->user['user_id']) ?? false;
-        if (!$canCreateRoom) {
-            return jerr("你暂时没有创建房间权限，申请权限请加QQ群 1140258698");
-        }
         $myRoom = $this->model->where('room_user', $this->user['user_id'])->find();
         if ($myRoom) {
             return jerr('创建失败,你已经有了一个房间');
