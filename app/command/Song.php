@@ -240,7 +240,7 @@ class Song extends BaseCommand
         $roomModel = new RoomModel();
         $rooms = cache('RoomList') ?? false;
         if (!$rooms) {
-            $rooms = $roomModel->field('room_id,room_robot,room_type,room_playone,room_user')->where('room_type in (1,4) and room_realonline > 0 or room_id < 1000')->select();
+            $rooms = $roomModel->field('room_id,room_robot,room_type,room_playone,room_user')->where('room_type in (1,4) and room_realonline > 0 or room_id = 888')->select();
             $rooms = $rooms ? $rooms->toArray() : [];
             if ($rooms) {
                 cache('RoomList', $rooms, 5);
