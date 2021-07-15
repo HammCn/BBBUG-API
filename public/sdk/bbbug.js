@@ -66,5 +66,16 @@ var BBBUG = {
         parent.window.postMessage({
             event: "hideAll"
         }, "*");
+    },
+    sendImage(url) {
+        parent.window.postMessage({
+            event: "sendImage",
+            url: url
+        }, "*");
+    },
+    getMessageList() {
+        parent.window.postMessage({
+            event: "getMessageList",
+        }, "*");
     }
 };
