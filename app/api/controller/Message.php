@@ -252,7 +252,7 @@ class Message extends BaseController
             if ($weapp_appid && $weapp_appkey) {
                 $weapp = new Weapp($this->app);
                 $error = $weapp->checkText($msg_decode);
-                if($error){
+                if ($error) {
                     return $error;
                 }
             }
@@ -312,7 +312,7 @@ class Message extends BaseController
             }
             if ($type == 'img') {
                 $isVip = cache('guest_room_' . $room_id . '_user_' . $this->user['user_id']) ?? false;
-                
+
 
                 if ($this->user['user_id'] != $room['room_user'] && $isVip) {
                     //非房主
@@ -517,40 +517,48 @@ class Message extends BaseController
                     }
                 }
                 if ($ifRobotEnable && config('startadmin.tencent_ai_appid') && config('startadmin.tencent_ai_appkey')) {
-                    $url = "https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat";
-                    $tencentAiArray = [
-                        "app_id" => config('startadmin.tencent_ai_appid'),
-                        "time_stamp" => time(),
-                        "nonce_str" => md5(time() . rand(100000, 999999)),
-                        "session" => $this->user['user_id'],
-                        "question" => $msg_decode
+                    $url = "https://openai.weixin.qq.com/openapi/sign/Qn8nnAYcBJZbONOEgjTkABxP3VoBsa";
+                    $postData = [
+                        "userid" => $this->user['user_id'],
+                        "username" => $this->user['user_name']
                     ];
-                    $postData = http_build_query([
-                        "app_id" => $tencentAiArray['app_id'],
-                        "time_stamp" => $tencentAiArray['time_stamp'],
-                        "nonce_str" => $tencentAiArray['nonce_str'],
-                        "sign" => getTencentAiSign($tencentAiArray, config('startadmin.tencent_ai_appkey')),
-                        "session" => $tencentAiArray['session'],
-                        "question" => $tencentAiArray['question']
-                    ]);
-                    $ret = curlHelper($url, 'POST', $postData);
+                    $ret = curlHelper($url, 'POST', http_build_query($postData));
                     $json = json_decode($ret['body'], true);
-                    if ($json['ret'] == 0) {
-                        $robotInfo = $this->userModel->where("user_id", 1)->find();
-                        $msg = [
-                            'type' => 'text',
-                            'content' => rawurlencode(rawurlencode($json['data']['answer'])),
-                            'where' => $where,
-                            'at' => [
-                                'user_id' => $this->user['user_id'],
-                                'user_name' => $this->user['user_name']
-                            ],
-                            'message_id' => 0,
-                            'message_time' => time(),
-                            'resource' => rawurlencode(rawurlencode($json['data']['answer'])),
-                            'user' => getUserData($robotInfo),
+                    if ($json['signature']) {
+                        $signature = $json['signature'];
+
+                        $url = "https://openai.weixin.qq.com/openapi/aibot/Qn8nnAYcBJZbONOEgjTkABxP3VoBsa";
+                        $postData = [
+                            "signature" => $signature,
+                            "query" => $msg_decode,
+                            "username" => $this->user['user_name']
                         ];
-                        sendWebsocketMessage('channel', $room_id, $msg);
+                        $ret = curlHelper($url, 'POST', http_build_query($postData));
+                        $json = json_decode($ret['body'], true);
+                        if ($json['answer'] && $json['answer_type']) {
+                            switch ($json['answer_type']) {
+                                case 'text':
+                                    $robotInfo = $this->userModel->where("user_id", 1)->find();
+                                    $msg = [
+                                        'type' => 'text',
+                                        'content' => rawurlencode(rawurlencode($json['answer'])),
+                                        'where' => $where,
+                                        'at' => [
+                                            'user_id' => $this->user['user_id'],
+                                            'user_name' => $this->user['user_name']
+                                        ],
+                                        'message_id' => 0,
+                                        'message_time' => time(),
+                                        'resource' => rawurlencode(rawurlencode($json['answer'])),
+                                        'user' => getUserData($robotInfo),
+                                    ];
+                                    sendWebsocketMessage('channel', $room_id, $msg);
+                                    break;
+                                default:
+                                    print_r($json);
+                            }
+                        }
+
                         return jok('');
                     }
                 }
@@ -558,8 +566,8 @@ class Message extends BaseController
                 break;
             case 'img':
                 //解决小程序端CDN图片地址错误的问题
-                $msg_decode = urldecode(str_replace("//images/emoji/","/new/images/emoji/",$msg_decode));
-                $msg_resource = urldecode(str_replace("//images/emoji/","/new/images/emoji/",$msg_resource));
+                $msg_decode = urldecode(str_replace("//images/emoji/", "/new/images/emoji/", $msg_decode));
+                $msg_resource = urldecode(str_replace("//images/emoji/", "/new/images/emoji/", $msg_resource));
 
                 if (cache('last_' . $this->user['user_id']) && !getIsAdmin($this->user) && $this->user['user_id'] != $room['room_user']) {
                     return jerr('发送图片太频繁啦~');

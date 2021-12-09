@@ -8,16 +8,7 @@ class Index extends BaseController
 {
     public function index()
     {
-        $wechat_app_enabled = cache('wechat_app_enabled') ?? 'close';
-        //FUCK YOUR BUG
-        // $wechat_app_enabled = "open";//上线后请放开这一行
-        if ($wechat_app_enabled == 'open') {
-            return jok($wechat_app_enabled, [
-                'success' => 1,
-                'systemVersion' => time()
-            ]);
-        }
-        return jok($wechat_app_enabled, [
+        return jok(0, [
             'success' => 0,
             'data' => json_decode(file_get_contents('https://h5.oschina.net/apiv3/projectRecommend?size=50&page=1'), true)['data']['items']
         ]);

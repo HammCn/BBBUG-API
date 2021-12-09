@@ -103,15 +103,6 @@ abstract class BaseController
         if(!$staticUrl){
             die('请先配置sa_conf表的static_url字段数据');
         }
-        if(input('plat')=='weapp' && $this->controller!='Index'){
-            $wechat_app_enabled = cache('wechat_app_enabled') ?? 'close';
-            //FUCK YOUR BUG
-            // $wechat_app_enabled = 'open'; //上线了请放开这一行
-            if ($wechat_app_enabled != 'open') {
-                echo jerr('error',503);
-                die;
-            }
-        }
     }
     /**
      * 检测授权
